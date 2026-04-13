@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
       routes: AppRoute.routes,
-      initialRoute: AppRoute.userProfile,
+      initialRoute: AppRoute.loginOrSignup,
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
