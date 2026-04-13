@@ -5,11 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 class PetwiseUserTextfield extends StatelessWidget {
   final String textLabel;
   final String textInput;
+  final bool isEditable;
 
   const PetwiseUserTextfield({
    super.key,
    required this.textLabel,
    required this.textInput,
+    this.isEditable = false,
 
 });
   @override
@@ -18,18 +20,20 @@ class PetwiseUserTextfield extends StatelessWidget {
       ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: 800,
+          minWidth: 40
         ),
         child: Container(
+          margin: EdgeInsets.symmetric(vertical: 10),
           width: double.infinity,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("User Name",
+              Text(textLabel,
                   style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w900, fontSize: 15)
               ),
               Container(
                 margin: EdgeInsets.all(5),
-                padding: EdgeInsets.only(left: 20, right: 20, bottom: 5),
+                padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
                 width: double.infinity,
                 height: 50,
                 decoration: BoxDecoration(
@@ -41,7 +45,7 @@ class PetwiseUserTextfield extends StatelessWidget {
                     )
                 ),
                 child: TextField(
-                  enabled: false,
+                  enabled: isEditable,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: textInput,
