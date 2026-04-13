@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/presentation/widgets/petwise_Navbar.dart';
+import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -72,12 +74,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                     child: Container(
                       width: double.infinity,
-                      height: 100,
-                      margin: const EdgeInsets.all(20),
-                      padding: const EdgeInsets.all(20),
+                      margin: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.pink,
+                        // color: Colors.pink,
                         borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("USER INFORMATION",
+                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 17, color: Color(0xFF92A1B7)),),
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                          ),
+                          PetwiseUserTextfield(textLabel: "User Name",textInput:  "Jose Ryle Andre"),
+
+
+                        ]
                       ),
                     ),
                   )

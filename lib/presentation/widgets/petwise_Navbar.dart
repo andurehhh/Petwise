@@ -62,7 +62,7 @@ class PetwiseNavbar extends StatelessWidget {
               Navigator.pushReplacementNamed(context, AppRoute.userProfile);
             },
             icon: Icon(
-              Icons.person,
+              Icons.pets,
               color: navbarIndex == 4 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
             ),
           )
