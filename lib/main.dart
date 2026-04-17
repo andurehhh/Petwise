@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/routes/app_route.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+        providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+
+  ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -32,7 +42,7 @@ class MyApp extends StatelessWidget {
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
       routes: AppRoute.routes,
-      initialRoute: AppRoute.loginOrSignup,
+      initialRoute: AppRoute.userProfile,
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }

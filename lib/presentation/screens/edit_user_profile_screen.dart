@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:petwise/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 
 class EditUserProfileScreen extends StatefulWidget {
@@ -11,8 +13,32 @@ class EditUserProfileScreen extends StatefulWidget {
 }
 
 class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
+  late TextEditingController _nicknameController;
+
+  @override
+  void initState(){
+    super.initState();
+
+    final user = context.read<UserProvider>().user;
+    _firstNameController = TextEditingController(text: user?.firstName ?? "");
+    _lastNameController = TextEditingController(text: user?.lastName ?? "");
+    _nicknameController = TextEditingController(text: user?.nickname ?? "");
+  }
+
+  @override
+  void dispose(){
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _nicknameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>();
+
     return
       Scaffold(
         backgroundColor: Color(0xFFF8F7F6),
@@ -79,8 +105,8 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                               letterSpacing: -1.5),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                              hintText: "Lady Gaga"
-                          )
+                          ),
+                          controller: _nicknameController,
                       ),
                     ),
                     SizedBox(
@@ -130,11 +156,11 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                     height: 20,
                                   ),
                                   PetwiseUserTextfield(textLabel: "First Name",
-                                      textInput: "Yves Kylle Genesis", isEditable: true,),
+                                      textHint: "Enter first name", isEditable: true, controller: _firstNameController,),
                                   PetwiseUserTextfield(textLabel: "Last Name",
-                                      textInput: "Almazora", isEditable: true,),
+                                      textHint: "Enter last name", isEditable: true, controller: _lastNameController),
                                   PetwiseUserTextfield(textLabel: "Email",
-                                      textInput: "andrealmazora19@gmail.com",),
+                                      textHint: userProvider.user?.email, isEditable: false,),
 
                                   ConstrainedBox(
                                       constraints: BoxConstraints(
@@ -149,7 +175,21 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                             width: 50,
                                             height: 30,
                                           ),
-                                          OutlinedButton(onPressed: () {},
+                                          OutlinedButton(onPressed: () {
+                                            print("DEBUG Controller First: ${_firstNameController.text}");
+                                            String newFirstName = _firstNameController.text;
+                                            String newLastName = _lastNameController.text;
+                                            String newNickname = _nicknameController.text;
+
+                                            context.read<UserProvider>().updateUserInfo(newFirstName, newLastName, newNickname);
+
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text("Profile Updated!"),
+                                                  backgroundColor: Colors.lightGreen,)
+                                            );
+                                            Navigator.pop(context);
+                                          },
                                               style: OutlinedButton.styleFrom(
                                                   minimumSize: const Size(
                                                       300, 50),
@@ -171,7 +211,10 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                             width: 50,
                                             height: 15,
                                           ),
-                                          FilledButton(onPressed: () {},
+                                          FilledButton(onPressed: () {
+                                            Navigator.pop(context);
+
+                                          },
                                               style: FilledButton.styleFrom(
                                                   minimumSize: const Size(
                                                       300, 50),

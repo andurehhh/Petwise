@@ -4,13 +4,15 @@ import 'package:google_fonts/google_fonts.dart';
 
 class PetwiseUserTextfield extends StatelessWidget {
   final String textLabel;
-  final String textInput;
+  final String? textHint;
+  final TextEditingController? controller;
   final bool isEditable;
 
   const PetwiseUserTextfield({
    super.key,
    required this.textLabel,
-   required this.textInput,
+    this.textHint,
+    this.controller,
     this.isEditable = false,
 
 });
@@ -45,10 +47,11 @@ class PetwiseUserTextfield extends StatelessWidget {
                     )
                 ),
                 child: TextField(
+                  controller: controller,
                   enabled: isEditable,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: textInput,
+                    hintText: textHint,
 
                   ),
                 ),

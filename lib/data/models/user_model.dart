@@ -5,12 +5,15 @@ class UserModel {
   final String email;
   final String dbId;
   String? profileImageUrl;
+  String? nickname;
 
   UserModel({
    required this.id,
    required this.firstName,
    required this.lastName,
-   required this.email,
+
+    this.nickname,
+    required this.email,
    required this.dbId,
    this.profileImageUrl,
 });

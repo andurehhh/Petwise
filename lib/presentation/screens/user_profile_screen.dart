@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/presentation/widgets/petwise_Navbar.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:petwise/routes/app_route.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -16,6 +18,10 @@ class UserProfileScreen extends StatefulWidget {
 class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.user;
+    print(user);
+
     return
       Scaffold(
         backgroundColor: Color(0xFFF8F7F6),
@@ -67,7 +73,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     height: 20,
                     width: 40,
                   ),
-                  Text("Lady Gaga",
+                  Text("${user?.nickname}",
                   style: GoogleFonts.plusJakartaSans(fontSize: 23, fontWeight: FontWeight.bold, letterSpacing: -1.5),
                   ),
                   SizedBox(
@@ -116,9 +122,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 width: 20,
                                 height: 20,
                               ),
-                              PetwiseUserTextfield(textLabel: "First Name",textInput:  "Yves Kylle Genesis"),
-                              PetwiseUserTextfield(textLabel: "Last Name",textInput:  "Almazora"),
-                              PetwiseUserTextfield(textLabel: "Email",textInput:  "andrealmazora19@gmail.com"),
+                              PetwiseUserTextfield(textLabel: "First Name",textHint: "${user?.firstName}"),
+                              PetwiseUserTextfield(textLabel: "Last Name",textHint:  "${user?.lastName}"),
+                              PetwiseUserTextfield(textLabel: "Email",textHint:  "${user?.email}"),
 
                                   ConstrainedBox(
                                       constraints: BoxConstraints(
