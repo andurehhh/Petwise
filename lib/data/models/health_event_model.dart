@@ -1,11 +1,11 @@
 class HealthEvent{
-  final id;
-  final createdAt;
-  final eventName;
-  final eventDate;
-  final type;
-  final isCompleted;
-  final petId;
+  final int id;
+  final DateTime createdAt;
+  String eventName;
+  DateTime eventDate;
+  String type;
+  bool isCompleted;
+  int petId;
 
   HealthEvent({
     required this.id,

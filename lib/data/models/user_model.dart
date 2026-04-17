@@ -1,10 +1,10 @@
 class UserModel {
   final String id;
-  final String firstName;
-  final String lastName;
+  String firstName;
+  String lastName;
   final String email;
   final String dbId;
-  final String? profileImageUrl;
+  String? profileImageUrl;
 
   UserModel({
    required this.id,

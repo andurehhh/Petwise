@@ -1,11 +1,12 @@
 class Pet{
-  final id;
-  final createdAt;
-  final userId;
-  final name;
-  final species;
-  final birthday;
-  final sex;
+  final String id;
+  final DateTime createdAt;
+  final String userId;
+  String name;
+  String species;
+  DateTime birthday;
+  String sex;
+
 
   Pet({
     required this.id,

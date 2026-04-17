@@ -1,12 +1,12 @@
 class ActivityModel {
   final String id;
   final DateTime createdAt;
-  final int petId;
-  final String title;
-  final String? description;
-  final DateTime scheduledDate;
-  final bool isCompleted;
-  final String? recurrence;
+  int petId;
+  String title;
+  String? description;
+  DateTime scheduledDate;
+  bool isCompleted;
+  String? recurrence;
 
   ActivityModel ({
     required this.id,
