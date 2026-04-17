@@ -1,43 +1,49 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petwise/providers/user_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:petwise/data/models/pet_model.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/providers/PetProvider.dart';
+import 'package:petwise/routes/app_route.dart';
+import 'package:provider/provider.dart';
 
-class EditUserProfileScreen extends StatefulWidget {
-  const EditUserProfileScreen({super.key});
+
+class EditPetProfileScreen extends StatefulWidget {
+  const EditPetProfileScreen({super.key});
 
   @override
-  State<EditUserProfileScreen> createState() => _EditUserProfileScreenState();
+  State<EditPetProfileScreen> createState() => _EditPetProfileScreenState();
 }
 
-class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
-  late TextEditingController _nicknameController;
+class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
+  late TextEditingController _petNameController;
+  late TextEditingController _petSpeciesController;
+  late TextEditingController _petAgeController;
+  late TextEditingController _petWeightController;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
+    final pet = context.read<PetProvider>().selectedPet;
 
-    final user = context.read<UserProvider>().user;
-    _firstNameController = TextEditingController(text: user?.firstName ?? "");
-    _lastNameController = TextEditingController(text: user?.lastName ?? "");
-    _nicknameController = TextEditingController(text: user?.nickname ?? "");
+    _petNameController = TextEditingController(text: pet?.name ?? "");
+    _petSpeciesController = TextEditingController(text: pet?.species?? "");
+    _petAgeController = TextEditingController(text: pet?.age.toString()?? "0");
+    _petWeightController = TextEditingController(text: pet?.sex?? "");
   }
 
   @override
-  void dispose(){
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _nicknameController.dispose();
+    void dispose() {
+    _petAgeController.dispose();
+    _petNameController.dispose();
+    _petSpeciesController.dispose();
+    _petWeightController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = context.watch<UserProvider>();
+    final pet = context.watch<PetProvider>().selectedPet;
 
     return
       Scaffold(
@@ -46,7 +52,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
         appBar: AppBar(
           leading:
           IconButton(
-              onPressed: () {
+              onPressed: (){
                 Navigator.pop(context);
               },
               icon: Icon(CupertinoIcons.back)),
@@ -58,56 +64,34 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    GestureDetector(
-                      onTap: (){},
-                      child: Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 72,
-                            backgroundColor: Color(0xFFF7A433),
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 72,
+                          backgroundColor: Color(0xFFF7A433),
+                          child: CircleAvatar(
+                            radius: 70,
+                            backgroundImage: AssetImage(
+                                'assets/images/doggie.gif'),
                             child: CircleAvatar(
+                              backgroundColor: Colors.black26,
                               radius: 70,
-                              backgroundImage: AssetImage(
-                                  'assets/images/SUA.jpg'),
-                              child: CircleAvatar(
-                                backgroundColor: Colors.black26,
-                                radius: 70,
-                                child: Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 30,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-
                     SizedBox(
                       height: 20,
                       width: 40,
                     ),
-                    // Text("Lady Gaga",
-                    //   style: GoogleFonts.plusJakartaSans(fontSize: 23,
-                    //       fontWeight: FontWeight.bold,
-                    //       letterSpacing: -1.5),
-                    // ),
-                    Container(
-                      // color: Colors.red,
-                      height: 50,
-                      width: 300,
-                      child: TextField(
-                        enabled: true,
-                        textAlign: TextAlign.center,
-                          style: GoogleFonts.plusJakartaSans(fontSize: 23,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -1.5),
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                          ),
-                          controller: _nicknameController,
-                      ),
+                    Text("${pet?.name}",
+                      style: GoogleFonts.plusJakartaSans(fontSize: 23, fontWeight: FontWeight.bold, letterSpacing: -1.5),
                     ),
                     SizedBox(
                       width: 10,
@@ -140,7 +124,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text("USER INFORMATION",
+                            Text("BASIC INFORMATION",
                               style: GoogleFonts.plusJakartaSans(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 17,
@@ -155,12 +139,26 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                     width: 20,
                                     height: 20,
                                   ),
-                                  PetwiseUserTextfield(textLabel: "First Name",
-                                      textHint: "Enter first name", isEditable: true, controller: _firstNameController,),
-                                  PetwiseUserTextfield(textLabel: "Last Name",
-                                      textHint: "Enter last name", isEditable: true, controller: _lastNameController),
-                                  PetwiseUserTextfield(textLabel: "Email",
-                                      textHint: userProvider.user?.email, isEditable: false,),
+                                  PetwiseUserTextfield(textLabel: "Pet Name",textHint:  "Enter Pet Name here", controller: _petNameController, isEditable: true,),
+                                  PetwiseUserTextfield(textLabel: "Breed",textHint:  "Enter pet Breed here", controller: _petSpeciesController, isEditable: true,),
+
+                                  ConstrainedBox(
+                                    constraints:
+                                    BoxConstraints(
+                                      maxWidth: 800,
+                                    ),
+                                    child:
+                                    Row(
+                                      children: [
+                                        Expanded(child:
+                                        PetwiseUserTextfield(textLabel: "Age (in Years)",textHint:  "${pet?.age}", controller: _petAgeController,),
+                                        ),
+                                        Expanded(child:
+                                        PetwiseUserTextfield(textLabel: "Weight (Kg)",textHint:  "${pet?.sex}", controller: _petWeightController)
+                                        ),
+                                      ],
+                                    ),
+                                  ),
 
                                   ConstrainedBox(
                                       constraints: BoxConstraints(
@@ -168,8 +166,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                           minWidth: 40
                                       ),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           SizedBox(
                                             width: 50,
@@ -177,16 +174,19 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                           ),
                                           FilledButton(
                                               onPressed: () {
-                                                print("DEBUG Controller First: ${_firstNameController.text}");
-                                                String newFirstName = _firstNameController.text;
-                                                String newLastName = _lastNameController.text;
-                                                String newNickname = _nicknameController.text;
+                                                print("DEBUG Controller First: ${_petNameController.text}");
 
-                                                context.read<UserProvider>().updateUserInfo(newFirstName, newLastName, newNickname);
+                                                String newPetName = _petNameController.text;
+                                                String newPetSpecies = _petSpeciesController.text;
+                                                String newPetAge = _petAgeController.text;
+                                                String newPetWeight = _petWeightController.text;
+
+
+                                                context.read<PetProvider>().updatePetInfo(newPetName, newPetSpecies);
 
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                     const SnackBar(
-                                                      content: Text("Profile Updated!"),
+                                                      content: Text("Pet Info Updated!"),
                                                       backgroundColor: Colors.lightGreen,)
                                                 );
                                                 Navigator.pop(context);
@@ -234,7 +234,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                                         .bold),
                                               )
                                           ),
-
                                         ],
                                       ))
 
@@ -244,6 +243,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                         ),
                       ),
                     )
+
 
 
                   ]
@@ -264,4 +264,3 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
       );
   }
 }
-

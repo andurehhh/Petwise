@@ -138,6 +138,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                             width: 50,
                                             height: 30,
                                           ),
+                                          FilledButton(onPressed: (){},
+                                              style: FilledButton.styleFrom(
+                                                  minimumSize: const Size(300,50),
+                                                  backgroundColor: Color(0xFFF7A433),
+                                                  side: const BorderSide(
+                                                    color: Color(0xFFDA9B44),
+                                                    width: 2,
+                                                  )
+                                              ),
+                                              child: Text("FORGOT PASSWORD",
+                                                  style: GoogleFonts.plusJakartaSans(
+                                                      color: Color(0xFFFFFFFF),
+                                                      fontWeight: FontWeight.bold)
+                                              )
+                                          ),
+                                          SizedBox(
+                                            width: 50,
+                                            height: 15,
+                                          ),
                                           OutlinedButton(onPressed: (){},
                                               style: OutlinedButton.styleFrom(
                                                   minimumSize: const Size(300, 50),
@@ -146,32 +165,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                       width: 2
                                                   )
                                               ),
-                                              child: Text("FORGOT PASSWORD",
+                                              child: Text("LOG OUT",
                                                 style: GoogleFonts.plusJakartaSans(
                                                     color: Color(0xFFF7A433),
                                                     fontWeight: FontWeight.bold),
                                               )
                                           ),
-
-                                          SizedBox(
-                                            width: 50,
-                                            height: 15,
-                                          ),
-                                          FilledButton(onPressed: (){},
-                                              style: FilledButton.styleFrom(
-                                                minimumSize: const Size(300,50),
-                                                backgroundColor: Color(0xFFF7A433),
-                                                side: const BorderSide(
-                                                  color: Color(0xFFDA9B44),
-                                                  width: 2,
-                                                )
-                                              ),
-                                              child: Text("LOG OUT",
-                                                style: GoogleFonts.plusJakartaSans(
-                                                    color: Color(0xFFFFFFFF),
-                                                    fontWeight: FontWeight.bold)
-                                              )
-                                          )
                                         ],
                                       ))
 
