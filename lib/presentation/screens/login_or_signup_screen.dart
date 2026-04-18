@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginOrSignupScreen extends StatefulWidget {
   const LoginOrSignupScreen({super.key});
@@ -19,7 +20,7 @@ class _LoginOrSignupScreenState extends State<LoginOrSignupScreen> {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(18.0),
+          padding: const EdgeInsets.only(left: 18.0, right: 18.0, bottom: 40.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -32,9 +33,12 @@ class _LoginOrSignupScreenState extends State<LoginOrSignupScreen> {
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 55),
                 ),
-                child: const Text(
+                child: Text(
                   'CREATE ACCOUNT',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 5),
@@ -43,9 +47,31 @@ class _LoginOrSignupScreenState extends State<LoginOrSignupScreen> {
                   // Navigate to signup screen
                 },
                 style: TextButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 35),
+                  foregroundColor: Color(0xff454E53),
+                  minimumSize: const Size(double.infinity, 40),
+                  splashFactory: NoSplash.splashFactory,
+                  overlayColor: Colors.transparent,
                 ),
-                child: const Text('Sign Up'),
+                child: RichText(
+                  text: TextSpan(
+                    text: 'Already have an account? ',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff454E53),
+                    ),
+                    children: [
+                      TextSpan(
+                        text: 'Log in',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xffDF8F17),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

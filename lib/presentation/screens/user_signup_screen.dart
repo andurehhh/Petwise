@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import '../widgets/petwise_user_textField.dart';
 
-class UserLoginScreen extends StatefulWidget {
-  const UserLoginScreen({super.key});
+class UserSignupScreen extends StatefulWidget {
+  const UserSignupScreen({super.key});
 
   @override
-  State<UserLoginScreen> createState() => _UserLoginScreenState();
+  State<UserSignupScreen> createState() => _UserSignupScreenState();
 }
 
-class _UserLoginScreenState extends State<UserLoginScreen> {
+class _UserSignupScreenState extends State<UserSignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,7 +42,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome Back!',
+                      'Welcome to PetWise!',
                       style: GoogleFonts.plusJakartaSans(
                         color: Color(0xff0B4A72),
                         fontSize: 23,
@@ -51,7 +51,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                       ),
                     ),
                     Text(
-                      'Login to check on your pets.',
+                      'Create an account to check on your pets.',
                       style: GoogleFonts.plusJakartaSans(
                         color: Color(0xffA5927D),
                         fontSize: 14,
@@ -74,34 +74,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                         ),
                       ],
                     ),
-                    Transform.translate(
-                      offset: const Offset(0, -8),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            //ins forgot password logic here
-                          },
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 0,
-                            ),
-                            overlayColor: Colors.transparent,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            'Forgot Password?',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Color(0xffA5927D),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+
                     const SizedBox(height: 25),
                     ElevatedButton(
                       onPressed: () {
@@ -113,7 +86,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                         minimumSize: const Size(double.infinity, 50),
                       ),
                       child: Text(
-                        'LOGIN',
+                        'CREATE ACCOUNT',
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.white,
                           fontSize: 17,
