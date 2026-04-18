@@ -15,17 +15,28 @@ class Pet{
     required this.name,
     required this.species,
     required this.birthday,
-    required this.sex
+    required this.sex,
 });
+
+  int get age{
+    DateTime now = DateTime.now();
+    int years = now.year - birthday.year;
+
+    if (now.month < birthday.month ||
+        (now.month == birthday.month && now.day < birthday.day)) {
+      years--;
+    }
+    return years < 0? 0 : years;
+  }
 
   factory Pet.fromJson(Map<String,dynamic> json){
     return Pet(
       id: json["pet_id"],
-      createdAt: DateTime.parse(json["created_at"]),
+      createdAt: DateTime.parse(json["created_at"]).toLocal() ,
       userId: json["user_id"],
       name: json["name"],
       species: json["species"],
-      birthday: DateTime.parse(json["birthday"]),
+      birthday: DateTime.parse(json["birthday"]).toLocal(),
       sex: json["sex"],
     );
   }

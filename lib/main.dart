@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petwise/providers/PetProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/routes/app_route.dart';
@@ -8,6 +9,7 @@ void main() {
     MultiProvider(
         providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => PetProvider())
 
   ],
       child: const MyApp(),
