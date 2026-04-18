@@ -64,12 +64,12 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                         SizedBox(height: 15, width: 25),
                         PetwiseUserTextfield(
                           textLabel: 'EMAIL',
-                          textInput: 'Enter your email address',
+                          textHint: 'Enter your email address',
                           isEditable: true,
                         ),
                         PetwiseUserTextfield(
                           textLabel: 'PASSWORD',
-                          textInput: 'Enter your password',
+                          textHint: 'Enter your password',
                           isEditable: true,
                         ),
                       ],
