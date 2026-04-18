@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../widgets/petwise_pet_profile.dart';
 import '../widgets/petwise_activity_card.dart';
 
-class UserHomePageScreen extends StatefulWidget {
-  const UserHomePageScreen({super.key});
+class UserHomePage extends StatefulWidget {
+  const UserHomePage({super.key});
 
   @override
-  State<UserHomePageScreen> createState() => _UserHomePageScreenState();
+  State<UserHomePage> createState() => _UserHomePageScreenState();
 }
 
-class _UserHomePageScreenState extends State<UserHomePageScreen> {
+class _UserHomePageScreenState extends State<UserHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:petwise/providers/PetProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/routes/app_route.dart';
@@ -7,11 +6,7 @@ import 'package:petwise/routes/app_route.dart';
 void main() {
   runApp(
     MultiProvider(
-        providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => PetProvider())
-
-  ],
+      providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
       child: const MyApp(),
     ),
   );
@@ -44,7 +39,7 @@ class MyApp extends StatelessWidget {
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
       routes: AppRoute.routes,
-      initialRoute: AppRoute.userProfile,
+      initialRoute: AppRoute.userHomePage,
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
