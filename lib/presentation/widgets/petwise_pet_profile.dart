@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PetCircle extends StatelessWidget {
   final String imagePath;
@@ -20,19 +21,26 @@ class PetCircle extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.grey.shade300, width: 2),
+            border: Border.all(color: Color(0xffD0DAF0), width: 3),
           ),
           child: CircleAvatar(
-            radius: 35,
+            radius: 40,
             backgroundImage: AssetImage(imagePath),
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: Color(0xffFFF9F2),
           ),
         ),
         const SizedBox(height: 8),
-        Text(petName, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          petName,
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800),
+        ),
         Text(
           petType,
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.grey.shade600,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );

@@ -105,7 +105,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                     const SizedBox(height: 25),
                     ElevatedButton(
                       onPressed: () {
-                        // Handle login logic
+                        Navigator.pushNamed(context, '/UserHomePage');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xffF4AD44),
@@ -124,6 +124,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 15),
             ],
           ),
         ),

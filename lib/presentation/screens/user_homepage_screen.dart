@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/petwise_pet_profile.dart';
 import '../widgets/petwise_activity_card.dart';
+import '../widgets/petwise_app_bar.dart';
+import '../widgets/petwise_Navbar.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -10,100 +13,122 @@ class UserHomePage extends StatefulWidget {
 }
 
 class _UserHomePageScreenState extends State<UserHomePage> {
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF8F7F6),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Image.asset('assets/images/logo.png', height: 40),
-                  Row(
-                    children: const [
-                      Icon(Icons.notifications_none, size: 28),
-                      SizedBox(width: 15),
-                      Icon(Icons.person_outline, size: 28),
-                    ],
+      appBar: const PetWiseAppBar(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 15),
+            Text(
+              "Good morning, Mia!",
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 25,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1,
+              ),
+            ),
+            Text(
+              "They are having a great day so far.",
+              style: GoogleFonts.roboto(fontSize: 13, color: Colors.grey),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              height: 150,
+              decoration: BoxDecoration(
+                color: const Color(0xffF6EEE4),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            const SizedBox(height: 25),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Pets",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
                   ),
-                ],
-              ),
-              const SizedBox(height: 25),
-              const Text(
-                "Good morning, Mia!",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const Text(
-                "They are having a great day so far.",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                height: 150,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
                 ),
-              ),
-              const SizedBox(height: 25),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    "Pets",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.orange,
+                    overlayColor: Colors.transparent,
                   ),
-                  Text("See all", style: TextStyle(color: Colors.orange)),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  PetCircle(
-                    imagePath: 'assets/images/dog.png',
-                    petName: 'Draeco',
-                    petType: 'Pomeranian',
+                  child: Text(
+                    "See all",
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  PetCircle(
-                    imagePath: 'assets/images/cat.png',
-                    petName: 'Rence',
-                    petType: 'British Shorthair',
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                PetCircle(
+                  imagePath: 'assets/images/dog.png',
+                  petName: 'Draeco',
+                  petType: 'Pomeranian',
+                ),
+                PetCircle(
+                  imagePath: 'assets/images/cat.png',
+                  petName: 'Rence',
+                  petType: 'British Shorthair',
+                ),
+              ],
+            ),
+            const SizedBox(height: 25),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Upcoming Activities",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
                   ),
-                ],
-              ),
-              const SizedBox(height: 25),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    "Upcoming Activities",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.orange,
+                    overlayColor: Colors.transparent,
                   ),
-                  Text("See all", style: TextStyle(color: Colors.orange)),
-                ],
-              ),
-              const SizedBox(height: 15),
-              const ActivityCard(
-                title: 'Vet Appointment',
-                subtitle: '10:00 AM',
-                //status: 'Today',
-              ),
-              const ActivityCard(
-                title: 'Grooming',
-                subtitle: '2:00 PM',
-                //status: 'Tomorrow', wag mo forget add tau sa card
-              ),
-            ],
-          ),
+                  child: Text(
+                    "See all",
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            const ActivityCard(title: 'Vet Appointment', subtitle: '10:00 AM'),
+            const ActivityCard(title: 'Grooming', subtitle: '2:00 PM'),
+          ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: Color(0xFFF7A433),
+        shape: CircleBorder(),
+        child: Icon(Icons.add, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      bottomNavigationBar: PetwiseNavbar(navbarIndex: 1),
     );
   }
 }

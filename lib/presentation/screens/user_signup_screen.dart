@@ -10,6 +10,44 @@ class UserSignupScreen extends StatefulWidget {
 }
 
 class _UserSignupScreenState extends State<UserSignupScreen> {
+  void _showEmailValidationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xffFFF9EE),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: Text(
+            'Email Validation',
+            style: GoogleFonts.plusJakartaSans(
+              color: const Color(0xff0B4A72),
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          content: Text(
+            "We're waiting for your email validation.",
+            style: GoogleFonts.plusJakartaSans(
+              color: const Color(0xffA5927D),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Navigator.of(context).pop();
+                Navigator.pushNamed(context, '/UserProfileSignupScreen');
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,10 +113,10 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 25),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        // Handle login logic
+                        _showEmailValidationDialog();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xffF4AD44),
@@ -86,7 +124,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                         minimumSize: const Size(double.infinity, 50),
                       ),
                       child: Text(
-                        'CREATE ACCOUNT',
+                        'CREATE  ACCOUNT',
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.white,
                           fontSize: 17,
@@ -97,6 +135,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 15),
             ],
           ),
         ),

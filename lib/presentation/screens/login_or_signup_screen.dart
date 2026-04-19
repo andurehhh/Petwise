@@ -26,7 +26,7 @@ class _LoginOrSignupScreenState extends State<LoginOrSignupScreen> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  // Navigate to login screen
+                  Navigator.pushNamed(context, '/UserSignupScreen');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xffF4AD44),
@@ -44,7 +44,7 @@ class _LoginOrSignupScreenState extends State<LoginOrSignupScreen> {
               const SizedBox(height: 5),
               TextButton(
                 onPressed: () {
-                  // Navigate to signup screen
+                  Navigator.pushNamed(context, '/UserLoginScreen');
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: Color(0xff454E53),
