@@ -9,8 +9,8 @@ class PetwiseNavbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      elevation: 15,
-      shadowColor: Colors.grey,
+      elevation: 18,
+      shadowColor: Colors.black,
       notchMargin: 8,
       color: Colors.white,
       shape: const AutomaticNotchedShape(
@@ -26,20 +26,20 @@ class PetwiseNavbar extends StatelessWidget {
             onPressed: () {
               Navigator.pushReplacementNamed(context, AppRoute.userProfile);
             },
-            icon: Icon(Icons.home, color: Color(0xFF94A3B8)),
+            icon: Icon(Icons.home, color: navbarIndex == 0 ? Color(0xFFF7A433):Color(0xFF94A3B8) ),
           ),
           IconButton(
             onPressed: () {
               Navigator.pushReplacementNamed(context, AppRoute.userProfile);
             },
-            icon: Icon(Icons.bar_chart, color: Color(0xFF94A3B8)),
+            icon: Icon(Icons.bar_chart, color: navbarIndex == 1 ? Color(0xFFF7A433):Color(0xFF94A3B8) ),
           ),
           SizedBox(width: 50),
           IconButton(
             onPressed: () {
-              Navigator.pushReplacementNamed(context, AppRoute.userProfile);
+              Navigator.pushReplacementNamed(context, AppRoute.petProfile);
             },
-            icon: Icon(Icons.calendar_month_rounded, color: Color(0xFF94A3B8)),
+            icon: Icon(Icons.calendar_month_rounded, color: navbarIndex == 2 ? Color(0xFFF7A433):Color(0xFF94A3B8) ),
           ),
           IconButton(
             onPressed: () {
@@ -47,7 +47,7 @@ class PetwiseNavbar extends StatelessWidget {
             },
             icon: Icon(
               Icons.pets,
-              color: navbarIndex == 4 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
+              color: navbarIndex == 3 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
             ),
           ),
         ],
