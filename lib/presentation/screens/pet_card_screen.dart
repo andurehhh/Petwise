@@ -6,6 +6,7 @@ import '../widgets/petwise_petcard.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/petwise_Navbar.dart';
+import 'package:petwise/presentation/screens/pet_profile_screen.dart';
 
 class PetCardScreen extends StatelessWidget {
   const PetCardScreen({super.key});
@@ -53,17 +54,29 @@ class PetCardScreen extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: GestureDetector(
-                    onTap: () => context.read<PetProvider>().selectPet(pet),
-                    child: PetCard(
-                      id: pet.id,
-                      name: pet.name,
-                      species: pet.species,
-                      birthday: DateFormat('MM-dd-yyyy').format(pet.birthday),
-                      sex: pet.sex,
-                      cardColor: cardColor,
-                      detailColor: detailColor,
-                      dataTileBackgroundColor: tileBackground,
-                      imagePath: 'assets/images/${pet.name.toLowerCase()}.png',
+                    onTap: () {
+                      context.read<PetProvider>().selectPet(pet);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PetProfileScreen(),
+                        ),
+                      );
+                    },
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: PetCard(
+                        id: pet.id,
+                        name: pet.name,
+                        species: pet.species,
+                        birthday: DateFormat('MM-dd-yyyy').format(pet.birthday),
+                        sex: pet.sex,
+                        cardColor: cardColor,
+                        detailColor: detailColor,
+                        dataTileBackgroundColor: tileBackground,
+                        imagePath:
+                            'assets/images/${pet.name.toLowerCase()}.png',
+                      ),
                     ),
                   ),
                 );

@@ -30,8 +30,14 @@ class PetCard extends StatelessWidget {
     return Align(
       alignment: Alignment.center,
       child: Container(
-        height: 127,
-        width: 320,
+        constraints: const BoxConstraints(
+          minHeight: 120,
+          maxHeight: 160,
+          minWidth: 280,
+          maxWidth: 500,
+        ),
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(20),
@@ -86,13 +92,14 @@ class PetCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Row(
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
                           children: [
                             _buildDataTile(
                               Icons.calendar_month_outlined,
                               birthday,
                             ),
-                            const SizedBox(width: 6),
                             _buildDataTile(
                               sex.toLowerCase() == 'male'
                                   ? Icons.male
@@ -138,12 +145,15 @@ class PetCard extends StatelessWidget {
         children: [
           Icon(icon, size: 13, color: detailColor),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: GoogleFonts.plusJakartaSans(
-              color: detailColor,
-              fontWeight: FontWeight.w600,
-              fontSize: 11,
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.plusJakartaSans(
+                color: detailColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
             ),
           ),
         ],

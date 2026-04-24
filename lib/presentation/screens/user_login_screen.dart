@@ -97,124 +97,163 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/login_bg.png'),
-            fit: BoxFit.fitWidth,
+            fit: BoxFit.cover,
           ),
         ),
-        child: Padding(
+        child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 260),
-              Container(
-                padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  color: const Color(0xffFFF9EE),
-                  borderRadius: BorderRadius.circular(20.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
+          children: [
+            const SizedBox(height: 260),
+            Container(
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: const Color(0xffFFF9EE),
+                borderRadius: BorderRadius.circular(20.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome Back!',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: const Color(0xff0B4A72),
+                      fontSize: 23,
+                      fontWeight: FontWeight.w800,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome Back!',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xff0B4A72),
-                        fontSize: 23,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  ),
+                  Text(
+                    'Login to check on your pets.',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: const Color(0xffA5927D),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
-                    Text(
-                      'Login to check on your pets.',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xffA5927D),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    PetwiseUserTextfield(
-                      textLabel: 'EMAIL',
-                      textHint: 'Enter your email address',
-                      isEditable: true,
-                      controller: _emailController,
-                    ),
-                    PetwiseUserTextfield(
-                      textLabel: 'PASSWORD',
-                      textHint: 'Enter your password',
-                      isEditable: true,
-                      controller: _passwordController,
-                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Themed Error Message Card
                   if (authProvider.error != null)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(authProvider.error!, style: const TextStyle(color: Colors.red)),
-                    ),
-                    Transform.translate(
-                      offset: const Offset(0, -8),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: _showForgotPasswordDialog,
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 15),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 20,
                           ),
-                          child: Text(
-                            'Forgot Password?',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: const Color(0xffA5927D),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              authProvider.error!,
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 25),
-                    Center(
-                      child: ElevatedButton(
-                          onPressed: authProvider.isLoading
-                              ? null
-                              : ()async {
-                            bool success = await authProvider.login(
-                                _emailController.text.trim(),
-                                _passwordController.text.trim()
-                            );
-                            if(success && context.mounted){
-                              Navigator.pushReplacementNamed(context, '/UserHomePage');
-                            }
-                          },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xffF4AD44),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(180, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          elevation: 0,
+
+                  PetwiseUserTextfield(
+                    textLabel: 'EMAIL',
+                    textHint: 'Enter your email address',
+                    isEditable: true,
+                    controller: _emailController,
+                  ),
+                  PetwiseUserTextfield(
+                    textLabel: 'PASSWORD',
+                    textHint: 'Enter your password',
+                    isEditable: true,
+                    controller: _passwordController,
+                  ),
+                  Transform.translate(
+                    offset: const Offset(0, -8),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _showForgotPasswordDialog,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
-                          'Login',
+                          'Forgot Password?',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
+                            color: const Color(0xffA5927D),
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 25),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: authProvider.isLoading
+                          ? null
+                          : () async {
+                              bool success = await authProvider.login(
+                                _emailController.text.trim(),
+                                _passwordController.text.trim(),
+                              );
+                              if (success && context.mounted) {
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/UserHomePage',
+                                );
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xffF4AD44),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(180, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: authProvider.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Login',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 50),
+          ],
         ),
       ),
     );

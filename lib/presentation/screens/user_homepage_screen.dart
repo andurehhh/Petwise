@@ -17,23 +17,17 @@ class UserHomePage extends StatefulWidget {
   State<UserHomePage> createState() => _UserHomePageScreenState();
 }
 
-
-
 class _UserHomePageScreenState extends State<UserHomePage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 1. Get the current user's ID
       final userProvider = context.read<UserProvider>();
       final userId = userProvider.user?.id;
 
-      // 2. Fetch the pets for this user
       if (userId != null) {
         context.read<PetProvider>().loadUserPets(userId);
       }
-      print(userId);
-
     });
   }
 
@@ -110,22 +104,25 @@ class _UserHomePageScreenState extends State<UserHomePage> {
               ],
             ),
             const SizedBox(height: 20),
-            Wrap(
-              spacing: 25,
-              runSpacing: 20,
-              alignment: WrapAlignment.start,
-              children: petList.map((pet) {
-                return GestureDetector(
-                  onTap: () {
-                    context.read<PetProvider>().selectPet(pet);
-                  },
-                  child: PetCircle(
-                    imagePath: 'assets/images/${pet.name.toLowerCase()}.png',
-                    petName: pet.name,
-                    petType: pet.species,
-                  ),
-                );
-              }).toList(),
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                runSpacing: 20,
+                children: petList.map((pet) {
+                  return GestureDetector(
+                    onTap: () {
+                      context.read<PetProvider>().selectPet(pet);
+                      Navigator.pushNamed(context, '/PetCardScreen');
+                    },
+                    child: PetCircle(
+                      imagePath: 'assets/images/${pet.name.toLowerCase()}.png',
+                      petName: pet.name,
+                      petType: pet.species,
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
             const SizedBox(height: 35),
             Row(

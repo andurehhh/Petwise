@@ -24,22 +24,31 @@ class PetwiseNavbar extends StatelessWidget {
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, AppRoute.userProfile);
+              Navigator.pushNamed(context, AppRoute.userHomePage);
             },
-            icon: Icon(Icons.home, color: navbarIndex == 0 ? Color(0xFFF7A433):Color(0xFF94A3B8) ),
+            icon: Icon(
+              Icons.home,
+              color: navbarIndex == 0 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
+            ),
           ),
           IconButton(
             onPressed: () {
               Navigator.pushNamed(context, AppRoute.userProfile);
             },
-            icon: Icon(Icons.bar_chart, color: navbarIndex == 1 ? Color(0xFFF7A433):Color(0xFF94A3B8) ),
+            icon: Icon(
+              Icons.bar_chart,
+              color: navbarIndex == 1 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
+            ),
           ),
           SizedBox(width: 50),
           IconButton(
             onPressed: () {
               Navigator.pushNamed(context, AppRoute.petProfile);
             },
-            icon: Icon(Icons.calendar_month_rounded, color: navbarIndex == 2 ? Color(0xFFF7A433):Color(0xFF94A3B8) ),
+            icon: Icon(
+              Icons.calendar_month_rounded,
+              color: navbarIndex == 2 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
+            ),
           ),
           IconButton(
             onPressed: () {

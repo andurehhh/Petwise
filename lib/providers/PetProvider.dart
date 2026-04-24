@@ -10,37 +10,44 @@ class PetProvider extends ChangeNotifier {
   String? _errorMessage;
 
   List<Pet> _pets = [
-    // //dummy data
-    // Pet(
-    //   id: 01,
-    //   createdAt: DateTime(2023, 10, 10),
-    //   userId: "100",
-    //   name: "Mocha",
-    //   species: "dog",
-    //   birthday: DateTime(2023, 10, 10),
-    //   sex: "male",
-    // ),
-    // Pet(
-    //   id: 02,
-    //   createdAt: DateTime(2024, 06, 10),
-    //   userId: "100",
-    //   name: "Jamba",
-    //   species: "dog",
-    //   birthday: DateTime(2024, 06, 04),
-    //   sex: "male",
-    // ),
+    Pet(
+      id: 1,
+      createdAt: DateTime(2023, 10, 10),
+      userId: "100",
+      name: "Mocha",
+      species: "dog",
+      birthday: DateTime(2023, 10, 10),
+      sex: "male",
+    ),
+    Pet(
+      id: 2,
+      createdAt: DateTime(2024, 06, 10),
+      userId: "100",
+      name: "Jamba",
+      species: "cat",
+      birthday: DateTime(2024, 06, 04),
+      sex: "male",
+    ),
+    Pet(
+      id: 3,
+      createdAt: DateTime(2024, 06, 10),
+      userId: "100",
+      name: "Draeco",
+      species: "rabbit",
+      birthday: DateTime(2024, 08, 11),
+      sex: "male",
+    ),
   ];
 
-  Pet? _selectedPet;
-  // Pet? _selectedPet = Pet(
-  //   id: 01,
-  //   createdAt: DateTime(2023, 10, 10),
-  //   userId: "100",
-  //   name: "Mocha",
-  //   species: "dog",
-  //   birthday: DateTime(2023, 10, 10),
-  //   sex: "male",
-  // );
+  Pet? _selectedPet = Pet(
+    id: 1,
+    createdAt: DateTime(2023, 10, 10),
+    userId: "100",
+    name: "Mocha",
+    species: "dog",
+    birthday: DateTime(2023, 10, 10),
+    sex: "male",
+  );
 
   List<Pet> get pets => _pets;
   Pet? get selectedPet => _selectedPet;
