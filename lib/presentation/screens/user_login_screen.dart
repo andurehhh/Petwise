@@ -119,7 +119,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 180),
+              const SizedBox(height: 210),
               Container(
                 padding: const EdgeInsets.all(20.0),
                 decoration: BoxDecoration(
