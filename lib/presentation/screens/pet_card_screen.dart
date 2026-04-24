@@ -41,7 +41,7 @@ class PetCardScreen extends StatelessWidget {
                   cardColor = const Color(0xFFAE9CEE);
                   detailColor = const Color(0xFF8D64AD);
                   tileBackground = const Color(0xFFE4D9FE);
-                } else if (species.contains('hamster')) {
+                } else if (species.contains('rabbit')) {
                   cardColor = const Color(0xFFFF99CC);
                   detailColor = const Color(0xFF880E4F);
                   tileBackground = const Color(0xFFFCE4EC);
