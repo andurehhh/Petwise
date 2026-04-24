@@ -10,6 +10,82 @@ class UserLoginScreen extends StatefulWidget {
 }
 
 class _UserLoginScreenState extends State<UserLoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _forgotEmailController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _forgotEmailController.dispose();
+    super.dispose();
+  }
+
+  void _showForgotPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: const Color(0xffFFF9EE),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Reset Password',
+                style: GoogleFonts.plusJakartaSans(
+                  color: const Color(0xff0B4A72),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Enter your email to receive a verifier link.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  color: const Color(0xffA5927D),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 20),
+              PetwiseUserTextfield(
+                textLabel: 'EMAIL',
+                textHint: 'name@email.com',
+                isEditable: true,
+                controller: _forgotEmailController,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffF4AD44),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(140, 45),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Done',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,11 +100,11 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             children: [
-              SizedBox(height: 260),
+              const SizedBox(height: 260),
               Container(
                 padding: const EdgeInsets.all(20.0),
                 decoration: BoxDecoration(
-                  color: Color(0xffFFF9EE),
+                  color: const Color(0xffFFF9EE),
                   borderRadius: BorderRadius.circular(20.0),
                   boxShadow: [
                     BoxShadow(
@@ -44,57 +120,47 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                     Text(
                       'Welcome Back!',
                       style: GoogleFonts.plusJakartaSans(
-                        color: Color(0xff0B4A72),
+                        color: const Color(0xff0B4A72),
                         fontSize: 23,
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 0,
                       ),
                     ),
                     Text(
                       'Login to check on your pets.',
                       style: GoogleFonts.plusJakartaSans(
-                        color: Color(0xffA5927D),
+                        color: const Color(0xffA5927D),
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: 15, width: 25),
-                        PetwiseUserTextfield(
-                          textLabel: 'EMAIL',
-                          textHint: 'Enter your email address',
-                          isEditable: true,
-                        ),
-                        PetwiseUserTextfield(
-                          textLabel: 'PASSWORD',
-                          textHint: 'Enter your password',
-                          isEditable: true,
-                        ),
-                      ],
+                    const SizedBox(height: 15),
+                    PetwiseUserTextfield(
+                      textLabel: 'EMAIL',
+                      textHint: 'Enter your email address',
+                      isEditable: true,
+                      controller: _emailController,
+                    ),
+                    PetwiseUserTextfield(
+                      textLabel: 'PASSWORD',
+                      textHint: 'Enter your password',
+                      isEditable: true,
+                      controller: _passwordController,
                     ),
                     Transform.translate(
                       offset: const Offset(0, -8),
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {
-                            //ins forgot password logic here
-                          },
+                          onPressed: _showForgotPasswordDialog,
                           style: TextButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 0,
-                            ),
-                            overlayColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
                             'Forgot Password?',
                             style: GoogleFonts.plusJakartaSans(
-                              color: Color(0xffA5927D),
+                              color: const Color(0xffA5927D),
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                             ),
@@ -103,28 +169,33 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 25),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/UserHomePage');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xffF4AD44),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 50),
-                      ),
-                      child: Text(
-                        'LOGIN',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/UserHomePage');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xffF4AD44),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(180, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Login',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 15),
             ],
           ),
         ),

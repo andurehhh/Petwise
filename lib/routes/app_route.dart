@@ -10,7 +10,7 @@ import '../presentation/screens/edit_pet_profile_screen.dart';
 import '../presentation/screens/user_signup_screen.dart';
 import '../presentation/screens/user_homepage_screen.dart';
 import '../presentation/screens/user_profile_signup_screen.dart';
-
+import '../presentation/screens/pet_card_screen.dart';
 //Create class
 
 class AppRoute {
@@ -23,6 +23,7 @@ class AppRoute {
   static const String userHomePage = '/UserHomePage';
   static const String userProfileSignup = '/UserProfileSignupScreen';
   static const String userSignup = '/UserSignupScreen';
+  static const String petCardScreen = '/PetCardScreen';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -35,6 +36,7 @@ class AppRoute {
       userSignup: (context) => const UserSignupScreen(),
       userProfileSignup: (context) => const UserProfileSignupScreen(),
       userHomePage: (context) => const UserHomePage(),
+      petCardScreen: (context) => const PetCardScreen(),
     };
   }
 }

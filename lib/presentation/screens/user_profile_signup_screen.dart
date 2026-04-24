@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:petwise/data/models/user_model.dart';
 
 class UserProfileSignupScreen extends StatefulWidget {
   const UserProfileSignupScreen({super.key});
@@ -12,6 +13,26 @@ class UserProfileSignupScreen extends StatefulWidget {
 }
 
 class _UserProfileSignupScreenState extends State<UserProfileSignupScreen> {
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _nicknameController = TextEditingController();
+
+  String? _profileImageUrl;
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _nicknameController.dispose();
+    super.dispose();
+  }
+
+  void _pickImage() {
+    print("Open Gallery/Camera");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,99 +45,95 @@ class _UserProfileSignupScreenState extends State<UserProfileSignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-
                 IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(CupertinoIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(CupertinoIcons.back),
                 ),
-
                 const SizedBox(height: 20),
-
                 Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xffF4AD44),
-                        width: 3,
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xffF4AD44),
+                          width: 3,
+                        ),
                       ),
-                    ),
-                    child: const CircleAvatar(
-                      radius: 60,
-                      backgroundImage: AssetImage('assets/images/SUA.jpg'),
+                      child: CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: _profileImageUrl != null
+                            ? NetworkImage(_profileImageUrl!)
+                            : null,
+                        child: _profileImageUrl == null
+                            ? const Icon(
+                                Icons.add_a_photo,
+                                size: 40,
+                                color: Colors.white,
+                              )
+                            : null,
+                      ),
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
                 Row(
                   children: [
                     Expanded(
                       child: PetwiseUserTextfield(
                         textLabel: 'FIRST NAME',
-                        textHint: '',
+                        textHint: 'First name',
                         isEditable: true,
                       ),
                     ),
-                    const SizedBox(width: 15),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: PetwiseUserTextfield(
                         textLabel: 'LAST NAME',
-                        textHint: '',
+                        textHint: 'Last name',
                         isEditable: true,
                       ),
                     ),
                   ],
                 ),
-
+                PetwiseUserTextfield(
+                  textLabel: 'EMAIL',
+                  textHint: 'google-email@example.com',
+                  isEditable: false,
+                ),
                 PetwiseUserTextfield(
                   textLabel: 'NICKNAME',
-                  textHint: '',
+                  textHint: 'Optional nickname',
                   isEditable: true,
                 ),
-
-                PetwiseUserTextfield(
-                  textLabel: 'PHONE NUMBER',
-                  textHint: '',
-                  isEditable: true,
-                ),
-
-                const SizedBox(height: 30),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/UserHomePage');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xffF4AD44),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
+                const SizedBox(height: 40),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/UserHomePage');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffF4AD44),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(180, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                      child: Text(
-                        'Save',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Save',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-
                 const SizedBox(height: 30),
               ],
             ),

@@ -1,0 +1,89 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:petwise/providers/PetProvider.dart';
+import '../widgets/petwise_app_bar.dart';
+import '../widgets/petwise_petcard.dart';
+import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../widgets/petwise_Navbar.dart';
+
+class PetCardScreen extends StatelessWidget {
+  const PetCardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final petList = context.watch<PetProvider>().pets;
+
+    return Scaffold(
+      backgroundColor: const Color(0xffF8F7F6),
+      appBar: const PetWiseAppBar(),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              itemCount: petList.length,
+              itemBuilder: (context, index) {
+                final pet = petList[index];
+                final String id = pet.id.toLowerCase().trim();
+
+                Color cardColor;
+                Color detailColor;
+                Color tileBackground;
+
+                if (id.endsWith('d')) {
+                  cardColor = const Color(0xFF97ACDA);
+                  detailColor = const Color.fromARGB(255, 95, 118, 167);
+                  tileBackground = const Color(0xFFD9E9FE);
+                } else if (id.endsWith('c')) {
+                  cardColor = const Color(0xFFAE9CEE);
+                  detailColor = const Color.fromARGB(255, 141, 100, 173);
+                  tileBackground = const Color(0xFFE4D9FE);
+                } else if (id.endsWith('r')) {
+                  cardColor = const Color(0xFFFF99CC);
+                  detailColor = const Color(0xFF880E4F);
+                  tileBackground = const Color(0xFFFCE4EC);
+                } else if (id.endsWith('b')) {
+                  cardColor = const Color(0xFFF7A433);
+                  detailColor = const Color(0xFFE1962D);
+                  tileBackground = const Color(0xFFF7E6CE);
+                } else {
+                  cardColor = const Color(0xFFABC4ED);
+                  detailColor = const Color(0xFF435B85);
+                  tileBackground = const Color(0xFFE3F2FD);
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: GestureDetector(
+                    onTap: () => context.read<PetProvider>().selectPet(pet),
+                    child: PetCard(
+                      id: pet.id,
+                      name: pet.name,
+                      species: pet.species,
+                      birthday: DateFormat('MM-dd-yyyy').format(pet.birthday),
+                      sex: pet.sex,
+                      cardColor: cardColor,
+                      detailColor: detailColor,
+                      dataTileBackgroundColor: tileBackground,
+                      imagePath: 'assets/images/${pet.name.toLowerCase()}.png',
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: const Color(0xFFF7A433),
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 1),
+    );
+  }
+}
