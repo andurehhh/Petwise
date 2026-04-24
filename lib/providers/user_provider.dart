@@ -22,9 +22,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> loadUser(String id) async{
-    print("DEBUG 1: loadUser started with ID: $id"); // Is it even reaching the function?
     if (_userService == null) {
-      print("DEBUG 2: loadUser FAILED - _userService is NULL!"); // The smoking gun
       return;
     }
     _isLoading = true;
@@ -33,14 +31,8 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final response = await _userService!.getUser(id);
-      // Map UserResponse -> UserModel
-
-      // DEBUG 1: Did the UserResponse get an ID?
-      print("DEBUG PROVIDER: response.userId is ${response.userId}");
-
       _user = _mapResponseToModel(response);
 
-      // DEBUG 2: Did the UserModel get an ID?
       print("DEBUG PROVIDER: _user.id is ${_user?.id}");
     } catch (e) {
       _errorMessage = e.toString();
@@ -70,7 +62,6 @@ class UserProvider extends ChangeNotifier {
 
       final response = await _userService!.updateUser(_user!.id, request);
 
-      // Update local state with the "truth" from the server
       _user = _mapResponseToModel(response);
 
       _isLoading = false;

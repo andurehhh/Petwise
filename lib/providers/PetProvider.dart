@@ -79,6 +79,7 @@ class PetProvider extends ChangeNotifier {
               birthday: res.birthday,
               sex: res.sex,
               createdAt: res.createdAt,
+              weight: res.weight
             ),
           )
           .toList();

@@ -30,7 +30,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _petNameController = TextEditingController(text: pet?.name ?? "");
     _petSpeciesController = TextEditingController(text: pet?.species?? "");
     _petAgeController = TextEditingController(text: pet?.age.toString()?? "0");
-    _petWeightController = TextEditingController(text: pet?.weight?.toString() ?? "0");
+    _petWeightController = TextEditingController(text: pet?.weight?.toString() ?? "0.1");
   }
 
   @override

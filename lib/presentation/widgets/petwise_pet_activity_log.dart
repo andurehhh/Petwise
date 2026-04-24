@@ -27,7 +27,7 @@ class PetwisePetActivityLog extends StatelessWidget {
                       Align(
                         alignment: Alignment.center,
                         child: Container(
-                          margin: const EdgeInsets.only(top: 8),
+                          margin: const EdgeInsets.only(top: 12),
                           width: 60,
                           height: 60,
                           decoration: const BoxDecoration(
