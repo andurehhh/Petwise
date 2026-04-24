@@ -4,15 +4,15 @@ import 'package:petwise/data/models/pet_model.dart';
 class PetProvider extends ChangeNotifier {
   final List<Pet> _pets = [
     //dummy data
-    Pet(
-      id: "01d",
-      createdAt: DateTime(2023, 10, 10),
-      userId: "100",
-      name: "Mocha",
-      species: "Dog",
-      birthday: DateTime(2023, 10, 10),
-      sex: "male",
-    ),
+  Pet(
+  id: "01d",
+  createdAt: DateTime(2023, 10, 10),
+  userId: "100",
+  name: "Mocha",
+  species: "Dog",
+  birthday: DateTime(2023, 10, 10),
+  sex: "male",
+  ),
     Pet(
       id: "02c",
       createdAt: DateTime(2024, 06, 10),
