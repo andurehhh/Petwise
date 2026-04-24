@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petwise/presentation/screens/user_homepage_screen.dart';
+import 'package:petwise/presentation/test/auth_test_screen.dart';
 import 'package:petwise/providers/PetProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/user_provider.dart';
@@ -10,8 +11,8 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => PetProvider())
-        ],
+        ChangeNotifierProvider(create: (_) => PetProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoute.userHomePage,
       routes: AppRoute.routes,
       home: UserHomePage(),
+      //home: AuthTestScreen(),
     );
   }
 }
