@@ -22,36 +22,32 @@ class PetCardScreen extends StatelessWidget {
         children: [
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               itemCount: petList.length,
               itemBuilder: (context, index) {
                 final pet = petList[index];
-                final String id = pet.id.toLowerCase().trim();
+                final String species = pet.species.toLowerCase();
 
-                Color cardColor;
-                Color detailColor;
-                Color tileBackground;
+                Color cardColor = const Color(0xFFABC4ED);
+                Color detailColor = const Color(0xFF435B85);
+                Color tileBackground = const Color(0xFFE3F2FD);
 
-                if (id.endsWith('d')) {
+                if (species.contains('dog')) {
                   cardColor = const Color(0xFF97ACDA);
-                  detailColor = const Color.fromARGB(255, 95, 118, 167);
+                  detailColor = const Color(0xFF5F76A7);
                   tileBackground = const Color(0xFFD9E9FE);
-                } else if (id.endsWith('c')) {
+                } else if (species.contains('cat')) {
                   cardColor = const Color(0xFFAE9CEE);
-                  detailColor = const Color.fromARGB(255, 141, 100, 173);
+                  detailColor = const Color(0xFF8D64AD);
                   tileBackground = const Color(0xFFE4D9FE);
-                } else if (id.endsWith('r')) {
+                } else if (species.contains('hamster')) {
                   cardColor = const Color(0xFFFF99CC);
                   detailColor = const Color(0xFF880E4F);
                   tileBackground = const Color(0xFFFCE4EC);
-                } else if (id.endsWith('b')) {
+                } else if (species.contains('bird')) {
                   cardColor = const Color(0xFFF7A433);
                   detailColor = const Color(0xFFE1962D);
                   tileBackground = const Color(0xFFF7E6CE);
-                } else {
-                  cardColor = const Color(0xFFABC4ED);
-                  detailColor = const Color(0xFF435B85);
-                  tileBackground = const Color(0xFFE3F2FD);
                 }
 
                 return Padding(

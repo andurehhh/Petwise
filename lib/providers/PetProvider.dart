@@ -54,7 +54,7 @@ class PetProvider extends ChangeNotifier {
 
   //Fetching
   Future<void> loadUserPets(String userid) async {
-    if(_petService == null) return;
+    if (_petService == null) return;
 
     _isLoading = true;
     _errorMessage = null;
@@ -62,23 +62,26 @@ class PetProvider extends ChangeNotifier {
 
     try {
       final responses = await _petService!.getPetsByUser(userid);
-      _pets = responses.map((res) => Pet(
-        id: res.petId,
-        name: res.name,
-        species: res.species,
-        userId: res.userId,
-        birthday: res.birthday,
-        sex: res.sex,
-        createdAt: res.createdAt,
-      )).toList();
+      _pets = responses
+          .map(
+            (res) => Pet(
+              id: res.petId,
+              name: res.name,
+              species: res.species,
+              userId: res.userId,
+              birthday: res.birthday,
+              sex: res.sex,
+              createdAt: res.createdAt,
+            ),
+          )
+          .toList();
 
-      if(_pets.isNotEmpty && _selectedPet == null){
+      if (_pets.isNotEmpty && _selectedPet == null) {
         _selectedPet = _pets.first;
       }
-    }catch(e){
-      _errorMessage =e.toString();
-    }
-    finally{
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
@@ -110,49 +113,46 @@ class PetProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-Future<bool> updatePet(int petId, UpdatePetRequest request) async {
-  if (_petService == null) return false;
+  Future<bool> updatePet(int petId, UpdatePetRequest request) async {
+    if (_petService == null) return false;
 
-  _isLoading = true;
-  _errorMessage = null;
-  notifyListeners();
-
-  try {
-    //API req to update pet
-    final response = await _petService!.updatePet(petId, request);
-
-    //convert response to pet model
-    final updatedPet = Pet(
-      id: response.petId,
-      name: response.name,
-      species: response.species,
-      userId: response.userId,
-      birthday: response.birthday,
-      sex: response.sex,
-      createdAt: response.createdAt,
-      weight: response.weight,
-      breed: response.breed
-    );
-    //update pets list
-
-    int index = _pets.indexWhere((pet) => pet.id == petId);
-    if (index != -1) {
-      _pets[index] = updatedPet;
-    }
-    if (_selectedPet?.id == petId) {
-      _selectedPet = updatedPet;
-    }
-    _isLoading = false;
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
-    return true;
 
-  } catch (e) {
-    _isLoading = false;
-    _errorMessage = e.toString();
-    notifyListeners();
-    return false;
+    try {
+      //API req to update pet
+      final response = await _petService!.updatePet(petId, request);
+
+      //convert response to pet model
+      final updatedPet = Pet(
+        id: response.petId,
+        name: response.name,
+        species: response.species,
+        userId: response.userId,
+        birthday: response.birthday,
+        sex: response.sex,
+        createdAt: response.createdAt,
+        weight: response.weight,
+        breed: response.breed,
+      );
+      //update pets list
+
+      int index = _pets.indexWhere((pet) => pet.id == petId);
+      if (index != -1) {
+        _pets[index] = updatedPet;
+      }
+      if (_selectedPet?.id == petId) {
+        _selectedPet = updatedPet;
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
   }
-
-  }
-
 }

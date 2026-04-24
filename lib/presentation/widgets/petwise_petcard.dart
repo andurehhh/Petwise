@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PetCard extends StatelessWidget {
-  final String id;
+  final int id;
   final String name;
   final String species;
   final String birthday;
@@ -109,7 +109,7 @@ class PetCard extends StatelessWidget {
                     child: Image.asset(
                       imagePath,
                       fit: BoxFit.contain,
-                      alignment: Alignment.centerRight,
+                      alignment: Alignment.center,
                       errorBuilder: (context, error, stackTrace) => const Icon(
                         Icons.pets,
                         size: 40,
