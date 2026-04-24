@@ -46,8 +46,14 @@ class _UserProfileSignupScreenState extends State<UserProfileSignupScreen> {
               children: [
                 const SizedBox(height: 20),
                 IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(CupertinoIcons.back),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/LoginScreen');
+                  },
+                  icon: const Icon(
+                    CupertinoIcons.back,
+                    color: Colors.black,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Center(
