@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:petwise/providers/AuthProvider.dart';
+import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:provider/provider.dart';
 
 class UserLoginScreen extends StatefulWidget {
   const UserLoginScreen({super.key});
@@ -88,6 +91,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -146,6 +150,11 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                       isEditable: true,
                       controller: _passwordController,
                     ),
+                  if (authProvider.error != null)
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(authProvider.error!, style: const TextStyle(color: Colors.red)),
+                    ),
                     Transform.translate(
                       offset: const Offset(0, -8),
                       child: Align(
@@ -171,9 +180,17 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                     const SizedBox(height: 25),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/UserHomePage');
-                        },
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : ()async {
+                            bool success = await authProvider.login(
+                                _emailController.text.trim(),
+                                _passwordController.text.trim()
+                            );
+                            if(success && context.mounted){
+                              Navigator.pushReplacementNamed(context, '/UserHomePage');
+                            }
+                          },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xffF4AD44),
                           foregroundColor: Colors.white,

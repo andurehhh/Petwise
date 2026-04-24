@@ -49,6 +49,7 @@ class PetwiseUserTextfield extends StatelessWidget {
                 child: TextField(
                   controller: controller,
                   enabled: isEditable,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 15),
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: textHint,

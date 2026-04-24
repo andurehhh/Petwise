@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:petwise/providers/PetProvider.dart';
+import 'package:petwise/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import '../widgets/petwise_pet_profile.dart';
 import '../widgets/petwise_activity_card.dart';
@@ -16,7 +17,26 @@ class UserHomePage extends StatefulWidget {
   State<UserHomePage> createState() => _UserHomePageScreenState();
 }
 
+
+
 class _UserHomePageScreenState extends State<UserHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 1. Get the current user's ID
+      final userProvider = context.read<UserProvider>();
+      final userId = userProvider.user?.id;
+
+      // 2. Fetch the pets for this user
+      if (userId != null) {
+        context.read<PetProvider>().loadUserPets(userId);
+      }
+      print(userId);
+
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final petList = context.watch<PetProvider>().pets;
@@ -163,7 +183,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 1),
+      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 0),
     );
   }
 }

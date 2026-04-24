@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:petwise/contracts/auth/signup_request.dart';
+import 'package:petwise/providers/AuthProvider.dart';
+import 'package:provider/provider.dart';
 import '../widgets/petwise_user_textField.dart';
 
 class UserSignupScreen extends StatefulWidget {
@@ -10,6 +13,16 @@ class UserSignupScreen extends StatefulWidget {
 }
 
 class _UserSignupScreenState extends State<UserSignupScreen> {
+  // 1. Define your controllers
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
   void _showEmailValidationDialog() {
     showDialog(
       context: context,
@@ -50,6 +63,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -104,19 +118,36 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                           textLabel: 'EMAIL',
                           textHint: 'Enter your email address',
                           isEditable: true,
+                          controller: _emailController,
                         ),
                         PetwiseUserTextfield(
                           textLabel: 'PASSWORD',
                           textHint: 'Enter your password',
                           isEditable: true,
+                          controller: _passwordController,
                         ),
                       ],
                     ),
 
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {
-                        _showEmailValidationDialog();
+                      onPressed: authProvider.isLoading
+                          ? null
+                          : () async {
+                        // 4. Call the signup function
+                        bool success = await authProvider.signUp(SignUpRequest(
+                            email:  _emailController.text.trim(),
+                            password:  _passwordController.text.trim(),
+                          )
+                        );
+
+                        if (success && mounted) {
+                          _showEmailValidationDialog();
+                        } else if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(authProvider.error ?? "Signup failed"), backgroundColor: Colors.redAccent)
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xffF4AD44),

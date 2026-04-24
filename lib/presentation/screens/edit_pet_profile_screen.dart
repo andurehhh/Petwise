@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:petwise/contracts/pet/update_pet_request.dart';
 import 'package:petwise/data/models/pet_model.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:petwise/providers/PetProvider.dart';
@@ -29,7 +30,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _petNameController = TextEditingController(text: pet?.name ?? "");
     _petSpeciesController = TextEditingController(text: pet?.species?? "");
     _petAgeController = TextEditingController(text: pet?.age.toString()?? "0");
-    _petWeightController = TextEditingController(text: pet?.sex?? "");
+    _petWeightController = TextEditingController(text: pet?.weight?.toString() ?? "0");
   }
 
   @override
@@ -43,7 +44,8 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pet = context.watch<PetProvider>().selectedPet;
+    final petProvider = context.watch<PetProvider>();
+    final pet = petProvider.selectedPet;
 
     return
       Scaffold(
@@ -154,7 +156,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                         PetwiseUserTextfield(textLabel: "Age (in Years)",textHint:  "${pet?.age}", controller: _petAgeController,),
                                         ),
                                         Expanded(child:
-                                        PetwiseUserTextfield(textLabel: "Weight (Kg)",textHint:  "${pet?.sex}", controller: _petWeightController)
+                                        PetwiseUserTextfield(textLabel: "Weight (Kg)",textHint:  "${pet?.weight}", controller: _petWeightController, isEditable: true,)
                                         ),
                                       ],
                                     ),
@@ -173,24 +175,67 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                             height: 30,
                                           ),
                                           FilledButton(
-                                              onPressed: () {
-                                                print("DEBUG Controller First: ${_petNameController.text}");
+                                              onPressed: petProvider.isLoading
+                                                  ? null
+                                                  :() async {
+                                                final currentPet = petProvider.selectedPet;
+                                                final petId = petProvider.selectedPet?.id;
+                                                if (currentPet == null) return;
+                                                if (petId == null) return;
 
-                                                String newPetName = _petNameController.text;
-                                                String newPetSpecies = _petSpeciesController.text;
-                                                String newPetAge = _petAgeController.text;
-                                                String newPetWeight = _petWeightController.text;
-
-
-                                                context.read<PetProvider>().updatePetInfo(newPetName, newPetSpecies);
-
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text("Pet Info Updated!"),
-                                                      backgroundColor: Colors.lightGreen,)
+                                                // 1. Create the request
+                                                final request = UpdatePetRequest(
+                                                  name: _petNameController.text,
+                                                  species: _petSpeciesController
+                                                      .text,
+                                                  weight: double.tryParse(
+                                                      _petWeightController
+                                                          .text) ?? 0.0,
+                                                  birthday: currentPet.birthday,
+                                                  sex: currentPet.sex,
+                                                  breed: _petSpeciesController.text,
                                                 );
-                                                Navigator.pop(context);
+                                                print("DEBUG JSON: ${request.toJson()}");
+
+                                                bool success = await context
+                                                    .read<PetProvider>()
+                                                    .updatePet(petId, request);
+
+                                                if (success && mounted) {
+                                                  ScaffoldMessenger
+                                                      .of(context)
+                                                      .showSnackBar(
+                                                      const SnackBar(
+                                                          content: Text(
+                                                              "Pet Info Updated!"),
+                                                          backgroundColor: Colors
+                                                              .lightGreen)
+                                                  );
+                                                  Navigator.pop(context);
+                                                } else if (mounted) {
+                                                  ScaffoldMessenger
+                                                      .of(context)
+                                                      .showSnackBar(
+                                                      SnackBar(content: Text(
+                                                          petProvider
+                                                              .errorMessage ??
+                                                              "Failed to update pet"),
+                                                          backgroundColor: Colors
+                                                              .redAccent)
+                                                  );
+                                                }
+
+                                                // String newPetName = _petNameController.text;
+                                                // String newPetSpecies = _petSpeciesController.text;
+                                                // String newPetAge = _petAgeController.text;
+                                                // String newPetWeight = _petWeightController.text;
+
+
+
+                                                // context.read<PetProvider>().updatePetInfo(newPetName, newPetSpecies);
                                               },
+
+
                                               style: FilledButton.styleFrom(
                                                   minimumSize: const Size(
                                                       300, 50),
@@ -201,13 +246,16 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                                     width: 2,
                                                   )
                                               ),
-                                              child: Text("SAVE CHANGES",
-                                                  style: GoogleFonts
-                                                      .plusJakartaSans(
-                                                      color: Color(0xFFFFFFFF),
-                                                      fontWeight: FontWeight
-                                                          .bold)
-                                              )
+                                              // child: Text("SAVE CHANGES",
+                                              //     style: GoogleFonts
+                                              //         .plusJakartaSans(
+                                              //         color: Color(0xFFFFFFFF),
+                                              //         fontWeight: FontWeight
+                                              //             .bold)
+                                              // )
+                                            child: petProvider.isLoading
+                                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                                : Text("SAVE CHANGES", style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)),
                                           ),
                                           SizedBox(
                                             width: 50,

@@ -176,20 +176,34 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                             height: 30,
                                           ),
                                           FilledButton(
-                                              onPressed: () {
-                                                print("DEBUG Controller First: ${_firstNameController.text}");
-                                                String newFirstName = _firstNameController.text;
-                                                String newLastName = _lastNameController.text;
-                                                String newNickname = _nicknameController.text;
+                                              onPressed: userProvider.isLoading
+                                                  ? null
+                                                  : () async {
+                                                    bool success = await context.read<UserProvider>().updateProfile(
+                                                      firstName: _firstNameController.text.trim(),
+                                                      lastName: _lastNameController.text.trim(),
+                                                      nickname: _nicknameController.text.trim());
 
-                                                context.read<UserProvider>().updateUserInfo(newFirstName, newLastName, newNickname);
-
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text("Profile Updated!"),
-                                                      backgroundColor: Colors.lightGreen,)
-                                                );
-                                                Navigator.pop(context);
+                                                    if (success && mounted) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text("Profile Updated!"),
+                                                            backgroundColor: Colors.lightGreen,)
+                                                      );
+                                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                        if (mounted) {
+                                                          Navigator.pop(context);
+                                                        }
+                                                      });
+                                                    }
+                                                    else if (mounted){
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(userProvider.error ?? "Failed to update profile"),
+                                                            backgroundColor: Colors.redAccent,
+                                                          )
+                                                      );
+                                                    }
                                               },
                                               style: FilledButton.styleFrom(
                                                   minimumSize: const Size(
@@ -201,12 +215,18 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                                     width: 2,
                                                   )
                                               ),
-                                              child: Text("SAVE CHANGES",
-                                                  style: GoogleFonts
-                                                      .plusJakartaSans(
-                                                      color: Color(0xFFFFFFFF),
-                                                      fontWeight: FontWeight
-                                                          .bold)
+                                              child:userProvider.isLoading
+                                                  ? const SizedBox(
+                                                height: 20,
+                                                width: 20,
+                                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                              )
+                                                  : Text(
+                                                "SAVE CHANGES",
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  color: const Color(0xFFFFFFFF),
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               )
                                           ),
                                           SizedBox(

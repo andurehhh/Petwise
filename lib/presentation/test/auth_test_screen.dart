@@ -28,7 +28,7 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
   Future<void> _testSignIn() async {
     try {
       final result = await _auth.signIn(
-        SignInRequest(email: 'renzosua111@gmail.com', password: 'renzo123'),
+        SignInRequest(email: 'renzosua111@gmail.com', password: 'renzo1234'),
       );
       setState(() {
         _userId = result.userId;

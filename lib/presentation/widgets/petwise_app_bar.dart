@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:petwise/routes/app_route.dart';
 
 class PetWiseAppBar extends StatelessWidget implements PreferredSizeWidget {
   const PetWiseAppBar({super.key});
@@ -34,7 +35,9 @@ class PetWiseAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.notifications_none, color: Colors.black, size: 25),
         ),
         IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pushNamed(context, AppRoute.userProfile);
+          },
           icon: const Icon(Icons.person_outline, color: Colors.black, size: 25),
         ),
         const SizedBox(width: 10),
