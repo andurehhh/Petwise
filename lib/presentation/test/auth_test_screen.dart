@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:petwise/contracts/activity/create_activity_request.dart';
+import 'package:petwise/contracts/activity/update_activity_request.dart';
 import 'package:petwise/contracts/auth/signin_request.dart';
 import 'package:petwise/contracts/auth/signup_request.dart';
 import 'package:petwise/contracts/pet/update_pet_request.dart';
 import 'package:petwise/contracts/user/update_user_request.dart';
+import 'package:petwise/services/activity_service.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/services/pet_service.dart';
@@ -22,6 +25,9 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
   late final _auth = AuthService(_apiClient);
   late final _pet = PetService(_apiClient);
   late final _user = UserService(_apiClient);
+  late final _activity = ActivityService(_apiClient);
+
+  int? _lastActivityId = 6;
 
   //SIGNIN
 
@@ -130,6 +136,78 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
+  Future<void> _testCreateActivity() async {
+    try {
+      final resultId = await _activity.createActivity(
+        CreateActivityRequest(
+          petId: 4, // Using Pet ID 4 based on your _testUpdatePet example
+          title: 'Daily Walk',
+          description: 'Walk around the village park',
+          timeScheduled: '17:00:00',
+          recurrence: 'Daily',
+        ),
+      );
+      setState(() {
+        _lastActivityId = resultId;
+        _output = 'CREATE ACTIVITY SUCCESS:\nCreated ID: $resultId';
+      });
+    } catch (e) {
+      setState(() => _output = 'CREATE ACTIVITY ERROR: $e');
+    }
+  }
+
+  // GET ACTIVITY BY ID
+  Future<void> _testGetActivity() async {
+    if (_lastActivityId == null) {
+      setState(() => _output = 'ERROR: Create an activity first to get an ID');
+      return;
+    }
+    try {
+      final result = await _activity.getActivity(_lastActivityId!);
+      setState(() => _output = 'GET ACTIVITY SUCCESS:\n${result.toJson()}');
+    } catch (e) {
+      setState(() => _output = 'GET ACTIVITY ERROR: $e');
+    }
+  }
+
+  // UPDATE ACTIVITY
+  Future<void> _testUpdateActivity() async {
+    if (_lastActivityId == null) {
+      setState(() => _output = 'ERROR: Create an activity first to update');
+      return;
+    }
+    try {
+      final result = await _activity.patchActivity(
+        _lastActivityId!,
+        UpdateActivityRequest(
+          title: 'Updated Walk Time',
+          timeScheduled: '18:30:00',
+          isActive: false,
+        ),
+      );
+      setState(() => _output = 'UPDATE ACTIVITY SUCCESS:\n${result.toJson()}');
+    } catch (e) {
+      setState(() => _output = 'UPDATE ACTIVITY ERROR: $e');
+    }
+  }
+
+  // DELETE ACTIVITY
+  Future<void> _testDeleteActivity() async {
+    if (_lastActivityId == null) {
+      setState(() => _output = 'ERROR: Create an activity first to delete');
+      return;
+    }
+    try {
+      final message = await _activity.deleteActivity(_lastActivityId!);
+      setState(() {
+        _output = 'DELETE SUCCESS: $message';
+        _lastActivityId = null; // Clear ID after deletion
+      });
+    } catch (e) {
+      setState(() => _output = 'DELETE ACTIVITY ERROR: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,6 +262,48 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(_output),
+            ),
+            const SizedBox(height: 16),
+            const Text('-- ACTIVITIES --', textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testCreateActivity,
+              child: const Text('Test Create Activity'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testGetActivity,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade50,
+              ),
+              child: const Text('Test Get Activity By ID'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testUpdateActivity,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade50,
+              ),
+              child: const Text('Test Update Activity'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testDeleteActivity,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade50,
+              ),
+              child: const Text('Test Delete Activity'),
+            ),
+
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(_output),

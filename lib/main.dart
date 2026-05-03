@@ -74,10 +74,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoute.loginOrSignup,
+      //initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
-      home: UserHomePage(),
-      //home: AuthTestScreen(),
+      //home: UserHomePage(),
+      home: AuthTestScreen(),
     );
   }
 }
