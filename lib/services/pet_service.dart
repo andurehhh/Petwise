@@ -44,4 +44,12 @@ class PetService {
       throw Exception('Failed to update pet: $e');
     }
   }
+
+  Future<void> deletePet(int petId) async {
+    try {
+      await _apiClient.delete('Pet/$petId');
+    } catch (e) {
+      throw Exception('Failed to delete pet: $e');
+    }
+  }
 }

@@ -52,6 +52,22 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
+  // CHANGE PASSWORD
+  Future<void> _testChangePassword() async {
+    try {
+      final result = await _auth.changePassword(
+        email: 'renzosua111@gmail.com',
+        currentPassword: 'renzo072',
+        newPassword: 'renzo1234',
+      );
+      setState(
+        () => _output = 'CHANGE PASSWORD SUCCESS:\n${result.toString()}',
+      );
+    } catch (e) {
+      setState(() => _output = 'CHANGE PASSWORD ERROR: $e');
+    }
+  }
+
   //GET PET BY USER ID
   Future<void> _testGetPets() async {
     if (_userId == null) {
@@ -96,6 +112,16 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
       setState(() => _output = 'UPDATE PET SUCCESS:\n${result.toJson()}');
     } catch (e) {
       setState(() => _output = 'UPDATE PET ERROR: $e');
+    }
+  }
+
+  // DELETE PET
+  Future<void> _testDeletePet() async {
+    try {
+      await _pet.deletePet(5); // change to your pet id
+      setState(() => _output = 'DELETE PET SUCCESS');
+    } catch (e) {
+      setState(() => _output = 'DELETE PET ERROR: $e');
     }
   }
 
@@ -150,7 +176,13 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
               onPressed: _testSignUp,
               child: const Text('Test Sign Up'),
             ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testChangePassword,
+              child: const Text('Test Change Password'),
+            ),
             const SizedBox(height: 16),
+
             const Text('-- PETS --', textAlign: TextAlign.center),
             const SizedBox(height: 8),
             ElevatedButton(
@@ -168,6 +200,12 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
               child: const Text('Test Update Pet'),
             ),
             const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testDeletePet,
+              child: const Text('Test Delete Pet'),
+            ),
+
             const Text('-- USER --', textAlign: TextAlign.center),
             const SizedBox(height: 8),
             ElevatedButton(

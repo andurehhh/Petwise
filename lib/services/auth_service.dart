@@ -41,4 +41,22 @@ class AuthService {
 
     return response;
   }
+
+  //  CHANGE PASSWORD
+  Future<Map<String, dynamic>> changePassword({
+    required String email,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await _apiClient.post('Auth/ChangePassword', {
+        'email': email,
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      });
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Change password failed: $e');
+    }
+  }
 }
