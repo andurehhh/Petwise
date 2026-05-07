@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/contracts/auth/signup_request.dart';
-import 'package:petwise/providers/AuthProvider.dart';
+import 'package:petwise/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import '../widgets/petwise_user_textField.dart';
 
@@ -146,20 +146,27 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                         onPressed: authProvider.isLoading
                             ? null
                             : () async {
-                                bool success = await authProvider.signUp(
+                                // Use read instead of watch inside the function to prevent unnecessary rebuilds during the async call
+                                final provider = context.read<AuthProvider>();
+
+                                bool success = await provider.signUp(
                                   SignUpRequest(
                                     email: _emailController.text.trim(),
                                     password: _passwordController.text.trim(),
                                   ),
                                 );
 
-                                if (success && mounted) {
+                                if (!mounted) return;
+
+                                if (success) {
+                                  // Success! Show the dialog.
                                   _showEmailValidationDialog();
-                                } else if (mounted) {
+                                } else {
+                                  // Only show the SnackBar if success is FALSE
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        authProvider.error ?? "Signup failed",
+                                        provider.error ?? "Signup failed",
                                       ),
                                       backgroundColor: Colors.redAccent,
                                     ),
@@ -171,14 +178,23 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                           foregroundColor: Colors.white,
                           minimumSize: const Size(double.infinity, 50),
                         ),
-                        child: Text(
-                          'CREATE ACCOUNT',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        child: authProvider.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                'CREATE ACCOUNT',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                       ),
                     ],
                   ),

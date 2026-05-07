@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:petwise/data/models/pet_model.dart';
 import 'package:petwise/presentation/screens/user_homepage_screen.dart';
 import 'package:petwise/presentation/test/auth_test_screen.dart';
-import 'package:petwise/providers/AuthProvider.dart';
+import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/PetProvider.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
@@ -74,10 +74,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      //initialRoute: AppRoute.loginOrSignup,
+      initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
-      //home: UserHomePage(),
-      home: AuthTestScreen(),
+      home: UserHomePage(),
+      //home: AuthTestScreen(),
     );
   }
 }

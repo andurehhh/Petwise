@@ -87,24 +87,39 @@ class ApiClient {
   }
 
   dynamic _handleResponse(http.Response response) {
-    final body = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+    final dynamic decodedBody = response.body.isNotEmpty
+        ? jsonDecode(response.body)
+        : null;
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (decodedBody is Map) {
+        return Map<String, dynamic>.from(decodedBody);
+      }
+      return decodedBody;
+    }
+
+    print("API ERROR BODY: $decodedBody");
+
+    String errorMessage = 'An unexpected error occurred';
+    if (decodedBody is Map) {
+      errorMessage =
+          decodedBody['message'] ?? decodedBody['error'] ?? errorMessage;
+    }
 
     switch (response.statusCode) {
-      case 200:
-      case 201:
-        return body;
       case 400:
-        throw Exception('Bad request: $body');
+      case 409:
+        throw Exception(errorMessage);
       case 401:
-        throw Exception('Unauthorized (token expired or invalid)');
-      case 403:
-        throw Exception('Forbidden');
-      case 404:
-        throw Exception('Not found');
+        throw Exception(
+          errorMessage.contains('Unauthorized')
+              ? errorMessage
+              : 'Session expired. Please login again.',
+        );
       case 500:
-        throw Exception('Server error');
+        throw Exception('Server error: $errorMessage');
       default:
-        throw Exception('Unexpected error: ${response.statusCode}');
+        throw Exception('Error ${response.statusCode}: $errorMessage');
     }
   }
 }
