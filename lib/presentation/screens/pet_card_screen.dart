@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:petwise/providers/PetProvider.dart';
+import 'package:petwise/providers/pet_provider.dart';
 import '../widgets/petwise_app_bar.dart';
 import '../widgets/petwise_petcard.dart';
 import 'package:intl/intl.dart';

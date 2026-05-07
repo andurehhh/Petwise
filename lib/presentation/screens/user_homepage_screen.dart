@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:petwise/providers/PetProvider.dart';
+import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
