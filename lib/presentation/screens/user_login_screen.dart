@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petwise/providers/AuthProvider.dart';
+import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:provider/provider.dart';

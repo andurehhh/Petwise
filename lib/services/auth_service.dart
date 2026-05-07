@@ -8,41 +8,53 @@ class AuthService {
 
   AuthService(this._apiClient);
 
-  //  SIGN IN
+  // SIGN IN
   Future<AuthResponse> signIn(SignInRequest request) async {
     try {
       final response = await _apiClient.post('Auth/Signin', request.toJson());
-      final authResponse = AuthResponse.fromJson(response);
+      final authResponse = AuthResponse.fromJson(
+        response as Map<String, dynamic>,
+      );
+
       await _apiClient.storage.write(
         key: 'token',
         value: authResponse.accessToken,
       );
+
       return authResponse;
     } catch (e) {
-      throw Exception('Sign in failed: $e');
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
-  //  SIGN UP
+  // SIGN UP
   Future<Map<String, dynamic>> signUp(SignUpRequest request) async {
     try {
       final response = await _apiClient.post('Auth/Signup', request.toJson());
-      return response as Map<String, dynamic>;
+
+      if (response is Map) {
+        return Map<String, dynamic>.from(response);
+      }
+
+      return {'message': 'Signup successful.', 'success': true};
     } catch (e) {
-      throw Exception('Sign up failed: $e');
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
-  //  FORGOT PASSWORD
+  // FORGOT PASSWORD
   Future<Map<String, dynamic>> forgotPassword(String email) async {
-    final response = await _apiClient.post('Auth/ForgotPassword', {
-      'email': email,
-    });
-
-    return response;
+    try {
+      final response = await _apiClient.post('Auth/ForgotPassword', {
+        'email': email,
+      });
+      return (response as Map<String, dynamic>?) ?? {};
+    } catch (e) {
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
   }
 
-  //  CHANGE PASSWORD
+  // CHANGE PASSWORD
   Future<Map<String, dynamic>> changePassword({
     required String email,
     required String currentPassword,
@@ -54,9 +66,9 @@ class AuthService {
         'current_password': currentPassword,
         'new_password': newPassword,
       });
-      return response as Map<String, dynamic>;
+      return (response as Map<String, dynamic>?) ?? {};
     } catch (e) {
-      throw Exception('Change password failed: $e');
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
 }

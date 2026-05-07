@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/presentation/widgets/petwise_Navbar.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/routes/app_route.dart';
@@ -10,194 +11,227 @@ import 'package:petwise/routes/app_route.dart';
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
 
-
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
+  }
+
+  void _loadUserData() {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    final currentUserId = authProvider.userId;
+
+    print("DEBUG: Fetching profile for ID: $currentUserId");
+
+    if (currentUserId != null && currentUserId.isNotEmpty) {
+      userProvider.loadUser(currentUserId);
+    } else {
+      print("DEBUG: Cannot load user because ID is null in AuthProvider");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final user = userProvider.user;
-    print(user);
 
-    return
-      Scaffold(
-        backgroundColor: Color(0xFFF8F7F6),
-        extendBody: true,
-       appBar: AppBar(
-         leading:
-         IconButton(
-             onPressed: (){
-               Navigator.pop(context);
-         },
-             icon: Icon(CupertinoIcons.back)),
-       ),
-        body: SingleChildScrollView(
-          child: SizedBox(
-            width: double.infinity,
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
+    if (userProvider.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (user == null) {
+      return Scaffold(
+        body: Center(
+          child: Text("User not found. Error: ${userProvider.error}"),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Color(0xFFF8F7F6),
+      extendBody: true,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(CupertinoIcons.back),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
                 children: [
-                  Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 72,
-                        backgroundColor: Color(0xFFF7A433),
-                        child: CircleAvatar(
-                          radius: 70,
-                          backgroundImage: AssetImage('assets/images/SUA.jpg'),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFFF7A433),
-                            ),
-                            child: IconButton(
-                              onPressed: (){
-                                Navigator.pushNamed(context, AppRoute.editUserProfile);
-                              },
-                              icon: Icon(Icons.edit),
-                            )
-                        ),
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20,
-                    width: 40,
-                  ),
-                  Text("${user?.nickname}",
-                  style: GoogleFonts.plusJakartaSans(fontSize: 23, fontWeight: FontWeight.bold, letterSpacing: -1.5),
-                  ),
-                  SizedBox(
-                    width: 10,
-                      height: 5,
-                  ),
-                  Container(
-                    width: 150,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDCDCDC),
-                      borderRadius: BorderRadius.circular(20),
+                  CircleAvatar(
+                    radius: 72,
+                    backgroundColor: Color(0xFFF7A433),
+                    child: CircleAvatar(
+                      radius: 70,
+                      backgroundImage: AssetImage('assets/images/SUA.jpg'),
                     ),
                   ),
-                  SizedBox(
-                    height: 20,
-                    width: 40,
-                  ),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 1000
-                    ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
                     child: Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.all(10),
-                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        // color: Colors.pink,
-                        borderRadius: BorderRadius.circular(20),
+                        shape: BoxShape.circle,
+                        color: Color(0xFFF7A433),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoute.editUserProfile,
+                          );
+                        },
+                        icon: Icon(Icons.edit),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20, width: 40),
+              Text(
+                "${user?.nickname}",
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 23,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -1.5,
+                ),
+              ),
+              SizedBox(width: 10, height: 5),
+              Container(
+                width: 150,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCDCDC),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              SizedBox(height: 20, width: 40),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    // color: Colors.pink,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        "USER INFORMATION",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: Color(0xFF92A1B7),
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text("USER INFORMATION",
-                            style: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                              color: Color(0xFF92A1B7),
-
-                            ),
+                          SizedBox(width: 20, height: 20),
+                          PetwiseUserTextfield(
+                            textLabel: "First Name",
+                            textHint: "${user?.firstName}",
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 20,
-                                height: 20,
-                              ),
-                              PetwiseUserTextfield(textLabel: "First Name",textHint: "${user?.firstName}"),
-                              PetwiseUserTextfield(textLabel: "Last Name",textHint:  "${user?.lastName}"),
-                              PetwiseUserTextfield(textLabel: "Email",textHint:  "${user?.email}"),
+                          PetwiseUserTextfield(
+                            textLabel: "Last Name",
+                            textHint: "${user?.lastName}",
+                          ),
+                          PetwiseUserTextfield(
+                            textLabel: "Email",
+                            textHint: "${user?.email}",
+                          ),
 
-                                  ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                          maxWidth: 800,
-                                          minWidth: 40
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          SizedBox(
-                                            width: 50,
-                                            height: 30,
-                                          ),
-                                          FilledButton(onPressed: (){},
-                                              style: FilledButton.styleFrom(
-                                                  minimumSize: const Size(300,50),
-                                                  backgroundColor: Color(0xFFF7A433),
-                                                  side: const BorderSide(
-                                                    color: Color(0xFFDA9B44),
-                                                    width: 2,
-                                                  )
-                                              ),
-                                              child: Text("FORGOT PASSWORD",
-                                                  style: GoogleFonts.plusJakartaSans(
-                                                      color: Color(0xFFFFFFFF),
-                                                      fontWeight: FontWeight.bold)
-                                              )
-                                          ),
-                                          SizedBox(
-                                            width: 50,
-                                            height: 15,
-                                          ),
-                                          OutlinedButton(onPressed: (){},
-                                              style: OutlinedButton.styleFrom(
-                                                  minimumSize: const Size(300, 50),
-                                                  side: const BorderSide(
-                                                      color: Color(0xFFF7A433),
-                                                      width: 2
-                                                  )
-                                              ),
-                                              child: Text("LOG OUT",
-                                                style: GoogleFonts.plusJakartaSans(
-                                                    color: Color(0xFFF7A433),
-                                                    fontWeight: FontWeight.bold),
-                                              )
-                                          ),
-                                        ],
-                                      ))
-
-                            ]
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: 800,
+                              minWidth: 40,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(width: 50, height: 30),
+                                FilledButton(
+                                  onPressed: () {},
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size(300, 50),
+                                    backgroundColor: Color(0xFFF7A433),
+                                    side: const BorderSide(
+                                      color: Color(0xFFDA9B44),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "FORGOT PASSWORD",
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Color(0xFFFFFFFF),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 50, height: 15),
+                                OutlinedButton(
+                                  onPressed: () {},
+                                  style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size(300, 50),
+                                    side: const BorderSide(
+                                      color: Color(0xFFF7A433),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "LOG OUT",
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Color(0xFFF7A433),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  )
-
-                  
-
-                ]
-            ),
-          )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
+      ),
 
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: (){
-        //
-        //   },
-        //   backgroundColor: Color(0xFFF7A433),
-        //   shape: CircleBorder(),
-        //   child: Icon(Icons.add, color: Colors.white,)
-        // ),
-        // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        // bottomNavigationBar: PetwiseNavbar(navbarIndex: 4)
-      );
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: (){
+      //
+      //   },
+      //   backgroundColor: Color(0xFFF7A433),
+      //   shape: CircleBorder(),
+      //   child: Icon(Icons.add, color: Colors.white,)
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // bottomNavigationBar: PetwiseNavbar(navbarIndex: 4)
+    );
   }
 }

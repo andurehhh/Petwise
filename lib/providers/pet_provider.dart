@@ -79,7 +79,7 @@ class PetProvider extends ChangeNotifier {
               birthday: res.birthday,
               sex: res.sex,
               createdAt: res.createdAt,
-              weight: res.weight
+              weight: res.weight,
             ),
           )
           .toList();
@@ -101,7 +101,6 @@ class PetProvider extends ChangeNotifier {
 
     try {
       await _petService!.createPet(request);
-      // After creating, re-fetch the list to stay updated
       await loadUserPets(request.userId);
     } catch (e) {
       _errorMessage = e.toString();
@@ -129,7 +128,6 @@ class PetProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      //API req to update pet
       final response = await _petService!.updatePet(petId, request);
 
       //convert response to pet model
@@ -144,7 +142,6 @@ class PetProvider extends ChangeNotifier {
         weight: response.weight,
         breed: response.breed,
       );
-      //update pets list
 
       int index = _pets.indexWhere((pet) => pet.id == petId);
       if (index != -1) {

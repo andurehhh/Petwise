@@ -21,19 +21,19 @@ class UserProvider extends ChangeNotifier {
     _userService = service;
   }
 
-  Future<void> loadUser(String id) async{
-    if (_userService == null) {
+  Future<void> loadUser(String id) async {
+    if (_user != null && _user!.id == id) {
       return;
     }
+
+    if (_userService == null) return;
+
     _isLoading = true;
-    _errorMessage = null;
     notifyListeners();
 
     try {
       final response = await _userService!.getUser(id);
       _user = _mapResponseToModel(response);
-
-      print("DEBUG PROVIDER: _user.id is ${_user?.id}");
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
@@ -74,7 +74,6 @@ class UserProvider extends ChangeNotifier {
       return false;
     }
   }
-
 
   // UserModel? _user= UserModel(
   //   id: "cc",
@@ -124,7 +123,7 @@ class UserProvider extends ChangeNotifier {
   //   }
   // }
 
-UserModel _mapResponseToModel(UserResponse response){
+  UserModel _mapResponseToModel(UserResponse response) {
     return UserModel(
       id: response.userId,
       firstName: response.firstName ?? 'Guest',
@@ -132,5 +131,5 @@ UserModel _mapResponseToModel(UserResponse response){
       email: response.email,
       nickname: response.nickname,
     );
-}
+  }
 }

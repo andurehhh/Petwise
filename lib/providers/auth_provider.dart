@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:petwise/contracts/auth/signin_request.dart';
 import 'package:petwise/contracts/auth/signup_request.dart';
 import 'package:petwise/providers/user_provider.dart';
@@ -11,10 +12,14 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
+  String? _userId;
+
   AuthProvider(this._authService, this._userProvider);
 
   bool get isLoading => _isLoading;
   String? get error => _errorMessage;
+
+  String? get userId => _userId;
 
   void updateDependencies(AuthService service, UserProvider userProvider) {
     _authService = service;
@@ -28,10 +33,11 @@ class AuthProvider extends ChangeNotifier {
       final request = SignInRequest(email: email, password: password);
       final authResponse = await _authService.signIn(request);
 
-      // DEBUG: Is the ID actually coming back from the server?
-      print("DEBUG: authResponse.userId is ${authResponse.userId}");
+      _userId = authResponse.userId;
 
-      // Fetch the full user data immediately after login
+      const storage = FlutterSecureStorage();
+      await storage.write(key: 'token', value: authResponse.accessToken);
+
       await _userProvider.loadUser(authResponse.userId);
 
       _setLoading(false);
@@ -44,15 +50,19 @@ class AuthProvider extends ChangeNotifier {
 
   // --- 2. SIGN UP ---
   Future<bool> signUp(SignUpRequest request) async {
-    _setLoading(true);
-    try {
-      // Your service returns a Map here. Usually, you'd check for success.
-      await _authService.signUp(request);
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
-      _setLoading(false);
-      return true; // Return true so UI can navigate back to Login
+    try {
+      await _authService.signUp(request);
+      _isLoading = false;
+      notifyListeners();
+      return true;
     } catch (e) {
-      _handleError(e);
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
       return false;
     }
   }
@@ -70,10 +80,10 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Helper methods to keep code DRY (Don't Repeat Yourself)
+  // Helper methods
   void _setLoading(bool value) {
     _isLoading = value;
-    _errorMessage = null;
+    if (value) _errorMessage = null;
     notifyListeners();
   }
 
