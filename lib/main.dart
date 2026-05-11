@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
       home: UserHomePage(),
-      //home: AuthTestScreen(),
+      // home: AuthTestScreen(),
     );
   }
 }

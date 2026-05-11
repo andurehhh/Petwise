@@ -264,6 +264,52 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                               ),
                       ),
                     ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: authProvider.isLoading
+                            ? null
+                            : () async {
+                          bool success = await authProvider.loginWithGoogle();
+                          if (success && context.mounted) {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              '/UserHomePage',
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white, // Standard Google button look
+                          foregroundColor: const Color(0xff0B4A72),
+                          minimumSize: const Size(220, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                            side: const BorderSide(color: Color(0xffE5E5E5)), // Light border
+                          ),
+                          elevation: 0,
+                        ),
+                        child: authProvider.isLoading
+                            ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : Text(
+                          'Sign in from Google',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+
                   ],
                 ),
               ),

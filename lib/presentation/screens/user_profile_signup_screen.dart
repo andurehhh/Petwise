@@ -107,7 +107,7 @@ class _UserProfileSignupScreenState extends State<UserProfileSignupScreen> {
                 ),
                 PetwiseUserTextfield(
                   textLabel: 'EMAIL',
-                  textHint: 'google-email@example.com',
+                  textHint: 'google-email@decaf.com',
                   isEditable: false,
                 ),
                 PetwiseUserTextfield(

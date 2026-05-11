@@ -1,10 +1,13 @@
 import 'api_client.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../contracts/auth/signin_request.dart';
 import '../contracts/auth/signup_request.dart';
 import '../contracts/auth/auth_response.dart';
 
 class AuthService {
   final ApiClient _apiClient;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+  );
 
   AuthService(this._apiClient);
 
@@ -70,5 +73,37 @@ class AuthService {
     } catch (e) {
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
+  }
+//GOOGLE SIGN IN
+  Future<AuthResponse> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if(googleUser == null) {
+        throw Exception('Google Sign In Failed');
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if(idToken == null) {
+        throw Exception('Google Sign In Failed to retrieve the Google ID Token');
+      }
+
+      final response = await _apiClient.post('Auth/GoogleSignIn', {'idToken':idToken,});
+      final authResponse = AuthResponse.fromJson(
+        response as Map<String,dynamic>,
+      );
+
+      await _apiClient.storage.write(
+        key: 'token',
+        value: authResponse.accessToken,
+      );
+      return authResponse;
+    } catch(e){
+      print('Google Sign-In error: $e');
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+
   }
 }

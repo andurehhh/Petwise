@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "989719260711",
+    "project_id": "petwise-16792",
+    "storage_bucket": "petwise-16792.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:989719260711:android:dbc442a9729be0f45d6802",
+        "android_client_info": {
+          "package_name": "com.decaf.petwise"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "989719260711-l8lr5g72knpaavn9vnpgsnc7p299mhvc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.decaf.petwise",
+            "certificate_hash": "81b6149038c2675ccdd15dfd73d425284a27cbaf"
+          }
+        },
+        {
+          "client_id": "989719260711-agrnoub3fan37u33dur7juhl63i4fnks.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjdMSx_-EpxqtS1av3Qw8IbPnoDspdWz4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "989719260711-agrnoub3fan37u33dur7juhl63i4fnks.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

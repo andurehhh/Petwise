@@ -1,4 +1,4 @@
-package com.example.petwise;
+package com.decaf.petwise;
 
 import io.flutter.embedding.android.FlutterActivity;
 

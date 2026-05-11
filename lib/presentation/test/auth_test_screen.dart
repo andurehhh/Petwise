@@ -46,6 +46,20 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
+  // GOOGLE SIGN IN
+  Future<void> _testGoogleSignIn() async {
+    try {
+      final result = await _auth.signInWithGoogle();
+      setState(() {
+        _userId = result.userId;
+        _output =
+            'GOOGLE SIGN IN SUCCESS:\nEmail: ${result.email}\nUserID: ${result.userId}\nToken: ${result.accessToken}';
+      });
+    } catch (e) {
+      setState(() => _output = 'GOOGLE SIGN IN ERROR: $e');
+    }
+  }
+
   //SINGUP
   Future<void> _testSignUp() async {
     try {
@@ -166,7 +180,7 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     try {
       final resultId = await _activity.createActivity(
         CreateActivityRequest(
-          petId: 4, // Using Pet ID 4 based on your _testUpdatePet example
+          petId: 4, // Using Pet ID 4 based on your _testUpdatePet decaf
           title: 'Daily Walk',
           description: 'Walk around the village park',
           timeScheduled: '17:00:00',
@@ -248,6 +262,11 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
             ElevatedButton(
               onPressed: _testSignIn,
               child: const Text('Test Sign In'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testGoogleSignIn,
+              child: const Text('Test Google Sign In'),
             ),
             const SizedBox(height: 8),
             ElevatedButton(

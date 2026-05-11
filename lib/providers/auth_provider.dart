@@ -80,6 +80,25 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> loginWithGoogle() async{
+    _setLoading(true);
+    try {
+      final authResponse = await _authService.signInWithGoogle();
+      _userId = authResponse.userId;
+
+      const storage = FlutterSecureStorage();
+      await storage.write(key: 'token', value: authResponse.accessToken);
+
+      await _userProvider.loadUser(authResponse.userId);
+
+      _setLoading(false);
+      return true;
+    } catch (e){
+      _handleError(e);
+      return false;
+    }
+  }
+
   // Helper methods
   void _setLoading(bool value) {
     _isLoading = value;
