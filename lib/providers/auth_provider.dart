@@ -80,7 +80,32 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> loginWithGoogle() async{
+  // --- 4. CHANGE PASSWORD ---
+  Future<bool> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    _setLoading(true);
+    try {
+      final email = _userProvider.user?.email;
+      if (email == null) {
+        _handleError('User session expired. Please log in again.');
+        return false;
+      }
+      await _authService.changePassword(
+        email: email,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _handleError(e);
+      return false;
+    }
+  }
+
+  Future<bool> loginWithGoogle() async {
     _setLoading(true);
     try {
       final authResponse = await _authService.signInWithGoogle();
@@ -93,7 +118,7 @@ class AuthProvider extends ChangeNotifier {
 
       _setLoading(false);
       return true;
-    } catch (e){
+    } catch (e) {
       _handleError(e);
       return false;
     }
