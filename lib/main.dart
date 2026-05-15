@@ -24,13 +24,13 @@ void main() {
 
         // Services
         ProxyProvider<ApiClient, AuthService>(
-          update: (_, client, __) => AuthService(client),
+          update: (_, client, _) => AuthService(client),
         ),
         ProxyProvider<ApiClient, UserService>(
-          update: (_, client, __) => UserService(client),
+          update: (_, client, _) => UserService(client),
         ),
         ProxyProvider<ApiClient, PetService>(
-          update: (_, client, __) => PetService(client),
+          update: (_, client, _) => PetService(client),
         ),
 
         // Providers

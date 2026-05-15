@@ -6,8 +6,7 @@ import '../contracts/auth/auth_response.dart';
 
 class AuthService {
   final ApiClient _apiClient;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   AuthService(this._apiClient);
 
@@ -74,25 +73,31 @@ class AuthService {
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
-//GOOGLE SIGN IN
+
+  //GOOGLE SIGN IN
   Future<AuthResponse> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-      if(googleUser == null) {
+      if (googleUser == null) {
         throw Exception('Google Sign In Failed');
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
-      if(idToken == null) {
-        throw Exception('Google Sign In Failed to retrieve the Google ID Token');
+      if (idToken == null) {
+        throw Exception(
+          'Google Sign In Failed to retrieve the Google ID Token',
+        );
       }
 
-      final response = await _apiClient.post('Auth/GoogleSignIn', {'idToken':idToken,});
+      final response = await _apiClient.post('Auth/GoogleSignIn', {
+        'idToken': idToken,
+      });
       final authResponse = AuthResponse.fromJson(
-        response as Map<String,dynamic>,
+        response as Map<String, dynamic>,
       );
 
       await _apiClient.storage.write(
@@ -100,10 +105,9 @@ class AuthService {
         value: authResponse.accessToken,
       );
       return authResponse;
-    } catch(e){
+    } catch (e) {
       print('Google Sign-In error: $e');
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
-
   }
 }

@@ -43,7 +43,7 @@ class PetwiseNavbar extends StatelessWidget {
           SizedBox(width: 50),
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, AppRoute.petProfile);
+              Navigator.pushNamed(context, AppRoute.petActivityPlanner);
             },
             icon: Icon(
               Icons.calendar_month_rounded,

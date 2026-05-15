@@ -4,11 +4,11 @@ import 'package:petwise/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import '../widgets/petwise_pet_profile.dart';
-import '../widgets/petwise_activity_card.dart';
+import '../widgets/petwise_dynamic_activity_card.dart';
 import '../widgets/petwise_app_bar.dart';
 import '../widgets/petwise_Navbar.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+import '../screens/pet_activity_planner_screen.dart';
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -33,8 +33,16 @@ class _UserHomePageScreenState extends State<UserHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
     final petList = context.watch<PetProvider>().pets;
-    final activityList = context.watch<ActivityProvider>().activities;
+
+    final activityList = context
+        .watch<ActivityProvider>()
+        .activities
+        .where((a) => !a.isCompleted)
+        .toList();
+
+    final String displayName = user?.nickname ?? user?.firstName ?? "User";
 
     return Scaffold(
       backgroundColor: const Color(0xffF8F7F6),
@@ -47,7 +55,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
           children: [
             const SizedBox(height: 15),
             Text(
-              "Good morning, Mia!",
+              "Good morning, $displayName!",
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
@@ -116,7 +124,8 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                       Navigator.pushNamed(context, '/PetCardScreen');
                     },
                     child: PetCircle(
-                      imagePath: 'assets/images/${pet.name.toLowerCase()}.png',
+                      imagePath:
+                          'assets/images/${pet.species.toLowerCase()}.png',
                       petName: pet.name,
                       petType: pet.species,
                     ),
@@ -137,7 +146,14 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PlannerScreen(),
+                      ),
+                    );
+                  },
                   child: Text(
                     "See all",
                     style: GoogleFonts.plusJakartaSans(
@@ -150,30 +166,46 @@ class _UserHomePageScreenState extends State<UserHomePage> {
               ],
             ),
             const SizedBox(height: 15),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: activityList.length,
-              itemBuilder: (context, index) {
-                final activity = activityList[index];
-                final timeString = DateFormat.jm().format(
-                  activity.scheduledDate,
-                );
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: ActivityCard(
-                    title: activity.title,
-                    subtitle: timeString,
+            if (activityList.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: Text(
+                    "No pending activities",
+                    style: GoogleFonts.roboto(color: Colors.grey),
                   ),
-                );
-              },
-            ),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: activityList.length > 3 ? 3 : activityList.length,
+                itemBuilder: (context, index) {
+                  final activity = activityList[index];
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PlannerScreen(
+                            initialDate: activity.scheduledDate,
+                          ),
+                        ),
+                      );
+                    },
+                    child: DynamicActivityCard(activity: activity),
+                  );
+                },
+              ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, '/AddPetProfileScreen');
+        },
         backgroundColor: const Color(0xFFF7A433),
         elevation: 4,
         shape: const CircleBorder(),
