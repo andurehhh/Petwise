@@ -63,10 +63,16 @@ class _PlannerScreenState extends State<PlannerScreen> {
               eventLoader: (day) => activityProvider.activities
                   .where((a) => isSameDay(a.scheduledDate, day))
                   .toList(),
-              onDaySelected: (selectedDay, focusedDay) => setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              }),
+              onDaySelected: (selectedDay, focusedDay) {
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _selectedDay = selectedDay;
+                      _focusedDay = focusedDay;
+                    });
+                  }
+                });
+              },
               headerStyle: const HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
@@ -164,19 +170,23 @@ class _PlannerScreenState extends State<PlannerScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFF7A433),
         onPressed: () {
-          if (userId != null) {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (context) =>
-                  AddActivitySheet(userId: userId, selectedDate: _selectedDay),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("User session not found.")),
-            );
-          }
+          Future.microtask(() {
+            if (userId != null) {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => AddActivitySheet(
+                  userId: userId,
+                  selectedDate: _selectedDay,
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("User session not found.")),
+              );
+            }
+          });
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),

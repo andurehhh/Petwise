@@ -120,12 +120,13 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                 children: petList.map((pet) {
                   return GestureDetector(
                     onTap: () {
-                      context.read<PetProvider>().selectPet(pet);
-                      Navigator.pushNamed(context, '/PetCardScreen');
+                      Future.microtask(() {
+                        context.read<PetProvider>().selectPet(pet);
+                        Navigator.pushNamed(context, '/PetCardScreen');
+                      });
                     },
                     child: PetCircle(
-                      imagePath:
-                          'assets/images/${pet.species.toLowerCase()}.png',
+                      imagePath: '',
                       petName: pet.name,
                       petType: pet.species,
                     ),
@@ -147,12 +148,14 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PlannerScreen(),
-                      ),
-                    );
+                    Future.microtask(() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PlannerScreen(),
+                        ),
+                      );
+                    });
                   },
                   child: Text(
                     "See all",
@@ -186,14 +189,16 @@ class _UserHomePageScreenState extends State<UserHomePage> {
 
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PlannerScreen(
-                            initialDate: activity.scheduledDate,
+                      Future.microtask(() {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlannerScreen(
+                              initialDate: activity.scheduledDate,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      });
                     },
                     child: DynamicActivityCard(activity: activity),
                   );
@@ -204,7 +209,9 @@ class _UserHomePageScreenState extends State<UserHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, '/AddPetProfileScreen');
+          Future.microtask(() {
+            Navigator.pushNamed(context, '/AddPetProfileScreen');
+          });
         },
         backgroundColor: const Color(0xFFF7A433),
         elevation: 4,

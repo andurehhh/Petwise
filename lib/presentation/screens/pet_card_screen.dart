@@ -4,7 +4,6 @@ import 'package:petwise/providers/pet_provider.dart';
 import '../widgets/petwise_app_bar.dart';
 import '../widgets/petwise_petcard.dart';
 import 'package:intl/intl.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../widgets/petwise_Navbar.dart';
 import 'package:petwise/presentation/screens/pet_profile_screen.dart';
 
@@ -86,7 +85,9 @@ class PetCardScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, '/AddPetProfileScreen');
+        },
         backgroundColor: const Color(0xFFF7A433),
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white),

@@ -140,16 +140,19 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
               ),
               onPressed: () {
                 if (titleController.text.isNotEmpty) {
-                  setState(() {
-                    _medicalRecords.add(
-                      MedicalRecord(
-                        title: titleController.text,
-                        description: descController.text,
-                        date: selectedDate,
-                      ),
-                    );
-                  });
+                  final newRecord = MedicalRecord(
+                    title: titleController.text,
+                    description: descController.text,
+                    date: selectedDate,
+                  );
                   Navigator.pop(context);
+                  Future.microtask(() {
+                    if (mounted) {
+                      setState(() {
+                        _medicalRecords.add(newRecord);
+                      });
+                    }
+                  });
                 }
               },
               child: Text(
@@ -297,8 +300,13 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                                   ),
                                 );
                               }).toList(),
-                              onChanged: (val) =>
-                                  setState(() => _selectedSex = val!),
+                              onChanged: (val) {
+                                Future.microtask(() {
+                                  if (mounted) {
+                                    setState(() => _selectedSex = val!);
+                                  }
+                                });
+                              },
                             ),
                           ),
                         ),
@@ -328,7 +336,11 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                               lastDate: DateTime.now(),
                             );
                             if (picked != null) {
-                              setState(() => _selectedBirthday = picked);
+                              Future.microtask(() {
+                                if (mounted) {
+                                  setState(() => _selectedBirthday = picked);
+                                }
+                              });
                             }
                           },
                           child: Container(
@@ -434,7 +446,9 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                         size: 24,
                         color: Color(0xFFDCDCDC),
                       ),
-                      onTap: _showAddMedicalDialog,
+                      onTap: () {
+                        Future.microtask(() => _showAddMedicalDialog());
+                      },
                     ),
                   ],
                 ),
@@ -443,68 +457,72 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
               FilledButton(
                 onPressed: petProvider.isLoading
                     ? null
-                    : () async {
-                        if (_nameController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Please enter your pet's name."),
-                            ),
-                          );
-                          return;
-                        }
-
-                        if (_breedController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Please enter your pet's breed."),
-                            ),
-                          );
-                          return;
-                        }
-
-                        final currentUserId = authProvider.userId;
-
-                        if (currentUserId == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Error: User session not found."),
-                            ),
-                          );
-                          return;
-                        }
-
-                        final request = CreatePetRequest(
-                          name: _nameController.text.trim(),
-                          species: _breedController.text.trim(),
-                          breed: _breedController.text.trim(),
-                          weight:
-                              double.tryParse(_weightController.text) ?? 0.0,
-                          birthday: _selectedBirthday ?? DateTime.now(),
-                          sex: _selectedSex.toLowerCase(),
-                          userId: currentUserId,
-                        );
-
-                        try {
-                          await context.read<PetProvider>().createNewPet(
-                            request,
-                          );
-                          if (mounted) {
+                    : () {
+                        Future.microtask(() async {
+                          if (_nameController.text.trim().isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text(
-                                  "Pet profile added successfully!",
-                                ),
+                                content: Text("Please enter your pet's name."),
                               ),
                             );
-                            Navigator.pop(context);
+                            return;
                           }
-                        } catch (e) {
-                          if (mounted) {
+
+                          if (_breedController.text.trim().isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Error: ${e.toString()}")),
+                              const SnackBar(
+                                content: Text("Please enter your pet's breed."),
+                              ),
                             );
+                            return;
                           }
-                        }
+
+                          final currentUserId = authProvider.userId;
+
+                          if (currentUserId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Error: User session not found."),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final request = CreatePetRequest(
+                            name: _nameController.text.trim(),
+                            species: _breedController.text.trim(),
+                            breed: _breedController.text.trim(),
+                            weight:
+                                double.tryParse(_weightController.text) ?? 0.0,
+                            birthday: _selectedBirthday ?? DateTime.now(),
+                            sex: _selectedSex.toLowerCase(),
+                            userId: currentUserId,
+                          );
+
+                          try {
+                            await context.read<PetProvider>().createNewPet(
+                              request,
+                            );
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Pet profile added successfully!",
+                                  ),
+                                ),
+                              );
+                              Navigator.pop(context);
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Error: ${e.toString()}"),
+                                ),
+                              );
+                            }
+                          }
+                        });
                       },
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(double.infinity, 56),
@@ -533,7 +551,9 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Future.microtask(() => Navigator.pop(context));
+                },
                 child: Text(
                   "Cancel",
                   style: GoogleFonts.plusJakartaSans(

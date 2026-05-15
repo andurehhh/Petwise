@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
 
 class PetCircle extends StatelessWidget {
   final String imagePath;
@@ -13,6 +14,60 @@ class PetCircle extends StatelessWidget {
     required this.petType,
   });
 
+  Widget _buildAvatar() {
+    final isNetworkUrl =
+        imagePath.startsWith('http://') || imagePath.startsWith('https://');
+    final isFilePath = imagePath.startsWith('/');
+
+    if (isNetworkUrl) {
+      return CircleAvatar(
+        radius: 40,
+        backgroundColor: const Color(0xffFFF9F2),
+        backgroundImage: NetworkImage(imagePath),
+        onBackgroundImageError: (_, __) {},
+        child: null,
+      );
+    }
+
+    if (isFilePath) {
+      final file = File(imagePath);
+      if (file.existsSync()) {
+        return CircleAvatar(
+          radius: 40,
+          backgroundColor: const Color(0xffFFF9F2),
+          backgroundImage: FileImage(file),
+        );
+      }
+      return _pawFallback();
+    }
+
+    return _assetAvatarWithFallback();
+  }
+
+  Widget _assetAvatarWithFallback() {
+    return CircleAvatar(
+      radius: 40,
+      backgroundColor: const Color(0xffFFF9F2),
+      child: ClipOval(
+        child: Image.asset(
+          imagePath,
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _pawFallback(),
+        ),
+      ),
+    );
+  }
+
+  Widget _pawFallback() {
+    return CircleAvatar(
+      radius: 40,
+      backgroundColor: const Color(0xffFFF9F2),
+      child: const Icon(Icons.pets, size: 36, color: Color(0xffF4AD44)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -21,13 +76,9 @@ class PetCircle extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Color(0xffD0DAF0), width: 3),
+            border: Border.all(color: const Color(0xffD0DAF0), width: 3),
           ),
-          child: CircleAvatar(
-            radius: 40,
-            backgroundImage: AssetImage(imagePath),
-            backgroundColor: Color(0xffFFF9F2),
-          ),
+          child: _buildAvatar(),
         ),
         const SizedBox(height: 8),
         Text(
