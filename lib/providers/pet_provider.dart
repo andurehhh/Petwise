@@ -54,12 +54,10 @@ class PetProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  //method for ProxyProvider
   void updatePetService(PetService service) {
     _petService = service;
   }
 
-  //Fetching
   Future<void> loadUserPets(String userid) async {
     if (_petService == null) return;
 
@@ -96,7 +94,12 @@ class PetProvider extends ChangeNotifier {
   }
 
   Future<void> createNewPet(CreatePetRequest request) async {
+    if (_petService == null) {
+      throw Exception("Pet service is not available.");
+    }
+
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
@@ -104,6 +107,9 @@ class PetProvider extends ChangeNotifier {
       await loadUserPets(request.userId);
     } catch (e) {
       _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -130,7 +136,6 @@ class PetProvider extends ChangeNotifier {
     try {
       final response = await _petService!.updatePet(petId, request);
 
-      //convert response to pet model
       final updatedPet = Pet(
         id: response.petId,
         name: response.name,

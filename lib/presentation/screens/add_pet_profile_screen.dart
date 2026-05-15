@@ -444,6 +444,24 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                 onPressed: petProvider.isLoading
                     ? null
                     : () async {
+                        if (_nameController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Please enter your pet's name."),
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (_breedController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Please enter your pet's breed."),
+                            ),
+                          );
+                          return;
+                        }
+
                         final currentUserId = authProvider.userId;
 
                         if (currentUserId == null) {
@@ -456,25 +474,36 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                         }
 
                         final request = CreatePetRequest(
-                          name: _nameController.text,
-                          species: _breedController.text,
+                          name: _nameController.text.trim(),
+                          species: _breedController.text.trim(),
+                          breed: _breedController.text.trim(),
                           weight:
                               double.tryParse(_weightController.text) ?? 0.0,
                           birthday: _selectedBirthday ?? DateTime.now(),
                           sex: _selectedSex.toLowerCase(),
                           userId: currentUserId,
-                          breed: _breedController.text,
                         );
 
                         try {
                           await context.read<PetProvider>().createNewPet(
                             request,
                           );
-                          if (mounted) Navigator.pop(context);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Pet profile added successfully!",
+                                ),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          }
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Error: ${e.toString()}")),
-                          );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Error: ${e.toString()}")),
+                            );
+                          }
                         }
                       },
                 style: FilledButton.styleFrom(
