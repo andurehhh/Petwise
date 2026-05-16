@@ -51,7 +51,11 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/UserProfileSignupScreen');
+                Navigator.pop(context); // close the dialog
+                Navigator.pushNamed(
+                  context,
+                  '/UserLoginScreen',
+                ); // or whatever your login route is named
               },
               child: const Text('OK'),
             ),
