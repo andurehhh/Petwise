@@ -5,6 +5,11 @@ import 'package:petwise/contracts/auth/signin_request.dart';
 import 'package:petwise/contracts/auth/signup_request.dart';
 import 'package:petwise/contracts/pet/update_pet_request.dart';
 import 'package:petwise/contracts/user/update_user_request.dart';
+// New imports for your HealthEvent feature
+import 'package:petwise/contracts/health_event/create_health_event_request.dart';
+import 'package:petwise/contracts/health_event/health_event_response.dart';
+import 'package:petwise/services/health_event_service.dart';
+
 import 'package:petwise/services/activity_service.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
@@ -26,11 +31,14 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
   late final _pet = PetService(_apiClient);
   late final _user = UserService(_apiClient);
   late final _activity = ActivityService(_apiClient);
+  // Instantiate your new service
+  late final _healthEvent = HealthEventService(_apiClient);
 
   int? _lastActivityId = 6;
+  // State variable to keep track of the created health event ID dynamically
+  int? _lastHealthEventId;
 
   //SIGNIN
-
   Future<void> _testSignIn() async {
     try {
       final result = await _auth.signIn(
@@ -180,7 +188,7 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     try {
       final resultId = await _activity.createActivity(
         CreateActivityRequest(
-          petId: 4, // Using Pet ID 4 based on your _testUpdatePet decaf
+          petId: 4,
           title: 'Daily Walk',
           description: 'Walk around the village park',
           timeScheduled: '17:00:00',
@@ -241,10 +249,98 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
       final message = await _activity.deleteActivity(_lastActivityId!);
       setState(() {
         _output = 'DELETE SUCCESS: $message';
-        _lastActivityId = null; // Clear ID after deletion
+        _lastActivityId = null;
       });
     } catch (e) {
       setState(() => _output = 'DELETE ACTIVITY ERROR: $e');
+    }
+  }
+
+  // ==========================================
+  // HEALTH EVENT SERVICE TEST METHODS
+  // ==========================================
+
+  Future<void> _testCreateHealthEvent() async {
+    try {
+      final resultId = await _healthEvent.createHealthEvent(
+        CreateHealthEventRequest(
+          petId: 6, // Targets Pet 4 based on your previous test values
+          eventName: 'Rabies Booster Shot',
+          eventDate: DateTime.now().add(const Duration(days: 7)),
+          type: 'vaccination',
+        ),
+      );
+      setState(() {
+        _lastHealthEventId = resultId;
+        _output = 'CREATE HEALTH EVENT SUCCESS:\nCreated Event ID: $resultId';
+      });
+    } catch (e) {
+      setState(() => _output = 'CREATE HEALTH EVENT ERROR: $e');
+    }
+  }
+
+  Future<void> _testGetHealthEventById() async {
+    if (_lastHealthEventId == null) {
+      setState(
+        () => _output = 'ERROR: Create a health event first to get its ID',
+      );
+      return;
+    }
+    try {
+      final result = await _healthEvent.getHealthEvent(_lastHealthEventId!);
+      setState(() => _output = 'GET HEALTH EVENT SUCCESS:\n${result.toJson()}');
+    } catch (e) {
+      setState(() => _output = 'GET HEALTH EVENT ERROR: $e');
+    }
+  }
+
+  Future<void> _testGetHealthEventsByPet() async {
+    try {
+      // Targets Pet 4 to grab all events assigned to it
+      final List<HealthEventResponse> results = await _healthEvent
+          .getHealthEventsByPet(6);
+      setState(() {
+        _output =
+            'GET HEALTH EVENTS BY PET SUCCESS:\n'
+            '${results.map((e) => e.toJson()).toList()}';
+      });
+    } catch (e) {
+      setState(() => _output = 'GET HEALTH EVENTS BY PET ERROR: $e');
+    }
+  }
+
+  Future<void> _testCompleteHealthEvent() async {
+    if (_lastHealthEventId == null) {
+      setState(
+        () => _output = 'ERROR: Create a health event first to mark complete',
+      );
+      return;
+    }
+    try {
+      final message = await _healthEvent.completeHealthEvent(
+        _lastHealthEventId!,
+      );
+      setState(() => _output = 'COMPLETE HEALTH EVENT SUCCESS:\n$message');
+    } catch (e) {
+      setState(() => _output = 'COMPLETE HEALTH EVENT ERROR: $e');
+    }
+  }
+
+  Future<void> _testDeleteHealthEvent() async {
+    if (_lastHealthEventId == null) {
+      setState(
+        () => _output = 'ERROR: Create a health event first to delete it',
+      );
+      return;
+    }
+    try {
+      final message = await _healthEvent.deleteHealthEvent(_lastHealthEventId!);
+      setState(() {
+        _output = 'DELETE HEALTH EVENT SUCCESS:\n$message';
+        _lastHealthEventId = null; // Clear ID out after removal
+      });
+    } catch (e) {
+      setState(() => _output = 'DELETE HEALTH EVENT ERROR: $e');
     }
   }
 
@@ -314,16 +410,8 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
               onPressed: _testUpdateUser,
               child: const Text('Test Update User'),
             ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(_output),
-            ),
             const SizedBox(height: 16),
+
             const Text('-- ACTIVITIES --', textAlign: TextAlign.center),
             const SizedBox(height: 8),
             ElevatedButton(
@@ -354,8 +442,52 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
               ),
               child: const Text('Test Delete Activity'),
             ),
+            const SizedBox(height: 16),
 
+            // ==========================================
+            // HEALTH EVENTS INTERFACE SECTION
+            // ==========================================
+            const Text('-- HEALTH EVENTS --', textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testCreateHealthEvent,
+              child: const Text('Test Create Health Event'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testGetHealthEventById,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade50,
+              ),
+              child: const Text('Test Get Health Event By ID'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testGetHealthEventsByPet,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple.shade50,
+              ),
+              child: const Text('Test Get Health Events By Pet ID'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testCompleteHealthEvent,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade50,
+              ),
+              child: const Text('Test Mark Health Event Complete'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testDeleteHealthEvent,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade50,
+              ),
+              child: const Text('Test Delete Health Event'),
+            ),
             const SizedBox(height: 20),
+
+            // Main output display block
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
