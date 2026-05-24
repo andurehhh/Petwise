@@ -5,6 +5,7 @@ class UpdatePetRequest {
   final String? sex;
   final String? breed;
   final double? weight;
+  final String? image_url;
 
   UpdatePetRequest({
     this.name,
@@ -13,6 +14,7 @@ class UpdatePetRequest {
     this.sex,
     this.breed,
     this.weight,
+    this.image_url,
   });
 
   factory UpdatePetRequest.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class UpdatePetRequest {
           : null,
       sex: json['sex'],
       breed: json['breed'],
+      image_url: json['image_url'],
       weight: json['weight'] != null
           ? (json['weight'] as num).toDouble()
           : null,
@@ -38,6 +41,7 @@ class UpdatePetRequest {
     if (birthday != null) {
       data['birthday'] = birthday!.toIso8601String();
     }
+    if (image_url != null) data['image_url'] = image_url;
     if (sex != null) data['sex'] = sex;
     if (breed != null) data['breed'] = breed;
     if (weight != null) data['weight'] = weight;

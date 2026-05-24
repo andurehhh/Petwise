@@ -6,6 +6,7 @@ class CreatePetRequest {
   final String sex;
   final String breed;
   final double weight;
+  final String image_url;
 
   CreatePetRequest({
     required this.name,
@@ -15,6 +16,7 @@ class CreatePetRequest {
     required this.sex,
     required this.breed,
     required this.weight,
+    required this.image_url,
   });
 
   factory CreatePetRequest.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class CreatePetRequest {
       birthday: DateTime.parse(json['birthday']),
       sex: json['sex'],
       breed: json['breed'],
+      image_url: json['image_url'],
       weight: (json['weight'] as num).toDouble(),
     );
   }
@@ -37,6 +40,7 @@ class CreatePetRequest {
       'birthday': birthday.toIso8601String(),
       'sex': sex,
       'breed': breed,
+      'image_url': image_url,
       'weight': weight,
     };
   }

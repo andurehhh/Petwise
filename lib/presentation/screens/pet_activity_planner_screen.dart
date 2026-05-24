@@ -160,7 +160,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   )
                 else
                   ...dailyActivities.map(
-                    (activity) => DynamicActivityCard(activity: activity),
+                    (activity) => DynamicActivityCard(
+                      key: ObjectKey(activity),
+                      activity: activity,
+                    ),
                   ),
               ],
             ),

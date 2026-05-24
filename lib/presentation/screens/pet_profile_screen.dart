@@ -18,9 +18,9 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
   Widget build(BuildContext context) {
     final petProvider = context.watch<PetProvider>();
     final pet = petProvider.selectedPet;
+
     return Scaffold(
-      backgroundColor: Color(0xFFDA9799),
-      // backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFDA9799),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -48,17 +48,17 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                   onPressed: () {
                     /*insert favorite function here*/
                   },
-                  icon: Icon(Icons.favorite_border),
+                  icon: const Icon(Icons.favorite_border),
                 ),
                 IconButton(
                   onPressed: () =>
                       Navigator.pushNamed(context, AppRoute.editPetProfile),
-                  icon: Icon(Icons.edit),
+                  icon: const Icon(Icons.edit),
                 ),
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
-                  color: Color(0xFFDA9799),
+                  color: const Color(0xFFDA9799),
                   child: Stack(
                     clipBehavior: Clip.none,
                     alignment: Alignment.center,
@@ -71,9 +71,20 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                           child: CircleAvatar(
                             radius: 119,
                             backgroundColor: Colors.white,
-                            backgroundImage: AssetImage(
-                              'assets/images/dog.png',
-                            ),
+                            backgroundImage:
+                                (pet?.image_url != null &&
+                                    pet!.image_url!.startsWith('http'))
+                                ? NetworkImage(pet.image_url!)
+                                : null,
+                            child:
+                                (pet?.image_url == null ||
+                                    !pet!.image_url!.startsWith('http'))
+                                ? Icon(
+                                    Icons.pets,
+                                    size: 80,
+                                    color: Colors.grey.shade400,
+                                  )
+                                : null,
                           ),
                         ),
                       ),
@@ -85,7 +96,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
 
             SliverToBoxAdapter(
               child: Container(
-                // transform: Matrix4.translationValues(0, -50, 0),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
@@ -96,12 +106,12 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                   children: [
                     Container(
                       width: double.infinity,
-                      padding: EdgeInsets.only(left: 10),
+                      padding: const EdgeInsets.only(left: 10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            pet!.name,
+                            pet?.name ?? "Unknown Pet",
                             style: GoogleFonts.plusJakartaSans(
                               color: Colors.black,
                               fontSize: 23,
@@ -110,7 +120,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                             ),
                           ),
                           Text(
-                            pet.species,
+                            pet?.species ?? "Unknown Species",
                             style: GoogleFonts.plusJakartaSans(
                               color: Colors.grey,
                               fontSize: 16,
@@ -118,7 +128,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                             ),
                           ),
                           Text(
-                            "${pet.age} years old",
+                            "${pet?.age ?? 0} years old",
                             style: GoogleFonts.plusJakartaSans(
                               color: Colors.grey,
                               fontSize: 16,
@@ -126,7 +136,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                             ),
                           ),
                         ],
-                      ), //Pet Name and short details
+                      ),
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
@@ -143,12 +153,12 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                               letterSpacing: -0.5,
                             ),
                           ),
-                          SizedBox(height: 20),
-                          PetwiseUpcomingMedicalPill(),
-                          PetwiseUpcomingMedicalPill(),
-                          PetwiseUpcomingMedicalPill(),
+                          const SizedBox(height: 20),
+                          const PetwiseUpcomingMedicalPill(),
+                          const PetwiseUpcomingMedicalPill(),
+                          const PetwiseUpcomingMedicalPill(),
 
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           Text(
                             "Recent Activity",
                             style: GoogleFonts.plusJakartaSans(
@@ -158,11 +168,11 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                               letterSpacing: -0.5,
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                          PetwisePetActivityLog(),
-                          PetwisePetActivityLog(),
-                          PetwisePetActivityLog(),
+                          const PetwisePetActivityLog(),
+                          const PetwisePetActivityLog(),
+                          const PetwisePetActivityLog(),
                         ],
                       ),
                     ),

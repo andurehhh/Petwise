@@ -8,6 +8,7 @@ class PetResponse {
   final String breed;
   final double weight;
   final DateTime createdAt;
+  final String image_url;
 
   PetResponse({
     required this.petId,
@@ -19,6 +20,7 @@ class PetResponse {
     required this.breed,
     required this.weight,
     required this.createdAt,
+    required this.image_url,
   });
 
   factory PetResponse.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class PetResponse {
           : DateTime.now(),
       sex: json['sex'] ?? '',
       breed: json['breed'] ?? '',
+      image_url: json['image_url'],
       weight: json['weight'] != null ? (json['weight'] as num).toDouble() : 0.0,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at']).toLocal()
@@ -48,6 +51,7 @@ class PetResponse {
       'birthday': birthday.toIso8601String(),
       'sex': sex,
       'breed': breed,
+      'image_url': image_url,
       'weight': weight,
       'created_at': createdAt.toIso8601String(),
     };

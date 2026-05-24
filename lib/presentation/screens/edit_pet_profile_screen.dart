@@ -2,11 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/contracts/pet/update_pet_request.dart';
-import 'package:petwise/data/models/pet_model.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:petwise/providers/pet_provider.dart';
-import 'package:petwise/routes/app_route.dart';
 import 'package:provider/provider.dart';
+import 'package:petwise/presentation/widgets/petwise_image_picker_sheet.dart';
 
 class EditPetProfileScreen extends StatefulWidget {
   const EditPetProfileScreen({super.key});
@@ -18,8 +17,10 @@ class EditPetProfileScreen extends StatefulWidget {
 class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   late TextEditingController _petNameController;
   late TextEditingController _petSpeciesController;
+  late TextEditingController _petBreedController;
   late TextEditingController _petAgeController;
   late TextEditingController _petWeightController;
+  late String image_url;
 
   @override
   void initState() {
@@ -28,10 +29,13 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
 
     _petNameController = TextEditingController(text: pet?.name ?? "");
     _petSpeciesController = TextEditingController(text: pet?.species ?? "");
+    _petBreedController = TextEditingController(text: pet?.breed ?? "");
     _petAgeController = TextEditingController(text: pet?.age.toString() ?? "0");
     _petWeightController = TextEditingController(
       text: pet?.weight?.toString() ?? "0.1",
     );
+
+    image_url = pet?.image_url ?? 'assets/images/doggie.gif';
   }
 
   @override
@@ -39,8 +43,35 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _petAgeController.dispose();
     _petNameController.dispose();
     _petSpeciesController.dispose();
+    _petBreedController.dispose();
     _petWeightController.dispose();
     super.dispose();
+  }
+
+  // Opens your custom URL picker bottom sheet
+  void _openImagePickerSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return PetwiseImagePickerSheet(
+          currentImageUrl: image_url,
+          onImageSelected: (newUrl) {
+            setState(() {
+              image_url = newUrl;
+            });
+          },
+        );
+      },
+    );
+  }
+
+  ImageProvider _getProfileImage() {
+    if (image_url.startsWith('http://') || image_url.startsWith('https://')) {
+      return NetworkImage(image_url);
+    }
+    return AssetImage(image_url);
   }
 
   @override
@@ -49,14 +80,14 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     final pet = petProvider.selectedPet;
 
     return Scaffold(
-      backgroundColor: Color(0xFFF8F7F6),
+      backgroundColor: const Color(0xFFF8F7F6),
       extendBody: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(CupertinoIcons.back),
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(CupertinoIcons.back, color: Color(0xFF1A2D40)),
         ),
       ),
       body: SingleChildScrollView(
@@ -66,28 +97,42 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 72,
-                    backgroundColor: Color(0xFFF7A433),
-                    child: CircleAvatar(
-                      radius: 70,
-                      backgroundImage: AssetImage('assets/images/doggie.gif'),
+              // WIRED IMAGE PICKER WRAPPER
+              GestureDetector(
+                onTap: _openImagePickerSheet,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 72,
+                      backgroundColor: const Color(0xFFF7A433),
                       child: CircleAvatar(
-                        backgroundColor: Colors.black26,
                         radius: 70,
-                        child: Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 30,
+                        backgroundImage: _getProfileImage(),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 140,
+                          height: 140,
+                          decoration: const BoxDecoration(
+                            color: Colors.black26,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 30,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              SizedBox(height: 20, width: 40),
+              const SizedBox(height: 20),
               Text(
                 "${pet?.name}",
                 style: GoogleFonts.plusJakartaSans(
@@ -96,7 +141,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                   letterSpacing: -1.5,
                 ),
               ),
-              SizedBox(width: 10, height: 5),
+              const SizedBox(height: 5),
               Container(
                 width: 150,
                 height: 4,
@@ -105,7 +150,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              SizedBox(height: 20, width: 40),
+              const SizedBox(height: 20),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1000),
                 child: Container(
@@ -113,7 +158,6 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                   margin: const EdgeInsets.all(10),
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    // color: Colors.pink,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -124,13 +168,13 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                         style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
-                          color: Color(0xFF92A1B7),
+                          color: const Color(0xFF92A1B7),
                         ),
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          SizedBox(width: 20, height: 20),
+                          const SizedBox(height: 20),
                           PetwiseUserTextfield(
                             textLabel: "Pet Name",
                             textHint: "Enter Pet Name here",
@@ -138,14 +182,19 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                             isEditable: true,
                           ),
                           PetwiseUserTextfield(
-                            textLabel: "Breed",
-                            textHint: "Enter pet Breed here",
+                            textLabel: "Species",
+                            textHint: "e.g. Dog, Cat",
                             controller: _petSpeciesController,
                             isEditable: true,
                           ),
-
+                          PetwiseUserTextfield(
+                            textLabel: "Breed",
+                            textHint: "Enter pet Breed here",
+                            controller: _petBreedController,
+                            isEditable: true,
+                          ),
                           ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: 800),
+                            constraints: const BoxConstraints(maxWidth: 800),
                             child: Row(
                               children: [
                                 Expanded(
@@ -153,6 +202,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                     textLabel: "Age (in Years)",
                                     textHint: "${pet?.age}",
                                     controller: _petAgeController,
+                                    isEditable: true,
                                   ),
                                 ),
                                 Expanded(
@@ -166,16 +216,15 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                               ],
                             ),
                           ),
-
                           ConstrainedBox(
-                            constraints: BoxConstraints(
+                            constraints: const BoxConstraints(
                               maxWidth: 800,
                               minWidth: 40,
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                SizedBox(width: 50, height: 30),
+                                const SizedBox(height: 30),
                                 FilledButton(
                                   onPressed: petProvider.isLoading
                                       ? null
@@ -184,23 +233,38 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                               petProvider.selectedPet;
                                           final petId =
                                               petProvider.selectedPet?.id;
-                                          if (currentPet == null) return;
-                                          if (petId == null) return;
+                                          if (currentPet == null ||
+                                              petId == null)
+                                            return;
 
-                                          // 1. Create the request
+                                          String? formatSex(String? sex) {
+                                            if (sex == null ||
+                                                sex.trim().isEmpty)
+                                              return null;
+                                            final clean = sex
+                                                .trim()
+                                                .toLowerCase();
+                                            return clean[0].toUpperCase() +
+                                                clean.substring(1);
+                                          }
+
                                           final request = UpdatePetRequest(
-                                            name: _petNameController.text,
-                                            species: _petSpeciesController.text,
+                                            name: _petNameController.text
+                                                .trim(),
+                                            species: _petSpeciesController.text
+                                                .trim(),
+                                            breed: _petBreedController.text
+                                                .trim(),
                                             weight:
                                                 double.tryParse(
                                                   _petWeightController.text,
                                                 ) ??
                                                 0.0,
                                             birthday: currentPet.birthday,
-                                            sex: currentPet.sex,
-                                            breed: _petSpeciesController.text,
+                                            sex: formatSex(currentPet.sex),
+                                            image_url: image_url,
                                           );
-                                          print(
+                                          debugPrint(
                                             "DEBUG JSON: ${request.toJson()}",
                                           );
 
@@ -235,30 +299,15 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                               ),
                                             );
                                           }
-
-                                          // String newPetName = _petNameController.text;
-                                          // String newPetSpecies = _petSpeciesController.text;
-                                          // String newPetAge = _petAgeController.text;
-                                          // String newPetWeight = _petWeightController.text;
-
-                                          // context.read<PetProvider>().updatePetInfo(newPetName, newPetSpecies);
                                         },
-
                                   style: FilledButton.styleFrom(
                                     minimumSize: const Size(300, 50),
-                                    backgroundColor: Color(0xFFF7A433),
+                                    backgroundColor: const Color(0xFFF7A433),
                                     side: const BorderSide(
                                       color: Color(0xFFDA9B44),
                                       width: 2,
                                     ),
                                   ),
-                                  // child: Text("SAVE CHANGES",
-                                  //     style: GoogleFonts
-                                  //         .plusJakartaSans(
-                                  //         color: Color(0xFFFFFFFF),
-                                  //         fontWeight: FontWeight
-                                  //             .bold)
-                                  // )
                                   child: petProvider.isLoading
                                       ? const SizedBox(
                                           height: 20,
@@ -276,11 +325,9 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                           ),
                                         ),
                                 ),
-                                SizedBox(width: 50, height: 15),
+                                const SizedBox(height: 15),
                                 OutlinedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
+                                  onPressed: () => Navigator.pop(context),
                                   style: OutlinedButton.styleFrom(
                                     minimumSize: const Size(300, 50),
                                     side: const BorderSide(
@@ -291,7 +338,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                   child: Text(
                                     "CANCEL",
                                     style: GoogleFonts.plusJakartaSans(
-                                      color: Color(0xFFF7A433),
+                                      color: const Color(0xFFF7A433),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -309,17 +356,6 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
           ),
         ),
       ),
-
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: (){
-      //
-      //   },
-      //   backgroundColor: Color(0xFFF7A433),
-      //   shape: CircleBorder(),
-      //   child: Icon(Icons.add, color: Colors.white,)
-      // ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      // bottomNavigationBar: PetwiseNavbar(navbarIndex: 4)
     );
   }
 }

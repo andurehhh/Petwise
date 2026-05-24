@@ -126,7 +126,8 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                       });
                     },
                     child: PetCircle(
-                      imagePath: '',
+                      // FIXED: Passing the real network URL or path instead of an empty string
+                      imagePath: pet.image_url ?? '',
                       petName: pet.name,
                       petType: pet.species,
                     ),

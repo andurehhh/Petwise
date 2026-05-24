@@ -12,6 +12,10 @@ class PetCard extends StatelessWidget {
   final Color dataTileBackgroundColor;
   final String imagePath;
 
+  // The default image URL requested
+  static const String _defaultPetImageUrl =
+      'https://i.pinimg.com/736x/54/34/81/543481c0ca5a909bd4d23863c6262339.jpg';
+
   const PetCard({
     super.key,
     required this.id,
@@ -27,6 +31,17 @@ class PetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isNetworkImage =
+        imagePath.startsWith('http://') || imagePath.startsWith('https://');
+
+    final Widget fallbackImage = Image.network(
+      _defaultPetImageUrl,
+      fit: BoxFit.cover,
+      alignment: Alignment.center,
+      errorBuilder: (context, error, stackTrace) =>
+          const Icon(Icons.pets, size: 35, color: Colors.white24),
+    );
+
     return Align(
       alignment: Alignment.center,
       child: Container(
@@ -62,11 +77,12 @@ class PetCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 12, 12, 12),
+              padding: const EdgeInsets.fromLTRB(18, 12, 16, 12),
               child: Row(
                 children: [
                   Expanded(
-                    flex: 3,
+                    flex:
+                        7, // Adjusted flex slightly to give text and avatar balanced spacing
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -111,18 +127,33 @@ class PetCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Image.asset(
-                      imagePath,
-                      fit: BoxFit.contain,
-                      alignment: Alignment.center,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.pets,
-                        size: 40,
-                        color: Colors.white24,
-                      ),
+                  const SizedBox(width: 12),
+                  // The Circular Avatar Container
+                  Container(
+                    width: 85,
+                    height: 85,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(
+                        0.15,
+                      ), // Fallback/Loading background ring
                     ),
+                    clipBehavior: Clip.antiAlias,
+                    child: isNetworkImage
+                        ? Image.network(
+                            imagePath,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
+                            errorBuilder: (context, error, stackTrace) =>
+                                fallbackImage,
+                          )
+                        : Image.asset(
+                            imagePath,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
+                            errorBuilder: (context, error, stackTrace) =>
+                                fallbackImage,
+                          ),
                   ),
                 ],
               ),

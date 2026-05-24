@@ -16,7 +16,7 @@ class UserProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _errorMessage;
 
-  //proxyProvider
+  // proxyProvider
   void updateUserService(UserService service) {
     _userService = service;
   }
@@ -46,6 +46,7 @@ class UserProvider extends ChangeNotifier {
     required String firstName,
     required String lastName,
     required String nickname,
+    String? image_url, // FIXED: Changed to snake_case style
   }) async {
     if (_userService == null || _user == null) return false;
 
@@ -58,6 +59,7 @@ class UserProvider extends ChangeNotifier {
         firstName: firstName,
         lastName: lastName,
         nickname: nickname,
+        image_url: image_url ?? _user!.image_url,
       );
 
       final response = await _userService!.updateUser(_user!.id, request);
@@ -75,53 +77,24 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // UserModel? _user= UserModel(
-  //   id: "cc",
-  //   firstName: "Andre",
-  //   lastName: "Almazora",
-  //   email: "andrealmazora19@gmail.com",
-  //   nickname: "Hiyuki",
-  // );
-
   void setUser(UserModel newUser) {
     _user = newUser;
     notifyListeners();
   }
 
-  // void updateUserInfo(
-  //   String newFirstName,
-  //   String newLastName,
-  //   String newNickname,
-  //     )
-  // {
-  //   if (_user != null) {
-  //     _user = UserModel(
-  //       id: _user!.id,
-  //       firstName: newFirstName.trim().isNotEmpty
-  //           ? newFirstName.trim()
-  //           : _user!.firstName,
-  //       lastName: newLastName.trim().isNotEmpty
-  //           ? newLastName.trim()
-  //           : _user!.lastName,
-  //       email: _user!.email,
-  //       // dbId: _user!.dbId,
-  //       // profileImageUrl: _user!.profileImageUrl,
-  //       nickname: newNickname.trim().isNotEmpty
-  //           ? newNickname.trim()
-  //           : _user!.nickname,
-  //     );
-  //
-  //     print("Provider: Updated user to ${_user!.firstName} ${_user!.lastName}");
-  //     notifyListeners();
-  //   }
-  // }
-
-  // void updatePicture(String pictureUrl) {
-  //   if (_user != null) {
-  //     _user!.profileImageUrl = pictureUrl;
-  //     notifyListeners();
-  //   }
-  // }
+  void updatePicture(String pictureUrl) {
+    if (_user != null) {
+      _user = UserModel(
+        id: _user!.id,
+        firstName: _user!.firstName,
+        lastName: _user!.lastName,
+        email: _user!.email,
+        nickname: _user!.nickname,
+        image_url: pictureUrl,
+      );
+      notifyListeners();
+    }
+  }
 
   UserModel _mapResponseToModel(UserResponse response) {
     return UserModel(
@@ -130,6 +103,7 @@ class UserProvider extends ChangeNotifier {
       lastName: response.lastName ?? '',
       email: response.email,
       nickname: response.nickname,
+      image_url: response.image_url,
     );
   }
 }

@@ -9,6 +9,7 @@ class PetProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Updated Mock Initial Data with image_url included
   List<Pet> _pets = [
     Pet(
       id: 1,
@@ -18,6 +19,7 @@ class PetProvider extends ChangeNotifier {
       species: "dog",
       birthday: DateTime(2023, 10, 10),
       sex: "male",
+      image_url: null, // Ready for network image URLs
     ),
     Pet(
       id: 2,
@@ -27,6 +29,7 @@ class PetProvider extends ChangeNotifier {
       species: "cat",
       birthday: DateTime(2024, 06, 04),
       sex: "male",
+      image_url: null,
     ),
     Pet(
       id: 3,
@@ -36,6 +39,7 @@ class PetProvider extends ChangeNotifier {
       species: "rabbit",
       birthday: DateTime(2024, 08, 11),
       sex: "male",
+      image_url: null,
     ),
   ];
 
@@ -47,6 +51,7 @@ class PetProvider extends ChangeNotifier {
     species: "dog",
     birthday: DateTime(2023, 10, 10),
     sex: "male",
+    image_url: null,
   );
 
   List<Pet> get pets => _pets;
@@ -70,7 +75,7 @@ class PetProvider extends ChangeNotifier {
       _pets = responses
           .map(
             (res) => Pet(
-              id: res.petId,
+              id: res.petId, // Mapping cleanly to your ID change
               name: res.name,
               species: res.species,
               userId: res.userId,
@@ -78,6 +83,9 @@ class PetProvider extends ChangeNotifier {
               sex: res.sex,
               createdAt: res.createdAt,
               weight: res.weight,
+              breed: res.breed,
+              image_url: res
+                  .image_url, // Added mapping for image_url from API contract response
             ),
           )
           .toList();
@@ -146,6 +154,8 @@ class PetProvider extends ChangeNotifier {
         createdAt: response.createdAt,
         weight: response.weight,
         breed: response.breed,
+        image_url: response
+            .image_url, // Added mapping here too so updates preserve the image
       );
 
       int index = _pets.indexWhere((pet) => pet.id == petId);

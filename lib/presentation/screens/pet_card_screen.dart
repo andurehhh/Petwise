@@ -28,6 +28,7 @@ class PetCardScreen extends StatelessWidget {
                 final pet = petList[index];
                 final String species = pet.species.toLowerCase();
 
+                // Theme color fallback pairs by pet species type
                 Color cardColor = const Color(0xFFABC4ED);
                 Color detailColor = const Color(0xFF435B85);
                 Color tileBackground = const Color(0xFFE3F2FD);
@@ -50,6 +51,12 @@ class PetCardScreen extends StatelessWidget {
                   tileBackground = const Color(0xFFF7E6CE);
                 }
 
+                // Resolves either custom uploaded user avatars or fallback local asset
+                final String displayImage =
+                    (pet.image_url != null && pet.image_url!.isNotEmpty)
+                    ? pet.image_url!
+                    : 'assets/images/doggie.gif';
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: GestureDetector(
@@ -62,20 +69,16 @@ class PetCardScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: PetCard(
-                        id: pet.id,
-                        name: pet.name,
-                        species: pet.species,
-                        birthday: DateFormat('MM-dd-yyyy').format(pet.birthday),
-                        sex: pet.sex,
-                        cardColor: cardColor,
-                        detailColor: detailColor,
-                        dataTileBackgroundColor: tileBackground,
-                        imagePath:
-                            'assets/images/${pet.name.toLowerCase()}.png',
-                      ),
+                    child: PetCard(
+                      id: pet.id,
+                      name: pet.name,
+                      species: pet.species,
+                      birthday: DateFormat('MM-dd-yyyy').format(pet.birthday),
+                      sex: pet.sex,
+                      cardColor: cardColor,
+                      detailColor: detailColor,
+                      dataTileBackgroundColor: tileBackground,
+                      imagePath: displayImage,
                     ),
                   ),
                 );

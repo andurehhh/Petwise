@@ -18,9 +18,8 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
   late TextEditingController _nicknameController;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-
     final user = context.read<UserProvider>().user;
     _firstNameController = TextEditingController(text: user?.firstName ?? "");
     _lastNameController = TextEditingController(text: user?.lastName ?? "");
@@ -28,7 +27,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _nicknameController.dispose();
@@ -37,251 +36,266 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = context.watch<UserProvider>();
-
-    return
-      Scaffold(
-        backgroundColor: Color(0xFFF8F7F6),
-        extendBody: true,
-        appBar: AppBar(
-          leading:
-          IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(CupertinoIcons.back)),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F7F6),
+      extendBody: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(CupertinoIcons.back, color: Colors.black),
         ),
-        body: SingleChildScrollView(
-            child: SizedBox(
-              width: double.infinity,
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: (){},
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {},
+                child: CircleAvatar(
+                  radius: 72,
+                  backgroundColor: const Color(0xFFF7A433),
+                  child: CircleAvatar(
+                    radius: 70,
+                    backgroundColor: const Color(0xffF6EEE4),
+                    child: ClipOval(
                       child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 72,
-                            backgroundColor: Color(0xFFF7A433),
-                            child: CircleAvatar(
-                              radius: 70,
-                              backgroundImage: AssetImage(
-                                  'assets/images/SUA.jpg'),
-                              child: CircleAvatar(
-                                backgroundColor: Colors.black26,
-                                radius: 70,
-                                child: Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                              ),
+                          // Dynamic Network vs Asset Image Switcher
+                          Builder(
+                            builder: (context) {
+                              final imageUrl = context.select(
+                                (UserProvider p) => p.user?.image_url,
+                              );
+
+                              if (imageUrl != null && imageUrl.isNotEmpty) {
+                                return Image.network(
+                                  imageUrl,
+                                  width: 140,
+                                  height: 140,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Image.asset(
+                                        'assets/images/SUA.jpg',
+                                        width: 140,
+                                        height: 140,
+                                        fit: BoxFit.cover,
+                                      ),
+                                );
+                              } else {
+                                return Image.asset(
+                                  'assets/images/SUA.jpg',
+                                  width: 140,
+                                  height: 140,
+                                  fit: BoxFit.cover,
+                                );
+                              }
+                            },
+                          ),
+                          // Camera Icon Translucent Mask overlay
+                          Container(
+                            color: Colors.black38,
+                            width: 140,
+                            height: 140,
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 30,
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    SizedBox(
-                      height: 20,
-                      width: 40,
-                    ),
-                    // Text("Lady Gaga",
-                    //   style: GoogleFonts.plusJakartaSans(fontSize: 23,
-                    //       fontWeight: FontWeight.bold,
-                    //       letterSpacing: -1.5),
-                    // ),
-                    Container(
-                      // color: Colors.red,
-                      height: 50,
-                      width: 300,
-                      child: TextField(
-                        enabled: true,
-                        textAlign: TextAlign.center,
-                          style: GoogleFonts.plusJakartaSans(fontSize: 23,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -1.5),
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                          ),
-                          controller: _nicknameController,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 10,
-                      height: 5,
-                    ),
-                    Container(
-                      width: 150,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDCDCDC),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                      width: 40,
-                    ),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(
-                          maxWidth: 1000
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.all(10),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          // color: Colors.pink,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text("USER INFORMATION",
-                              style: GoogleFonts.plusJakartaSans(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                                color: Color(0xFF92A1B7),
-
-                              ),
-                            ),
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                  ),
-                                  PetwiseUserTextfield(textLabel: "First Name",
-                                      textHint: "Enter first name", isEditable: true, controller: _firstNameController,),
-                                  PetwiseUserTextfield(textLabel: "Last Name",
-                                      textHint: "Enter last name", isEditable: true, controller: _lastNameController),
-                                  PetwiseUserTextfield(textLabel: "Email",
-                                      textHint: userProvider.user?.email, isEditable: false,),
-
-                                  ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                          maxWidth: 800,
-                                          minWidth: 40
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
-                                        children: [
-                                          SizedBox(
-                                            width: 50,
-                                            height: 30,
-                                          ),
-                                          FilledButton(
-                                              onPressed: userProvider.isLoading
-                                                  ? null
-                                                  : () async {
-                                                    bool success = await context.read<UserProvider>().updateProfile(
-                                                      firstName: _firstNameController.text.trim(),
-                                                      lastName: _lastNameController.text.trim(),
-                                                      nickname: _nicknameController.text.trim());
-
-                                                    if (success && mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                          const SnackBar(
-                                                            content: Text("Profile Updated!"),
-                                                            backgroundColor: Colors.lightGreen,)
-                                                      );
-                                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                                        if (mounted) {
-                                                          Navigator.pop(context);
-                                                        }
-                                                      });
-                                                    }
-                                                    else if (mounted){
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(userProvider.error ?? "Failed to update profile"),
-                                                            backgroundColor: Colors.redAccent,
-                                                          )
-                                                      );
-                                                    }
-                                              },
-                                              style: FilledButton.styleFrom(
-                                                  minimumSize: const Size(
-                                                      300, 50),
-                                                  backgroundColor: Color(
-                                                      0xFFF7A433),
-                                                  side: const BorderSide(
-                                                    color: Color(0xFFDA9B44),
-                                                    width: 2,
-                                                  )
-                                              ),
-                                              child:userProvider.isLoading
-                                                  ? const SizedBox(
-                                                height: 20,
-                                                width: 20,
-                                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                              )
-                                                  : Text(
-                                                "SAVE CHANGES",
-                                                style: GoogleFonts.plusJakartaSans(
-                                                  color: const Color(0xFFFFFFFF),
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )
-                                          ),
-                                          SizedBox(
-                                            width: 50,
-                                            height: 15,
-                                          ),
-                                          OutlinedButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-
-                                              },
-                                              style: OutlinedButton.styleFrom(
-                                                  minimumSize: const Size(
-                                                      300, 50),
-                                                  side: const BorderSide(
-                                                      color: Color(0xFFF7A433),
-                                                      width: 2
-                                                  )
-                                              ),
-                                              child: Text("CANCEL",
-                                                style: GoogleFonts
-                                                    .plusJakartaSans(
-                                                    color: Color(0xFFF7A433),
-                                                    fontWeight: FontWeight
-                                                        .bold),
-                                              )
-                                          ),
-
-                                        ],
-                                      ))
-
-                                ]
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-
-
-                  ]
+                  ),
+                ),
               ),
-            )
-        ),
+              const SizedBox(height: 20),
 
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: (){
-        //
-        //   },
-        //   backgroundColor: Color(0xFFF7A433),
-        //   shape: CircleBorder(),
-        //   child: Icon(Icons.add, color: Colors.white,)
-        // ),
-        // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        // bottomNavigationBar: PetwiseNavbar(navbarIndex: 4)
-      );
+              SizedBox(
+                height: 50,
+                width: 300,
+                child: TextField(
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 23,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Enter nickname",
+                  ),
+                  controller: _nicknameController,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Container(
+                width: 150,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCDCDC),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // --- DETAILS BOX ---
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        "USER INFORMATION",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: const Color(0xFF92A1B7),
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      PetwiseUserTextfield(
+                        textLabel: "First Name",
+                        textHint: "Enter first name",
+                        isEditable: true,
+                        controller: _firstNameController,
+                      ),
+                      const SizedBox(height: 12),
+                      PetwiseUserTextfield(
+                        textLabel: "Last Name",
+                        textHint: "Enter last name",
+                        isEditable: true,
+                        controller: _lastNameController,
+                      ),
+
+                      Consumer<UserProvider>(
+                        builder: (context, userProvider, child) {
+                          return Column(
+                            children: [
+                              PetwiseUserTextfield(
+                                textLabel: "Email",
+                                textHint:
+                                    userProvider.user?.email ??
+                                    "No Email Registered",
+                                isEditable: false,
+                              ),
+                              const SizedBox(height: 32),
+
+                              // Save Changes Button
+                              FilledButton(
+                                onPressed: userProvider.isLoading
+                                    ? null
+                                    : () async {
+                                        bool success = await userProvider
+                                            .updateProfile(
+                                              firstName: _firstNameController
+                                                  .text
+                                                  .trim(),
+                                              lastName: _lastNameController.text
+                                                  .trim(),
+                                              nickname: _nicknameController.text
+                                                  .trim(),
+                                            );
+
+                                        if (success && context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text("Profile Updated!"),
+                                              backgroundColor:
+                                                  Colors.lightGreen,
+                                            ),
+                                          );
+                                          Navigator.pop(context);
+                                        } else if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                userProvider.error ??
+                                                    "Failed to update profile",
+                                              ),
+                                              backgroundColor: Colors.redAccent,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size(double.infinity, 52),
+                                  backgroundColor: const Color(0xFFF7A433),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  side: const BorderSide(
+                                    color: Color(0xFFDA9B44),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: userProvider.isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(
+                                        "SAVE CHANGES",
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: const Color(0xFFFFFFFF),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Cancel Button
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: const BorderSide(
+                            color: Color(0xFFF7A433),
+                            width: 2,
+                          ),
+                        ),
+                        child: Text(
+                          "CANCEL",
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFFF7A433),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
-
