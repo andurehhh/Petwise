@@ -5,7 +5,6 @@ import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/services/notif_service.dart';
-import 'package:petwise/services/notification_service.dart';
 import 'package:petwise/services/pet_service.dart';
 import 'package:petwise/services/user_service.dart';
 import 'package:petwise/services/activity_service.dart';
