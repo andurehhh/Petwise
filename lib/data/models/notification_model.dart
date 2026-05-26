@@ -1,5 +1,5 @@
 class ActivityNotification{
-  final String id;
+  final int id;
   final String title;
   final String body;
   final DateTime scheduleTime;

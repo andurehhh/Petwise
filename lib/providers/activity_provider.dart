@@ -3,12 +3,12 @@ import 'package:petwise/contracts/activity/create_activity_request.dart';
 import 'package:petwise/contracts/activity/update_activity_request.dart';
 import 'package:petwise/data/models/activity_model.dart';
 import 'package:petwise/data/models/notification_model.dart';
-import 'package:petwise/services/notification_service.dart';
+import 'package:petwise/services/notif_service.dart';
 import 'package:petwise/services/activity_service.dart';
 
 class ActivityProvider with ChangeNotifier {
   ActivityService? _activityService;
-  final NotificationService _notificationService = NotificationService();
+  final NotifService _notificationService = NotifService();
 
   List<ActivityModel> _activities = [];
   bool _isLoading = false;
@@ -125,12 +125,12 @@ class ActivityProvider with ChangeNotifier {
       _activities.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
 
       final notification = ActivityNotification(
-        id: newActivity.id.toString(),
+        id: newActivity.id,
         title: "Petwise: ${newActivity.title}",
         body: newActivity.description ?? "It's time to take care of your pet!",
         scheduleTime: newActivity.scheduledDate,
       );
-      await _notificationService.scheduleNotification(notification);
+      await _notificationService.scheduledNotification(notification);
 
     } catch (e) {
       _errorMessage = e.toString();
@@ -201,12 +201,12 @@ class ActivityProvider with ChangeNotifier {
         await _notificationService.cancelNotification(activityId.toString());
         final updatedActivity = _activities[index];
         final notification = ActivityNotification(
-          id: updatedActivity.id.toString(),
+          id: updatedActivity.id,
           title: "Petwise: ${updatedActivity.title}",
           body: updatedActivity.description ?? "It's time to take care of your pet!",
           scheduleTime: updatedActivity.scheduledDate,
         );
-        await _notificationService.scheduleNotification(notification);
+        await _notificationService.scheduledNotification(notification);
       }
 
     } catch (e) {

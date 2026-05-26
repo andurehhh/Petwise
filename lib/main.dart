@@ -4,6 +4,7 @@ import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
+import 'package:petwise/services/notif_service.dart';
 import 'package:petwise/services/notification_service.dart';
 import 'package:petwise/services/pet_service.dart';
 import 'package:petwise/services/user_service.dart';
@@ -15,7 +16,9 @@ import 'package:petwise/routes/app_route.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await NotificationService().init();
+  // await NotificationService().init();
+  await NotifService().initNotification();
+
 
   runApp(
     MultiProvider(
