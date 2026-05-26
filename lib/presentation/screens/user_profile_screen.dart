@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:petwise/presentation/widgets/petwise_Navbar.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:petwise/presentation/widgets/petwise_user_image_picker.dart';
+import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/auth_provider.dart';
+import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/data/models/user_model.dart';
 
@@ -21,6 +23,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserData();
     });
@@ -29,6 +32,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void _loadUserData() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     final currentUserId = authProvider.userId;
 
     print("DEBUG: Fetching profile for ID: $currentUserId");
@@ -110,7 +114,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F7F6),
+      backgroundColor: Color(0xFFF8F7F6),
       extendBody: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -270,7 +274,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 ),
                                 const SizedBox(height: 15),
                                 OutlinedButton(
-                                  onPressed: () {},
+                                  onPressed: () async {
+                                    await context.read<AuthProvider>().logout(
+                                      petProvider: context.read<PetProvider>(),
+                                      activityProvider: context.read<ActivityProvider>(),
+                                    );
+                                    Navigator.of(context).pushNamedAndRemoveUntil('/LoginOrSignupScreen',(route)=>false);
+                                  },
                                   style: OutlinedButton.styleFrom(
                                     minimumSize: const Size(300, 50),
                                     side: const BorderSide(
@@ -299,6 +309,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
         ),
       ),
+
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: (){
+      //
+      //   },
+      //   backgroundColor: Color(0xFFF7A433),
+      //   shape: CircleBorder(),
+      //   child: Icon(Icons.add, color: Colors.white,)
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // bottomNavigationBar: PetwiseNavbar(navbarIndex: 4)
     );
   }
 }

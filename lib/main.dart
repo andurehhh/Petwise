@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:petwise/data/models/pet_model.dart';
 import 'package:petwise/presentation/screens/user_homepage_screen.dart';
-import 'package:petwise/presentation/test/auth_test_screen.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
+import 'package:petwise/services/notification_service.dart';
 import 'package:petwise/services/pet_service.dart';
 import 'package:petwise/services/user_service.dart';
+import 'package:petwise/services/activity_service.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/routes/app_route.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().init();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => PetProvider()),
-        ChangeNotifierProvider(create: (_) => ActivityProvider()),
         Provider(create: (_) => ApiClient()),
 
         // Services
@@ -32,23 +32,30 @@ void main() {
         ProxyProvider<ApiClient, PetService>(
           update: (_, client, _) => PetService(client),
         ),
+        ProxyProvider<ApiClient, ActivityService>(
+          update: (_, client, _) => ActivityService(client),
+        ),
 
         // Providers
-        // 1. UserProvider needs to "watch" UserService
         ChangeNotifierProxyProvider<UserService, UserProvider>(
           create: (context) => UserProvider(),
           update: (context, userService, userProvider) {
-            // This is the missing handshake!
             userProvider!.updateUserService(userService);
             return userProvider;
           },
         ),
-
         ChangeNotifierProxyProvider<PetService, PetProvider>(
           create: (context) => PetProvider(),
           update: (context, petService, petProvider) {
             petProvider!.updatePetService(petService);
             return petProvider;
+          },
+        ),
+        ChangeNotifierProxyProvider<ActivityService, ActivityProvider>(
+          create: (context) => ActivityProvider(),
+          update: (context, activityService, activityProvider) {
+            activityProvider!.updateActivityService(activityService);
+            return activityProvider;
           },
         ),
         ChangeNotifierProxyProvider2<AuthService, UserProvider, AuthProvider>(
@@ -77,7 +84,6 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
       home: UserHomePage(),
-      // home: AuthTestScreen(),
     );
   }
 }

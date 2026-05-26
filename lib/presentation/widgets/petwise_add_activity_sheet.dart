@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:petwise/contracts/activity/create_activity_request.dart';
+import 'package:petwise/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
@@ -131,20 +133,42 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            onPressed: () {
+            onPressed: () async {
               if (_titleController.text.isNotEmpty && _selectedPetId != null) {
-                context.read<ActivityProvider>().addActivity(
-                  ActivityModel(
-                    id: 'act_${DateTime.now().millisecondsSinceEpoch}',
-                    createdAt: DateTime.now(),
-                    petId: _selectedPetId!,
-                    title: _titleController.text,
-                    description: "",
-                    scheduledDate: _selectedDate,
-                    isCompleted: false,
-                  ),
-                );
-                Navigator.pop(context);
+                try {
+                  // 1. Format the time correctly for System.TimeOnly (HH:mm:ss)
+                  final formattedTime = DateFormat('HH:mm:ss').format(_selectedDate);
+
+                  // 2. Call the provider
+                  await context.read<ActivityProvider>().addActivity(
+                    CreateActivityRequest(
+                      petId: _selectedPetId!,
+                      title: _titleController.text,
+                      description: "Time to take care of your pet!",
+                      timeScheduled: formattedTime, // Pass only the time
+                      recurrence: "None",
+                    ),
+                  );
+
+                  // 3. Show success notification (Optional, since provider also schedules one)
+                  // We use the singleton instance properly here
+                  await NotificationService().showInstantNotification(
+                      "Activity Scheduled",
+                      "Task '${_titleController.text}' has been added."
+                  );
+
+                  // 4. Pop ONLY once and only if still mounted
+                  if (mounted) {
+                    Navigator.pop(context);
+                  }
+                } catch (e) {
+                  // Handle potential errors (e.g., show a SnackBar)
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Failed to add activity: $e")),
+                    );
+                  }
+                }
               }
             },
             child: Text(

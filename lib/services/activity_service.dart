@@ -31,6 +31,35 @@ class ActivityService {
     }
   }
 
+  ///TODO: GET /Activity
+  /// Returns all activities for the authenticated user
+  Future<List<ActivityResponse>> getAllActivities() async {
+    try {
+      final response = await _apiClient.get('Activity');
+      if(response == null) return [];
+      return (response as List)
+          .map((json) => ActivityResponse.fromJson(json))
+          .toList();
+    } catch (e) {
+      log('Error in getAllActivities: $e');
+      throw Exception('Failed to load activities.');
+    }
+  }
+
+  ///TODO: GET /Activity/Pet/{pet_id:int}
+  Future<List<ActivityResponse>> getActivitiesByPet(int petId) async {
+    try {
+      final response = await _apiClient.get('Activity/Pet/$petId');
+      if (response == null) return [];
+      return (response as List)
+          .map((json) => ActivityResponse.fromJson(json))
+          .toList();
+    } catch (e) {
+      log('Error in getActivitiesByPet: $e');
+      throw Exception('Failed to load activities for this pet.');
+    }
+  }
+
   /// PATCH /Activity/{id}
   Future<ActivityResponse> patchActivity(
     int activityId,

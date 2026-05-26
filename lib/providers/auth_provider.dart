@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:petwise/contracts/auth/signin_request.dart';
 import 'package:petwise/contracts/auth/signup_request.dart';
+import 'package:petwise/providers/activity_provider.dart';
+import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/services/auth_service.dart';
 
@@ -102,6 +104,30 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _handleError(e);
       return false;
+    }
+  }
+
+  Future<void> logout({
+    required PetProvider petProvider,
+    required ActivityProvider activityProvider,
+  }) async {
+    try {
+      // 1. Clear persistent storage
+      const storage = FlutterSecureStorage();
+      await storage.delete(key: 'token');
+
+      // 2. Clear AuthProvider state
+      _userId = null;
+      _errorMessage = null;
+
+      // 3. Clear all other shared state
+      _userProvider.clear();
+      petProvider.clear();
+      activityProvider.clear();
+
+      notifyListeners();
+    } catch (e) {
+      _handleError("Logout failed: $e");
     }
   }
 

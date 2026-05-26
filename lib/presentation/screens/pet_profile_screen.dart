@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_activity_log.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_upcoming_medical_pill.dart';
+import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/routes/app_route.dart';
 import 'package:provider/provider.dart';
@@ -15,12 +16,42 @@ class PetProfileScreen extends StatefulWidget {
 
 class _PetProfileScreenState extends State<PetProfileScreen> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final petProvider = context.read<PetProvider>();
+
+      // Get all pet IDs to populate the global activity list (Option B)
+      final petIds = petProvider.pets.map((p) => p.id).toList();
+
+      if (petIds.isNotEmpty) {
+        context.read<ActivityProvider>().loadAllActivities(petIds);
+      } else {
+        // Fallback: If no pets are loaded yet, load activities for the selected pet only
+        final selectedPet = petProvider.selectedPet;
+        if (selectedPet != null) {
+          context.read<ActivityProvider>().loadActivities(selectedPet.id);
+        }
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final petProvider = context.watch<PetProvider>();
+    final activityProvider = context.watch<ActivityProvider>();
     final pet = petProvider.selectedPet;
 
+    final petActivities = activityProvider.activities
+        .where((a) => a.petId == pet?.id)
+        .toList();
+
+    if (pet == null) {
+      return const Scaffold(body: Center(child: Text("No pet selected")));
+    }
     return Scaffold(
-      backgroundColor: const Color(0xFFDA9799),
+      backgroundColor: Color(0xFFDA9799),
+      // backgroundColor: Colors.white,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -45,9 +76,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
               clipBehavior: Clip.none,
               actions: [
                 IconButton(
-                  onPressed: () {
-                    /*insert favorite function here*/
-                  },
+                  onPressed: () {},
                   icon: const Icon(Icons.favorite_border),
                 ),
                 IconButton(
@@ -67,7 +96,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                         bottom: -50,
                         child: CircleAvatar(
                           radius: 120,
-                          backgroundColor: Colors.grey.shade400,
+                          backgroundColor: Colors.white,
                           child: CircleAvatar(
                             radius: 119,
                             backgroundColor: Colors.white,
@@ -93,7 +122,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                 ),
               ),
             ),
-
             SliverToBoxAdapter(
               child: Container(
                 decoration: const BoxDecoration(
@@ -155,9 +183,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                           ),
                           const SizedBox(height: 20),
                           const PetwiseUpcomingMedicalPill(),
-                          const PetwiseUpcomingMedicalPill(),
-                          const PetwiseUpcomingMedicalPill(),
-
                           const SizedBox(height: 20),
                           Text(
                             "Recent Activity",
@@ -169,11 +194,18 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-
-                          const PetwisePetActivityLog(),
-                          const PetwisePetActivityLog(),
-                          const PetwisePetActivityLog(),
-                        ],
+                          if (activityProvider.isLoading)
+                            const Center(child: CircularProgressIndicator())
+                          else if (activityProvider.activities.isEmpty)
+                            Center(
+                              child: Text(
+                                "No activities found",
+                                style: GoogleFonts.plusJakartaSans(color: Colors.grey),
+                              ),
+                            )
+                          else
+                          // Change activityProvider.activities.map to petActivities.map
+                            ...petActivities.map((activity) => PetwisePetActivityLog(activity: activity)),],
                       ),
                     ),
                   ],

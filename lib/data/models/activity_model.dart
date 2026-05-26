@@ -1,5 +1,5 @@
 class ActivityModel {
-  final String id;
+  final int id;
   final DateTime createdAt;
   int petId;
   String title;
@@ -8,7 +8,7 @@ class ActivityModel {
   bool isCompleted;
   String? recurrence;
 
-  ActivityModel ({
+  ActivityModel({
     required this.id,
     required this.createdAt,
     required this.petId,
@@ -19,30 +19,29 @@ class ActivityModel {
     this.recurrence,
   });
 
-  factory ActivityModel.fromJson(Map<String,dynamic> json){
+  factory ActivityModel.fromJson(Map<String, dynamic> json) {
     return ActivityModel(
-      id: json["activity_id"],
+      id: json["activity_id"] as int,
       createdAt: DateTime.parse(json["created_at"]),
-      petId: json["pet_id"],
-      title: json["title"],
-      description: json["description"],
-      scheduledDate: DateTime.parse(json["scheduled_date"]),
-      isCompleted: json["is_completed"]?? false,
-      recurrence: json["recurrence"],
+      petId: json["pet_id"] as int,
+      title: json["title"] as String,
+      description: json["description"] as String?,
+      scheduledDate: DateTime.parse(json["time_scheduled"] ?? json["scheduled_date"]),
+      isCompleted: json["is_active"] ?? false, // Mapping isActive from backend to isCompleted locally
+      recurrence: json["recurrence"] as String?,
     );
   }
 
-  Map<String,dynamic> toJson(){
+  Map<String, dynamic> toJson() {
     return {
-      "activity_id":id,
-      "created_at":createdAt.toIso8601String(),
-      "pet_id":petId,
-      "title":title,
-      "description":description,
-      "scheduled_date":scheduledDate.toIso8601String(),
-      "is_completed":isCompleted,
-      "recurrence":recurrence,
+      "activity_id": id,
+      "created_at": createdAt.toIso8601String(),
+      "pet_id": petId,
+      "title": title,
+      "description": description,
+      "time_scheduled": scheduledDate.toIso8601String(),
+      "is_active": isCompleted,
+      "recurrence": recurrence,
     };
   }
-
 }
