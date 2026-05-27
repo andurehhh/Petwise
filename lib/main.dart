@@ -5,6 +5,7 @@ import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/providers/health_event_provider.dart';
+import 'package:petwise/providers/vaccination_provider.dart';
 import 'package:petwise/routes/app_route.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
@@ -66,6 +67,13 @@ void main() async {
           update: (_, healthEventService, healthEventProvider) {
             healthEventProvider!.updateHealthEventService(healthEventService);
             return healthEventProvider;
+          },
+        ),
+        ChangeNotifierProxyProvider<HealthEventService, VaccinationProvider>(
+          create: (_) => VaccinationProvider(),
+          update: (_, healthEventService, vaccinationProvider) {
+            vaccinationProvider!.updateHealthEventService(healthEventService);
+            return vaccinationProvider;
           },
         ),
         ChangeNotifierProxyProvider2<AuthService, UserProvider, AuthProvider>(

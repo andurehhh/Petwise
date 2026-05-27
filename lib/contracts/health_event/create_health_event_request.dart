@@ -2,7 +2,7 @@ class CreateHealthEventRequest {
   final int petId;
   final String eventName;
   final DateTime eventDate;
-  final String type; // e.g., "vaccination", "illness", "checkup"
+  final String type;
 
   CreateHealthEventRequest({
     required this.petId,

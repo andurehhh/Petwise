@@ -22,7 +22,6 @@ class HealthEventResponse {
       eventId: json['event_id'] as int,
       petId: json['pet_id'] as int,
       eventName: json['event_name'] as String,
-      // DateTime.parse cleanly reads the ISO strings sent from ASP.NET Core
       eventDate: DateTime.parse(json['event_date'] as String),
       type: json['type'] as String,
       isCompleted: json['is_completed'] as bool,
