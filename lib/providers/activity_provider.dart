@@ -3,6 +3,8 @@ import 'package:petwise/contracts/activity/create_activity_request.dart';
 import 'package:petwise/contracts/activity/update_activity_request.dart';
 import 'package:petwise/data/models/activity_model.dart';
 import 'package:petwise/services/activity_service.dart';
+import 'package:petwise/services/notif_service.dart';
+import 'package:petwise/data/models/notification_model.dart';
 
 class ActivityProvider with ChangeNotifier {
   ActivityService _activityService;
@@ -162,6 +164,17 @@ class ActivityProvider with ChangeNotifier {
           _activities.add(a);
         }
       }
+
+      // Schedule the notification for the new activity
+      final notification = ActivityNotification(
+        id: newId,
+        title: "Petwise: ${mapped.title}",
+        body: mapped.description ?? "It's time to take care of your pet!",
+        scheduleTime: mapped.scheduledDate,
+        recurrence: mapped.recurrence,
+      );
+      await NotifService().scheduledNotification(notification);
+
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -202,6 +215,9 @@ class ActivityProvider with ChangeNotifier {
 
     try {
       await _activityService.deleteActivity(int.parse(baseId));
+
+      // Cancel the notification when activity is deleted
+      await NotifService().cancelNotification(baseId);
     } catch (e) {
       _error = e.toString();
       notifyListeners();

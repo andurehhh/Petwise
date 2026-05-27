@@ -18,7 +18,6 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await NotificationService().init();
   await NotifService().initNotification();
 
   runApp(
@@ -99,6 +98,25 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        primaryColor: const Color(0xFFF7A433),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFF7A433),
+          primary: const Color(0xFFF7A433),
+          surfaceTint: Colors.transparent,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xFF1A2D40)),
+        ),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Color(0xFFF7A433),
+          selectionColor: Color(0x4DF7A433),
+          selectionHandleColor: Color(0xFFF7A433),
+        ),
+      ),
       initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
       home: UserHomePage(),

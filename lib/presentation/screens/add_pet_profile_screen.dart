@@ -37,7 +37,6 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _speciesController = TextEditingController();
   final TextEditingController _breedController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   DateTime? _selectedBirthday;
   String _selectedSex = "Male";
@@ -62,7 +61,6 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
     _nameController.dispose();
     _speciesController.dispose();
     _breedController.dispose();
-    _ageController.dispose();
     _weightController.dispose();
     super.dispose();
   }
@@ -410,127 +408,63 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                   controller: _breedController,
                   isEditable: true,
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Sex",
+                // Birthday field in its own row, styled like PetwiseUserTextfield
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Birthday",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: _selectedBirthday ?? DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now(),
+                          );
+                          if (picked != null) {
+                            setState(() => _selectedBirthday = picked);
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+                          width: double.infinity,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(
+                              width: 1.5,
+                              color: const Color(0xFFDCDCDC),
+                            ),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _selectedBirthday == null
+                                ? "Select Date"
+                                : DateFormat('MM/dd/yyyy').format(_selectedBirthday!),
                             style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
                               color: const Color(0xFF1A2D40),
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFFDCDCDC),
-                              ),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedSex,
-                                isExpanded: true,
-                                items: ["Male", "Female"].map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(
-                                      value,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 14,
-                                        color: const Color(0xFF1A2D40),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) {
-                                    setState(() => _selectedSex = val);
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Birthday",
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1A2D40),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          InkWell(
-                            onTap: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate:
-                                    _selectedBirthday ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime.now(),
-                              );
-                              if (picked != null) {
-                                setState(() => _selectedBirthday = picked);
-                              }
-                            },
-                            child: Container(
-                              height: 48,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFDCDCDC),
-                                ),
-                              ),
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                _selectedBirthday == null
-                                    ? "Select Date"
-                                    : DateFormat(
-                                        'MM/dd/yyyy',
-                                      ).format(_selectedBirthday!),
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 14,
-                                  color: const Color(0xFF1A2D40),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: PetwiseUserTextfield(
-                        textLabel: "Age (Years)",
-                        textHint: "0",
-                        controller: _ageController,
-                        isEditable: true,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
                     Expanded(
                       child: PetwiseUserTextfield(
                         textLabel: "Weight (kg)",
@@ -539,6 +473,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                         isEditable: true,
                       ),
                     ),
+                    const SizedBox(width: 16),
                   ],
                 ),
                 const SizedBox(height: 24),

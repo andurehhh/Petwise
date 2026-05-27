@@ -32,11 +32,16 @@ class ActivityService {
   Future<List<ActivityResponse>> getActivitiesByPet(int petId) async {
     try {
       final response = await _apiClient.get('Activity/pet/$petId');
+      
+      // Fix: Handle null or empty responses safely to avoid cast errors
+      if (response == null) return [];
+      
       final List list = response as List;
       return list.map((e) => ActivityResponse.fromJson(e)).toList();
     } catch (e) {
       log('Error in getActivitiesByPet: $e');
-      throw Exception('Failed to load activities.');
+      // Providing more context in the error message
+      throw Exception('Failed to load activities: $e');
     }
   }
 

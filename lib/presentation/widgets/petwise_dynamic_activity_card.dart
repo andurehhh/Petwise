@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:petwise/data/models/pet_model.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/data/models/activity_model.dart';
 import 'package:petwise/providers/activity_provider.dart';
@@ -159,9 +160,7 @@ class DynamicActivityCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 22,
-                    backgroundImage: AssetImage(
-                      'assets/images/pet_${pet.id}.png',
-                    ),
+                    backgroundImage: _getPetImage(pet),
                   ),
                   GestureDetector(
                     onTap: () => context
@@ -199,5 +198,29 @@ class DynamicActivityCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  ImageProvider _getPetImage(Pet pet) {
+    final imageUrl = pet.image_url;
+
+    // 1. Check if we have a valid image_url
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      if (imageUrl.startsWith('http')) {
+        return NetworkImage(imageUrl);
+      }
+      return AssetImage(imageUrl);
+    }
+
+    // 2. Fallback to species-specific defaults
+    final species = pet.species.toLowerCase();
+    if (species.contains('cat')) {
+      return const AssetImage('assets/images/cat.png');
+    }
+    if (species.contains('dog')) {
+      return const AssetImage('assets/images/dog.png');
+    }
+
+    // 3. Final fallback
+    return const AssetImage('assets/images/doggie.gif');
   }
 }

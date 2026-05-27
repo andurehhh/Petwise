@@ -11,6 +11,7 @@ import 'package:petwise/data/models/vaccination_model.dart';
 import 'package:petwise/routes/app_route.dart';
 import 'package:petwise/utils/pet_theme.dart';
 import 'package:provider/provider.dart';
+import'package:intl/intl.dart';
 
 class PetProfileScreen extends StatefulWidget {
   const PetProfileScreen({super.key});
@@ -146,36 +147,69 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.only(left: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            pet?.name ?? "Unknown Pet",
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.black,
-                              fontSize: 23,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -1.5,
+                          Expanded(
+                            child:Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    pet?.name ?? "Unknown Pet",
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.black,
+                                      fontSize: 23,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -1.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    (pet?.species ?? "Unknown Species"),
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.grey,
+                                      fontSize: 16,
+                                      letterSpacing: -1.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    (pet?.breed ?? "A special guy"),
+                                    style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                    letterSpacing: -1.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          Text(
-                            pet?.species ?? "Unknown Species",
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.grey,
-                              fontSize: 16,
-                              letterSpacing: -1.5,
-                            ),
-                          ),
-                          Text(
-                            "${pet?.age ?? 0} years old",
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.grey,
-                              fontSize: 16,
-                              letterSpacing: -1.5,
-                            ),
+
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                pet?.sex == "Male"
+                                ? Icon(Icons.male, color: Colors.blue, size: 38)
+                                : Icon(Icons.female, color: Colors.pink, size: 38),
+
+                                Text(
+                                  "${pet?.age ?? 0} years old",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                    letterSpacing: -1,
+                                  ),
+                                ),
+                                Text(
+                                    DateFormat.yMMMMd().format(pet?.birthday ?? DateTime.now()),
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.grey,
+                                      fontSize: 16,
+                                      letterSpacing: -1,
+                                    )
+                                ),
+                              ]
                           ),
                         ],
-                      ),
+                          ),
                     ),
                     const SizedBox(height: 20),
                     SizedBox(

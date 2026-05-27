@@ -26,6 +26,9 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   late TextEditingController _petAgeController;
   late TextEditingController _petWeightController;
   late String image_url;
+  late String _selectedSex;
+  late DateTime _selectedBirthday;
+
 
   @override
   void initState() {
@@ -38,6 +41,8 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _petWeightController = TextEditingController(
       text: pet?.weight?.toString() ?? "0.1",
     );
+    _selectedSex = pet?.sex ?? "Male";
+    _selectedBirthday = pet?.birthday ?? DateTime.now();
     image_url = pet?.image_url ?? 'assets/images/doggie.gif';
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -211,24 +216,123 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                         controller: _petBreedController,
                         isEditable: true,
                       ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Birthday",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: pet?.birthday ?? DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (picked != null) {
+                                  setState(() => _selectedBirthday = picked);
+                                }
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.all(5),
+                                padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+                                width: double.infinity,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                  border: Border.all(
+                                    width: 1.5,
+                                    color: const Color(0xFFDCDCDC),
+                                  ),
+                                ),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _selectedBirthday == null
+                                      ? "Select Date"
+                                      : DateFormat('MM/dd/yyyy').format(_selectedBirthday!),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 15,
+                                    color: const Color(0xFF1A2D40),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 800),
                         child: Row(
                           children: [
                             Expanded(
                               child: PetwiseUserTextfield(
-                                textLabel: "Age (in Years)",
-                                textHint: "${pet?.age}",
-                                controller: _petAgeController,
-                                isEditable: true,
-                              ),
-                            ),
-                            Expanded(
-                              child: PetwiseUserTextfield(
                                 textLabel: "Weight (Kg)",
                                 textHint: "${pet?.weight}",
                                 controller: _petWeightController,
                                 isEditable: true,
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Sex",
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.all(5),
+                                      padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+                                      width: double.infinity,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(30),
+                                        border: Border.all(
+                                          width: 1.5,
+                                          color: const Color(0xFFDCDCDC),
+                                        ),
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          value: _selectedSex,
+                                          isExpanded: true,
+                                          items: ["Male", "Female"].map((String value) {
+                                            return DropdownMenuItem<String>(
+                                              value: value,
+                                              child: Text(
+                                                value,
+                                                style: GoogleFonts.plusJakartaSans(
+                                                  fontSize: 15,
+                                                  color: const Color(0xFF1A2D40),
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (val) {
+                                            if (val != null) {
+                                              setState(() => _selectedSex = val);
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],

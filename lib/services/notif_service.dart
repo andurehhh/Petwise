@@ -10,7 +10,6 @@ class NotifService {
   factory NotifService() => _instance;
   NotifService._internal();
 
-
   final notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
@@ -18,23 +17,28 @@ class NotifService {
   bool get isInitialized => _isInitialized;
 
 // initialize
-  Future<void> initNotification() async{
-    if(_isInitialized) return;
+  Future<void> initNotification() async {
+    if (_isInitialized) return;
 
     //initialize TimeZone
     tz.initializeTimeZones();
 
-    final TimezoneInfo timeZoneName = await FlutterTimezone.getLocalTimezone();
-    print("This is the timezone: " + timeZoneName.identifier);
-    final String timeZoneNameString = timeZoneName.identifier;
-    tz.setLocalLocation(tz.getLocation(timeZoneNameString));
+    try {
+      final TimezoneInfo tzData = await FlutterTimezone.getLocalTimezone();
+      // Handle potential object vs string return from different versions
+      String timeZoneName = tzData.identifier;
+
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      debugPrint("✅ Timezone Initialized: $timeZoneName");
+    } catch (e) {
+      debugPrint("⚠️ Timezone match failed, falling back to UTC: $e");
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    }
 
     const initSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const initSettings = InitializationSettings(
-        android: initSettingsAndroid
-    );
+    const initSettings = InitializationSettings(android: initSettingsAndroid);
 
     await notificationsPlugin.initialize(initSettings);
     _isInitialized = true;
@@ -42,69 +46,106 @@ class NotifService {
     final androidImpl = notificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
-    final granted = await androidImpl?.requestNotificationsPermission();
-    debugPrint("Notification permission granted: $granted");
-
-    // v18 REQUIRED for exact alarms
-    final exactGranted = await androidImpl?.requestExactAlarmsPermission();
-    debugPrint("Exact alarm permission granted: $exactGranted");
+    await androidImpl?.requestNotificationsPermission();
+    await androidImpl?.requestExactAlarmsPermission();
   }
 
   //NotifDetails
-  NotificationDetails notificationDetails(){
+  NotificationDetails notificationDetails() {
     return const NotificationDetails(
         android: AndroidNotificationDetails(
-            'testChannelId',
-            'testChannelName',
-            channelDescription: 'testChannelDescription',
+            'petwise_activity_channel',
+            'Pet Activity Alerts',
+            channelDescription: 'Reminders for your pets activity',
             importance: Importance.max,
             priority: Priority.max,
-            icon: '@mipmap/ic_launcher'
-        )
-    );
+            icon: '@mipmap/ic_launcher'));
   }
 
-  //Show Notif
-  Future<void> showNotification({
-    int id = 0,
-    String? title,
-    String? body}) async {
+  Future<void> showNotification({int id = 0, String? title, String? body}) async {
     return notificationsPlugin.show(
-        id,
-        title,
-        body,
-        notificationDetails(),
+      id,
+      title,
+      body,
+      notificationDetails(),
     );
   }
 
   //scheduled notif
   Future<void> scheduledNotification(ActivityNotification activityNotif) async {
     final now = tz.TZDateTime.now(tz.local);
+    // Convert to lowercase to match UI values: 'none', 'daily', 'weekly', 'monthly'
+    final String r = (activityNotif.recurrence?.trim() ?? "none").toLowerCase();
 
-    //date time for today specified
+    // Fix for the 2026 placeholder year bug:
+    // If it's a recurring task, we start counting from TODAY's year/month/day.
+    // If it's a one-off ('none'), we use the actual year/month/day provided.
     var scheduledDate = tz.TZDateTime(
-        tz.local,
-        now.year,
-        now.month,
-        now.day,
-        activityNotif.scheduleTime.hour,
-        activityNotif.scheduleTime.minute,
-        );
-
-    await notificationsPlugin.zonedSchedule(
-        activityNotif.id,
-        activityNotif.title,
-        activityNotif.body,
-        scheduledDate,
-        notificationDetails(),
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-
-      //repeats daily
-      matchDateTimeComponents: DateTimeComponents.time,
+      tz.local,
+      r == "none" ? activityNotif.scheduleTime.year : now.year,
+      r == "none" ? activityNotif.scheduleTime.month : now.month,
+      r == "none" ? activityNotif.scheduleTime.day : now.day,
+      activityNotif.scheduleTime.hour,
+      activityNotif.scheduleTime.minute,
     );
 
-    print("SCHEDULED NOTIF: NOTIF SCHED TO: $scheduledDate");
+    // If Weekly, ensure we match the intended Weekday (e.g., if the user wants Wednesdays)
+    if (r == 'weekly') {
+      while (scheduledDate.weekday != activityNotif.scheduleTime.weekday) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+    } 
+    // If Monthly, ensure we match the intended Day of Month
+    else if (r == 'monthly') {
+      while (scheduledDate.day != activityNotif.scheduleTime.day) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+    }
+
+    // Move to the next period if the target time has already passed today
+    if (scheduledDate.isBefore(now)) {
+      if (r == "daily") {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      } else if (r == "weekly") {
+        scheduledDate = scheduledDate.add(const Duration(days: 7));
+      } else if (r == "monthly") {
+        // Correctly jump to next month
+        scheduledDate = tz.TZDateTime(
+          tz.local,
+          scheduledDate.month == 12 ? scheduledDate.year + 1 : scheduledDate.year,
+          scheduledDate.month == 12 ? 1 : scheduledDate.month + 1,
+          scheduledDate.day,
+          scheduledDate.hour,
+          scheduledDate.minute,
+        );
+      } else {
+        // For 'none', if it's already past, set for 5 seconds from now for an immediate alert
+        scheduledDate = now.add(const Duration(seconds: 5));
+      }
+    }
+
+    DateTimeComponents? matchComponents;
+    if (r == "daily") {
+      matchComponents = DateTimeComponents.time;
+    } else if (r == "weekly") {
+      matchComponents = DateTimeComponents.dayOfWeekAndTime;
+    } else if (r == "monthly") {
+      matchComponents = DateTimeComponents.dayOfMonthAndTime;
+    }
+
+    await notificationsPlugin.zonedSchedule(
+      activityNotif.id,
+      activityNotif.title,
+      activityNotif.body,
+      scheduledDate,
+      notificationDetails(),
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: matchComponents,
+    );
+
+    debugPrint("✅ SCHEDULED NOTIF: ID ${activityNotif.id} on $scheduledDate (Recurrence: $r)");
   }
 
   //cancel notifs
@@ -114,6 +155,8 @@ class NotifService {
 
 //Cancel specific notif
   Future<void> cancelNotification(String id) async {
-    await notificationsPlugin.cancel(id.hashCode.abs());
+    int baseId = int.tryParse(id) ?? id.hashCode.abs();
+    await notificationsPlugin.cancel(baseId);
+    debugPrint("🚫 CANCELLED NOTIF: ID $baseId");
   }
 }
