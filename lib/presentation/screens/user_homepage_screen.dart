@@ -18,10 +18,13 @@ class UserHomePage extends StatefulWidget {
 }
 
 class _UserHomePageScreenState extends State<UserHomePage> {
+  // lib/presentation/screens/user_homepage_screen.dart
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+<<<<<<< HEAD
       if (!mounted) return;
       final userProvider = context.read<UserProvider>();
       final userId = userProvider.user?.id;
@@ -32,6 +35,23 @@ class _UserHomePageScreenState extends State<UserHomePage> {
       final petIds = context.read<PetProvider>().pets.map((p) => p.id).toList();
       if (petIds.isNotEmpty) {
         context.read<ActivityProvider>().loadAllActivities(petIds);
+=======
+      final userProvider = context.read<UserProvider>();
+      final petProvider = context.read<PetProvider>();
+      final activityProvider = context.read<ActivityProvider>();
+
+      if (userProvider.user?.id != null) {
+        // 1. Load pets first
+        await petProvider.loadUserPets(userProvider.user!.id);
+
+        // 2. Get the loaded pet IDs
+        final petIds = petProvider.pets.map((p) => p.id).toList();
+
+        // 3. Load all activities for these pets
+        if (petIds.isNotEmpty) {
+          await activityProvider.loadAllActivities(petIds);
+        }
+>>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
       }
     });
   }
@@ -42,6 +62,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
     final petList = context.watch<PetProvider>().pets;
     final activityProvider = context.watch<ActivityProvider>();
 
+<<<<<<< HEAD
     final now = DateTime.now();
     final activityList =
         activityProvider.activities
@@ -55,6 +76,18 @@ class _UserHomePageScreenState extends State<UserHomePage> {
           ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
 
     final displayedPets = petList.take(3).toList();
+=======
+    final activityProvider = context.watch<ActivityProvider>();
+    final activityList = activityProvider.activities
+        .where((a) => !a.isCompleted || activityProvider.recentlyCompletedIds.contains(a.id))
+        .toList();
+
+// Use activityProvider.isLoading to show a spinner if you want
+    if (activityProvider.isLoading && activityList.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+>>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
     final String displayName = user?.nickname ?? user?.firstName ?? "User";
 
     return Scaffold(

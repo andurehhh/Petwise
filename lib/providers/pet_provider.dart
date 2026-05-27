@@ -134,6 +134,14 @@ class PetProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clear() {
+    _pets = [];
+    _selectedPet = null;
+    _isLoading = false;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
   Future<bool> updatePet(int petId, UpdatePetRequest request) async {
     if (_petService == null) return false;
 

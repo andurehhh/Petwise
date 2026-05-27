@@ -8,17 +8,32 @@ import 'package:petwise/providers/health_event_provider.dart';
 import 'package:petwise/routes/app_route.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
+import 'package:petwise/services/notif_service.dart';
 import 'package:petwise/services/pet_service.dart';
 import 'package:petwise/services/user_service.dart';
 import 'package:petwise/services/activity_service.dart';
+<<<<<<< HEAD
 import 'package:petwise/services/health_event_service.dart';
+=======
+>>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // await NotificationService().init();
+  await NotifService().initNotification();
+
+
   runApp(
     MultiProvider(
       providers: [
+<<<<<<< HEAD
         Provider<ApiClient>(create: (_) => ApiClient()),
+=======
+        Provider(create: (_) => ApiClient()),
+
+        // Services
+>>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
         ProxyProvider<ApiClient, AuthService>(
           update: (_, client, __) => AuthService(client),
         ),
@@ -34,9 +49,20 @@ void main() {
         ProxyProvider<ApiClient, HealthEventService>(
           update: (_, client, __) => HealthEventService(client),
         ),
+<<<<<<< HEAD
         ChangeNotifierProxyProvider<UserService, UserProvider>(
           create: (_) => UserProvider(),
           update: (_, userService, userProvider) {
+=======
+        ProxyProvider<ApiClient, ActivityService>(
+          update: (_, client, _) => ActivityService(client),
+        ),
+
+        // Providers
+        ChangeNotifierProxyProvider<UserService, UserProvider>(
+          create: (context) => UserProvider(),
+          update: (context, userService, userProvider) {
+>>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
             userProvider!.updateUserService(userService);
             return userProvider;
           },
@@ -49,13 +75,19 @@ void main() {
           },
         ),
         ChangeNotifierProxyProvider<ActivityService, ActivityProvider>(
+<<<<<<< HEAD
           create: (context) =>
               ActivityProvider(context.read<ActivityService>()),
           update: (_, activityService, activityProvider) {
+=======
+          create: (context) => ActivityProvider(),
+          update: (context, activityService, activityProvider) {
+>>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
             activityProvider!.updateActivityService(activityService);
             return activityProvider;
           },
         ),
+<<<<<<< HEAD
         ChangeNotifierProxyProvider<HealthEventService, HealthEventProvider>(
           create: (_) => HealthEventProvider(),
           update: (_, healthEventService, healthEventProvider) {
@@ -63,6 +95,8 @@ void main() {
             return healthEventProvider;
           },
         ),
+=======
+>>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
         ChangeNotifierProxyProvider2<AuthService, UserProvider, AuthProvider>(
           create: (context) => AuthProvider(
             context.read<AuthService>(),

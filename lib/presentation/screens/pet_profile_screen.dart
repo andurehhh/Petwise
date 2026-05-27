@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_activity_log.dart';
 import 'package:petwise/presentation/widgets/petwise_add_health_event_sheet.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_upcoming_medical_pill.dart';
+import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/health_event_provider.dart';
 import 'package:petwise/routes/app_route.dart';
@@ -41,7 +42,8 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
           ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFDA9799),
+      backgroundColor: Color(0xFFDA9799),
+      // backgroundColor: Colors.white,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -64,6 +66,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
               actions: [
                 IconButton(
                   onPressed: () {},
+                  onPressed: () {},
                   icon: const Icon(Icons.favorite_border),
                 ),
                 IconButton(
@@ -83,7 +86,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                         bottom: -50,
                         child: CircleAvatar(
                           radius: 120,
-                          backgroundColor: Colors.grey.shade400,
+                          backgroundColor: Colors.white,
                           child: CircleAvatar(
                             radius: 119,
                             backgroundColor: Colors.white,

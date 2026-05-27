@@ -95,6 +95,12 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  void clear() {
+    _user = null;
+    _errorMessage = null;
+    _isLoading = false;
+    notifyListeners();
+  }
 
   UserModel _mapResponseToModel(UserResponse response) {
     return UserModel(

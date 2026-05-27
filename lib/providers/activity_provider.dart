@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:petwise/contracts/activity/create_activity_request.dart';
+import 'package:petwise/contracts/activity/update_activity_request.dart';
 import 'package:petwise/data/models/activity_model.dart';
 import 'package:petwise/services/activity_service.dart';
 import 'package:petwise/contracts/activity/create_activity_request.dart';
