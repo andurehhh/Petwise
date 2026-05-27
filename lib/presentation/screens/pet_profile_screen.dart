@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_activity_log.dart';
+import 'package:petwise/presentation/widgets/petwise_add_health_event_sheet.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_upcoming_medical_pill.dart';
 import 'package:petwise/providers/pet_provider.dart';
+import 'package:petwise/providers/health_event_provider.dart';
 import 'package:petwise/routes/app_route.dart';
 import 'package:provider/provider.dart';
 
@@ -15,9 +17,28 @@ class PetProfileScreen extends StatefulWidget {
 
 class _PetProfileScreenState extends State<PetProfileScreen> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final petId = context.read<PetProvider>().selectedPet?.id;
+      if (petId != null) {
+        context.read<HealthEventProvider>().loadPetHealthEvents(petId);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final petProvider = context.watch<PetProvider>();
+    final healthEventProvider = context.watch<HealthEventProvider>();
     final pet = petProvider.selectedPet;
+
+    final petEvents =
+        healthEventProvider.healthEvents
+            .where((e) => e.petId == pet?.id)
+            .toList()
+          ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
 
     return Scaffold(
       backgroundColor: const Color(0xFFDA9799),
@@ -27,10 +48,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             stops: [0.4, 0.4],
-            colors: [
-              Color(0xFFDA9799), //bg color
-              Colors.white,
-            ],
+            colors: [Color(0xFFDA9799), Colors.white],
           ),
         ),
         child: CustomScrollView(
@@ -45,9 +63,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
               clipBehavior: Clip.none,
               actions: [
                 IconButton(
-                  onPressed: () {
-                    /*insert favorite function here*/
-                  },
+                  onPressed: () {},
                   icon: const Icon(Icons.favorite_border),
                 ),
                 IconButton(
@@ -93,7 +109,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                 ),
               ),
             ),
-
             SliverToBoxAdapter(
               child: Container(
                 decoration: const BoxDecoration(
@@ -144,20 +159,82 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Upcoming Medical",
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.black,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.5,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Upcoming Medical",
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.black,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              TextButton.icon(
+                                onPressed: pet?.id != null
+                                    ? () {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder: (context) =>
+                                              AddHealthEventSheet(
+                                                preselectedPetId: pet!.id,
+                                              ),
+                                        );
+                                      }
+                                    : null,
+                                icon: const Icon(
+                                  Icons.add,
+                                  size: 16,
+                                  color: Color(0xFFF7A433),
+                                ),
+                                label: Text(
+                                  "Add",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: const Color(0xFFF7A433),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 20),
-                          const PetwiseUpcomingMedicalPill(),
-                          const PetwiseUpcomingMedicalPill(),
-                          const PetwiseUpcomingMedicalPill(),
-
+                          const SizedBox(height: 12),
+                          if (healthEventProvider.isLoading)
+                            const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFF7A433),
+                              ),
+                            )
+                          else if (petEvents.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                "No upcoming medical events",
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          else
+                            ...petEvents
+                                .take(3)
+                                .map(
+                                  (event) => PetwiseUpcomingMedicalPill(
+                                    event: event,
+                                    onTap: () {
+                                      if (!event.isCompleted) {
+                                        context
+                                            .read<HealthEventProvider>()
+                                            .markEventAsCompleted(
+                                              event.eventId,
+                                            );
+                                      }
+                                    },
+                                  ),
+                                ),
                           const SizedBox(height: 20),
                           Text(
                             "Recent Activity",
@@ -169,7 +246,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-
                           const PetwisePetActivityLog(),
                           const PetwisePetActivityLog(),
                           const PetwisePetActivityLog(),

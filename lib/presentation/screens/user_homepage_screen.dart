@@ -21,12 +21,17 @@ class _UserHomePageScreenState extends State<UserHomePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       final userProvider = context.read<UserProvider>();
       final userId = userProvider.user?.id;
-
       if (userId != null) {
-        context.read<PetProvider>().loadUserPets(userId);
+        await context.read<PetProvider>().loadUserPets(userId);
+      }
+      if (!mounted) return;
+      final petIds = context.read<PetProvider>().pets.map((p) => p.id).toList();
+      if (petIds.isNotEmpty) {
+        context.read<ActivityProvider>().loadAllActivities(petIds);
       }
     });
   }
@@ -35,13 +40,21 @@ class _UserHomePageScreenState extends State<UserHomePage> {
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
     final petList = context.watch<PetProvider>().pets;
+    final activityProvider = context.watch<ActivityProvider>();
 
-    final activityList = context
-        .watch<ActivityProvider>()
-        .activities
-        .where((a) => !a.isCompleted)
-        .toList();
+    final now = DateTime.now();
+    final activityList =
+        activityProvider.activities
+            .where(
+              (a) =>
+                  !a.isCompleted &&
+                  (a.scheduledDate.isAfter(now) ||
+                      isSameDay(a.scheduledDate, now)),
+            )
+            .toList()
+          ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
 
+    final displayedPets = petList.take(3).toList();
     final String displayName = user?.nickname ?? user?.firstName ?? "User";
 
     return Scaffold(
@@ -117,7 +130,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
               child: Wrap(
                 alignment: WrapAlignment.spaceBetween,
                 runSpacing: 20,
-                children: petList.map((pet) {
+                children: displayedPets.map((pet) {
                   return GestureDetector(
                     onTap: () {
                       Future.microtask(() {
@@ -126,7 +139,6 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                       });
                     },
                     child: PetCircle(
-                      // FIXED: Passing the real network URL or path instead of an empty string
                       imagePath: pet.image_url ?? '',
                       petName: pet.name,
                       petType: pet.species,
@@ -170,7 +182,14 @@ class _UserHomePageScreenState extends State<UserHomePage> {
               ],
             ),
             const SizedBox(height: 15),
-            if (activityList.isEmpty)
+            if (activityProvider.isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: CircularProgressIndicator(color: Color(0xFFF7A433)),
+                ),
+              )
+            else if (activityList.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Center(
@@ -187,7 +206,6 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                 itemCount: activityList.length > 3 ? 3 : activityList.length,
                 itemBuilder: (context, index) {
                   final activity = activityList[index];
-
                   return GestureDetector(
                     onTap: () {
                       Future.microtask(() {
@@ -223,4 +241,8 @@ class _UserHomePageScreenState extends State<UserHomePage> {
       bottomNavigationBar: const PetwiseNavbar(navbarIndex: 0),
     );
   }
+}
+
+bool isSameDay(DateTime a, DateTime b) {
+  return a.year == b.year && a.month == b.month && a.day == b.day;
 }

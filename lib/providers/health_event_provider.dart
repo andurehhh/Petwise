@@ -5,31 +5,10 @@ import 'package:petwise/services/health_event_service.dart';
 
 class HealthEventProvider extends ChangeNotifier {
   HealthEventService? _healthEventService;
+
   bool _isLoading = false;
   String? _errorMessage;
-
-  // Mock initial data matching your pet's format for development/UI testing
-  List<HealthEventResponse> _healthEvents = [
-    HealthEventResponse(
-      eventId: 1,
-      petId: 4,
-      eventName: "Rabies Shot",
-      eventDate: DateTime(2026, 06, 15),
-      type: "vaccination",
-      isCompleted: false,
-      createdAt: DateTime(2026, 05, 24),
-    ),
-    HealthEventResponse(
-      eventId: 2,
-      petId: 4,
-      eventName: "Annual Dental Clean",
-      eventDate: DateTime(2026, 07, 10),
-      type: "checkup",
-      isCompleted: true,
-      createdAt: DateTime(2026, 05, 24),
-    ),
-  ];
-
+  List<HealthEventResponse> _healthEvents = [];
   HealthEventResponse? _selectedEvent;
 
   List<HealthEventResponse> get healthEvents => _healthEvents;
@@ -37,27 +16,22 @@ class HealthEventProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  /// Updates the service instance when API clients change or initialize
   void updateHealthEventService(HealthEventService service) {
     _healthEventService = service;
   }
 
-  /// Fetches all health events associated with a specific pet ID
-  Future<void> loadPetHealthEvents(int petId) async {
+  Future<void> loadAllHealthEvents(List<int> petIds) async {
     if (_healthEventService == null) return;
-
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
-
     try {
-      final responses = await _healthEventService!.getHealthEventsByPet(petId);
-      _healthEvents = responses;
-
-      // Reset or adapt the single chosen event reference if needed
-      if (_healthEvents.isNotEmpty && _selectedEvent == null) {
-        _selectedEvent = _healthEvents.first;
-      }
+      final results = await Future.wait(
+        petIds.map((id) => _healthEventService!.getHealthEventsByPet(id)),
+      );
+      final fetched = results.expand((list) => list).toList();
+      final seen = <int>{};
+      _healthEvents = fetched.where((e) => seen.add(e.eventId)).toList();
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
@@ -66,19 +40,32 @@ class HealthEventProvider extends ChangeNotifier {
     }
   }
 
-  /// Registers a brand new health record entry and pulls fresh changes down
+  Future<void> loadPetHealthEvents(int petId) async {
+    if (_healthEventService == null) return;
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final responses = await _healthEventService!.getHealthEventsByPet(petId);
+      _healthEvents.removeWhere((e) => e.petId == petId);
+      _healthEvents.addAll(responses);
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> createNewHealthEvent(CreateHealthEventRequest request) async {
     if (_healthEventService == null) {
       throw Exception("Health Event service is not available.");
     }
-
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
-
     try {
       await _healthEventService!.createHealthEvent(request);
-      // Reload using the petId target from the creation request parameters
       await loadPetHealthEvents(request.petId);
     } catch (e) {
       _errorMessage = e.toString();
@@ -91,39 +78,32 @@ class HealthEventProvider extends ChangeNotifier {
     }
   }
 
-  /// Marks an individual health event as done/completed on the database side
   Future<bool> markEventAsCompleted(int eventId) async {
     if (_healthEventService == null) return false;
-
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
-
     try {
       await _healthEventService!.completeHealthEvent(eventId);
-
-      // Local State Sync: Find matching items locally and update their bool fields
       final index = _healthEvents.indexWhere(
         (event) => event.eventId == eventId,
       );
       if (index != -1) {
-        final currentEvent = _healthEvents[index];
-        final updatedEvent = HealthEventResponse(
-          eventId: currentEvent.eventId,
-          petId: currentEvent.petId,
-          eventName: currentEvent.eventName,
-          eventDate: currentEvent.eventDate,
-          type: currentEvent.type,
-          isCompleted: true, // Swapping status out explicitly
-          createdAt: currentEvent.createdAt,
+        final current = _healthEvents[index];
+        final updated = HealthEventResponse(
+          eventId: current.eventId,
+          petId: current.petId,
+          eventName: current.eventName,
+          eventDate: current.eventDate,
+          type: current.type,
+          isCompleted: true,
+          createdAt: current.createdAt,
         );
-        _healthEvents[index] = updatedEvent;
-
+        _healthEvents[index] = updated;
         if (_selectedEvent?.eventId == eventId) {
-          _selectedEvent = updatedEvent;
+          _selectedEvent = updated;
         }
       }
-
       _isLoading = false;
       notifyListeners();
       return true;
@@ -135,24 +115,17 @@ class HealthEventProvider extends ChangeNotifier {
     }
   }
 
-  /// Removes an entry completely from the local array cache and backend service
   Future<bool> deleteHealthEvent(int eventId) async {
     if (_healthEventService == null) return false;
-
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
-
     try {
       await _healthEventService!.deleteHealthEvent(eventId);
-
-      // Remove item locally upon verified server execution success
       _healthEvents.removeWhere((event) => event.eventId == eventId);
-
       if (_selectedEvent?.eventId == eventId) {
         _selectedEvent = null;
       }
-
       _isLoading = false;
       notifyListeners();
       return true;
@@ -171,6 +144,11 @@ class HealthEventProvider extends ChangeNotifier {
 
   void deselectEvent() {
     _selectedEvent = null;
+    notifyListeners();
+  }
+
+  void clearError() {
+    _errorMessage = null;
     notifyListeners();
   }
 }

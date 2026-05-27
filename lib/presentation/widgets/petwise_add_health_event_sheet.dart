@@ -2,75 +2,61 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:petwise/providers/activity_provider.dart';
+import 'package:petwise/providers/health_event_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
-import 'package:petwise/contracts/activity/create_activity_request.dart';
+import 'package:petwise/contracts/health_event/create_health_event_request.dart';
 
-class AddActivitySheet extends StatefulWidget {
-  final String userId;
-  final DateTime? selectedDate;
+class AddHealthEventSheet extends StatefulWidget {
+  final int? preselectedPetId;
 
-  const AddActivitySheet({super.key, required this.userId, this.selectedDate});
+  const AddHealthEventSheet({super.key, this.preselectedPetId});
 
   @override
-  State<AddActivitySheet> createState() => _AddActivitySheetState();
+  State<AddHealthEventSheet> createState() => _AddHealthEventSheetState();
 }
 
-class _AddActivitySheetState extends State<AddActivitySheet> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+class _AddHealthEventSheetState extends State<AddHealthEventSheet> {
+  final _eventNameController = TextEditingController();
   int? _selectedPetId;
-  late DateTime _selectedDate;
-  String _selectedRecurrence = 'none';
+  DateTime _selectedDate = DateTime.now();
+  String _selectedType = 'checkup';
   bool _isSubmitting = false;
 
-  final List<String> _recurrenceOptions = [
-    'none',
-    'daily',
-    'weekly',
-    'monthly',
-  ];
+  final List<String> _types = ['checkup', 'vaccination', 'illness', 'other'];
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = widget.selectedDate ?? DateTime.now();
+    _selectedPetId = widget.preselectedPetId;
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
+    _eventNameController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    if (_titleController.text.trim().isEmpty || _selectedPetId == null) return;
-
+    if (_eventNameController.text.trim().isEmpty || _selectedPetId == null) {
+      return;
+    }
     setState(() => _isSubmitting = true);
 
-    // Format time as "HH:mm:ss" to match API's timeScheduled field
-    final timeScheduled = DateFormat('HH:mm:ss').format(_selectedDate);
-
-    final request = CreateActivityRequest(
+    final request = CreateHealthEventRequest(
       petId: _selectedPetId!,
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      timeScheduled: timeScheduled,
-      recurrence: _selectedRecurrence,
+      eventName: _eventNameController.text.trim(),
+      eventDate: _selectedDate,
+      type: _selectedType,
     );
 
     try {
-      await context.read<ActivityProvider>().addActivity(
-        request,
-        _selectedDate,
-      );
+      await context.read<HealthEventProvider>().createNewHealthEvent(request);
       if (context.mounted) Navigator.pop(context);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to add activity: $e'),
+            content: Text('Failed to add health event: $e'),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -101,40 +87,25 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "New Activity",
+              "New Health Event",
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: const Color(0xFF1A2D40),
               ),
             ),
             const SizedBox(height: 24),
-
-            // Title
             TextField(
-              controller: _titleController,
+              controller: _eventNameController,
               decoration: InputDecoration(
-                labelText: "Activity Title",
+                labelText: "Event Name",
+                hintText: "e.g. Rabies Vaccination",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-
-            // Description
-            TextField(
-              controller: _descriptionController,
-              maxLines: 2,
-              decoration: InputDecoration(
-                labelText: "Description (optional)",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Pet dropdown
             DropdownButtonFormField<int>(
               value: _selectedPetId,
               decoration: InputDecoration(
@@ -151,46 +122,36 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
               onChanged: (val) => setState(() => _selectedPetId = val),
             ),
             const SizedBox(height: 16),
-
-            // Recurrence dropdown
             DropdownButtonFormField<String>(
-              value: _selectedRecurrence,
+              value: _selectedType,
               decoration: InputDecoration(
-                labelText: "Recurrence",
+                labelText: "Event Type",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              items: _recurrenceOptions
+              items: _types
                   .map(
-                    (r) => DropdownMenuItem(
-                      value: r,
-                      child: Text(r[0].toUpperCase() + r.substring(1)),
+                    (t) => DropdownMenuItem(
+                      value: t,
+                      child: Text(t[0].toUpperCase() + t.substring(1)),
                     ),
                   )
                   .toList(),
               onChanged: (val) =>
-                  setState(() => _selectedRecurrence = val ?? 'none'),
+                  setState(() => _selectedType = val ?? 'checkup'),
             ),
             const SizedBox(height: 16),
-
-            // Time picker
             InkWell(
               onTap: () async {
-                final time = await showTimePicker(
+                final picked = await showDatePicker(
                   context: context,
-                  initialTime: TimeOfDay.fromDateTime(_selectedDate),
+                  initialDate: _selectedDate,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
                 );
-                if (time != null) {
-                  setState(
-                    () => _selectedDate = DateTime(
-                      _selectedDate.year,
-                      _selectedDate.month,
-                      _selectedDate.day,
-                      time.hour,
-                      time.minute,
-                    ),
-                  );
+                if (picked != null) {
+                  setState(() => _selectedDate = picked);
                 }
               },
               child: Container(
@@ -203,13 +164,13 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Select Time",
+                      "Event Date",
                       style: GoogleFonts.plusJakartaSans(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      DateFormat('hh:mm a').format(_selectedDate),
+                      DateFormat('MMM dd, yyyy').format(_selectedDate),
                       style: GoogleFonts.plusJakartaSans(
                         color: const Color(0xFFF7A433),
                         fontWeight: FontWeight.bold,
@@ -220,8 +181,6 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
               ),
             ),
             const SizedBox(height: 32),
-
-            // Submit button
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF7A433),
@@ -241,7 +200,7 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
                       ),
                     )
                   : Text(
-                      "Schedule Activity",
+                      "Save Health Event",
                       style: GoogleFonts.plusJakartaSans(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

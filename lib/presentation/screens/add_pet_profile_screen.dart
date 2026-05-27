@@ -1,13 +1,13 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/contracts/pet/create_pet_request.dart';
+import 'package:petwise/contracts/health_event/create_health_event_request.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:petwise/presentation/widgets/petwise_image_picker_sheet.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/auth_provider.dart';
+import 'package:petwise/providers/health_event_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -15,18 +15,14 @@ class MedicalRecord {
   final String title;
   final String description;
   final DateTime date;
+  final String type;
 
   MedicalRecord({
     required this.title,
     required this.description,
     required this.date,
+    this.type = 'checkup',
   });
-
-  Map<String, dynamic> toJson() => {
-    'title': title,
-    'description': description,
-    'date': date.toIso8601String(),
-  };
 }
 
 class AddPetProfileScreen extends StatefulWidget {
@@ -43,14 +39,11 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
   final TextEditingController _breedController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
-
   DateTime? _selectedBirthday;
   String _selectedSex = "Male";
-
   String? _pickedImagePath;
   final String _defaultAssetPath =
       'https://i.pinimg.com/736x/54/34/81/543481c0ca5a909bd4d23863c6262339.jpg';
-
   final List<MedicalRecord> _medicalRecords = [];
 
   @override
@@ -94,6 +87,8 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
     final titleController = TextEditingController();
     final descController = TextEditingController();
     DateTime dialogSelectedDate = DateTime.now();
+    String dialogSelectedType = 'checkup';
+    final List<String> types = ['checkup', 'vaccination', 'illness', 'other'];
 
     showDialog(
       context: context,
@@ -125,6 +120,34 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                   textHint: "Enter details",
                   controller: descController,
                   isEditable: true,
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: dialogSelectedType,
+                  decoration: InputDecoration(
+                    labelText: "Type",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                  items: types
+                      .map(
+                        (t) => DropdownMenuItem(
+                          value: t,
+                          child: Text(
+                            t[0].toUpperCase() + t.substring(1),
+                            style: GoogleFonts.plusJakartaSans(fontSize: 14),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (val) => setDialogState(
+                    () => dialogSelectedType = val ?? 'checkup',
+                  ),
                 ),
                 const SizedBox(height: 10),
                 ListTile(
@@ -181,6 +204,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                     title: cleanedTitle,
                     description: descController.text.trim(),
                     date: dialogSelectedDate,
+                    type: dialogSelectedType,
                   );
                   Navigator.pop(context);
                   setState(() {
@@ -221,6 +245,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
 
     final authProvider = context.read<AuthProvider>();
     final currentUserId = authProvider.userId;
+
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error: User session not found.")),
@@ -241,6 +266,28 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
 
     try {
       await context.read<PetProvider>().createNewPet(request);
+
+      if (_medicalRecords.isNotEmpty) {
+        final petProvider = context.read<PetProvider>();
+        final newPetId = petProvider.pets.isNotEmpty
+            ? petProvider.pets.last.id
+            : null;
+
+        if (newPetId != null) {
+          final healthEventProvider = context.read<HealthEventProvider>();
+          for (final record in _medicalRecords) {
+            await healthEventProvider.createNewHealthEvent(
+              CreateHealthEventRequest(
+                petId: newPetId,
+                eventName: record.title,
+                eventDate: record.date,
+                type: record.type,
+              ),
+            );
+          }
+        }
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Pet profile added successfully!")),
@@ -524,7 +571,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                                 'MMMM dd, yyyy',
                               ).format(record.date),
                               description: record.description,
-                              icon: Icons.history,
+                              type: record.type,
                             ),
                             const Divider(height: 24, color: Color(0xFFF5F5F5)),
                           ],
@@ -606,8 +653,20 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
     required String title,
     required String date,
     required String description,
-    required IconData icon,
+    required String type,
   }) {
+    IconData icon;
+    switch (type.toLowerCase()) {
+      case 'vaccination':
+        icon = Icons.vaccines_outlined;
+        break;
+      case 'illness':
+        icon = Icons.sick_outlined;
+        break;
+      default:
+        icon = Icons.monitor_heart_outlined;
+    }
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
@@ -648,7 +707,6 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
         size: 16,
         color: Color(0xFFDCDCDC),
       ),
-      onTap: () {},
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'dart:developer'; // For logging
+import 'dart:developer';
 import 'package:petwise/contracts/activity/activity_response.dart';
 import 'package:petwise/contracts/activity/create_activity_request.dart';
 import 'package:petwise/contracts/activity/update_activity_request.dart';
@@ -9,7 +9,6 @@ class ActivityService {
 
   ActivityService(this._apiClient);
 
-  /// POST /Activity
   Future<int> createActivity(CreateActivityRequest request) async {
     try {
       final response = await _apiClient.post('Activity', request.toJson());
@@ -20,7 +19,6 @@ class ActivityService {
     }
   }
 
-  /// GET /Activity/{id}
   Future<ActivityResponse> getActivity(int activityId) async {
     try {
       final response = await _apiClient.get('Activity/$activityId');
@@ -31,7 +29,17 @@ class ActivityService {
     }
   }
 
-  /// PATCH /Activity/{id}
+  Future<List<ActivityResponse>> getActivitiesByPet(int petId) async {
+    try {
+      final response = await _apiClient.get('Activity/pet/$petId');
+      final List list = response as List;
+      return list.map((e) => ActivityResponse.fromJson(e)).toList();
+    } catch (e) {
+      log('Error in getActivitiesByPet: $e');
+      throw Exception('Failed to load activities.');
+    }
+  }
+
   Future<ActivityResponse> patchActivity(
     int activityId,
     UpdateActivityRequest request,
@@ -48,7 +56,6 @@ class ActivityService {
     }
   }
 
-  /// DELETE /Activity/{id}
   Future<String> deleteActivity(int activityId) async {
     try {
       final response = await _apiClient.delete('Activity/$activityId');

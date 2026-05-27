@@ -4,11 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
+import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/presentation/widgets/petwise_dynamic_activity_card.dart';
 import 'package:petwise/presentation/widgets/petwise_add_activity_sheet.dart';
 
 class PlannerScreen extends StatefulWidget {
   final DateTime? initialDate;
+
   const PlannerScreen({super.key, this.initialDate});
 
   @override
@@ -24,6 +26,26 @@ class _PlannerScreenState extends State<PlannerScreen> {
     super.initState();
     _focusedDay = widget.initialDate ?? DateTime.now();
     _selectedDay = widget.initialDate ?? DateTime.now();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final petProvider = context.read<PetProvider>();
+      final activityProvider = context.read<ActivityProvider>();
+
+      if (petProvider.pets.isEmpty) {
+        final userProvider = context.read<UserProvider>();
+        final userId = userProvider.user?.id;
+        if (userId != null) {
+          await petProvider.loadUserPets(userId);
+        }
+      }
+
+      if (!mounted) return;
+      final petIds = petProvider.pets.map((p) => p.id).toList();
+      if (petIds.isNotEmpty) {
+        activityProvider.loadAllActivities(petIds);
+      }
+    });
   }
 
   @override
@@ -35,6 +57,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
     final dailyActivities = activityProvider.activities
         .where((a) => isSameDay(a.scheduledDate, _selectedDay))
         .toList();
+
     final pendingCount = dailyActivities.where((a) => !a.isCompleted).length;
 
     return Scaffold(
@@ -148,7 +171,53 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                if (dailyActivities.isEmpty)
+                if (activityProvider.error != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.redAccent,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            activityProvider.error!,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.redAccent,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () =>
+                              context.read<ActivityProvider>().clearError(),
+                          child: const Icon(
+                            Icons.close,
+                            size: 16,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (activityProvider.isLoading)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFF7A433),
+                      ),
+                    ),
+                  )
+                else if (dailyActivities.isEmpty)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 40),
@@ -174,6 +243,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         backgroundColor: const Color(0xFFF7A433),
         onPressed: () {
           Future.microtask(() {
+            if (!mounted) return;
             if (userId != null) {
               showModalBottomSheet(
                 context: context,

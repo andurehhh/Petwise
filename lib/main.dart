@@ -1,54 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:petwise/data/models/pet_model.dart';
 import 'package:petwise/presentation/screens/user_homepage_screen.dart';
-import 'package:petwise/presentation/test/auth_test_screen.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
+import 'package:petwise/providers/activity_provider.dart';
+import 'package:petwise/providers/user_provider.dart';
+import 'package:petwise/providers/health_event_provider.dart';
+import 'package:petwise/routes/app_route.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/services/pet_service.dart';
 import 'package:petwise/services/user_service.dart';
+import 'package:petwise/services/activity_service.dart';
+import 'package:petwise/services/health_event_service.dart';
 import 'package:provider/provider.dart';
-import 'package:petwise/providers/user_provider.dart';
-import 'package:petwise/providers/activity_provider.dart';
-import 'package:petwise/routes/app_route.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => PetProvider()),
-        ChangeNotifierProvider(create: (_) => ActivityProvider()),
-        Provider(create: (_) => ApiClient()),
-
-        // Services
+        Provider<ApiClient>(create: (_) => ApiClient()),
         ProxyProvider<ApiClient, AuthService>(
-          update: (_, client, _) => AuthService(client),
+          update: (_, client, __) => AuthService(client),
         ),
         ProxyProvider<ApiClient, UserService>(
-          update: (_, client, _) => UserService(client),
+          update: (_, client, __) => UserService(client),
         ),
         ProxyProvider<ApiClient, PetService>(
-          update: (_, client, _) => PetService(client),
+          update: (_, client, __) => PetService(client),
         ),
-
-        // Providers
-        // 1. UserProvider needs to "watch" UserService
+        ProxyProvider<ApiClient, ActivityService>(
+          update: (_, client, __) => ActivityService(client),
+        ),
+        ProxyProvider<ApiClient, HealthEventService>(
+          update: (_, client, __) => HealthEventService(client),
+        ),
         ChangeNotifierProxyProvider<UserService, UserProvider>(
-          create: (context) => UserProvider(),
-          update: (context, userService, userProvider) {
-            // This is the missing handshake!
+          create: (_) => UserProvider(),
+          update: (_, userService, userProvider) {
             userProvider!.updateUserService(userService);
             return userProvider;
           },
         ),
-
         ChangeNotifierProxyProvider<PetService, PetProvider>(
-          create: (context) => PetProvider(),
-          update: (context, petService, petProvider) {
+          create: (_) => PetProvider(),
+          update: (_, petService, petProvider) {
             petProvider!.updatePetService(petService);
             return petProvider;
+          },
+        ),
+        ChangeNotifierProxyProvider<ActivityService, ActivityProvider>(
+          create: (context) =>
+              ActivityProvider(context.read<ActivityService>()),
+          update: (_, activityService, activityProvider) {
+            activityProvider!.updateActivityService(activityService);
+            return activityProvider;
+          },
+        ),
+        ChangeNotifierProxyProvider<HealthEventService, HealthEventProvider>(
+          create: (_) => HealthEventProvider(),
+          update: (_, healthEventService, healthEventProvider) {
+            healthEventProvider!.updateHealthEventService(healthEventService);
+            return healthEventProvider;
           },
         ),
         ChangeNotifierProxyProvider2<AuthService, UserProvider, AuthProvider>(
@@ -56,7 +68,7 @@ void main() {
             context.read<AuthService>(),
             context.read<UserProvider>(),
           ),
-          update: (context, authService, userProvider, authProvider) {
+          update: (_, authService, userProvider, authProvider) {
             authProvider!.updateDependencies(authService, userProvider);
             return authProvider;
           },
@@ -77,7 +89,6 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
       home: UserHomePage(),
-      // home: AuthTestScreen(),
     );
   }
 }
