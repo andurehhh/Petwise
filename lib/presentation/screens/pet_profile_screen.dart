@@ -33,6 +33,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
   Widget build(BuildContext context) {
     final petProvider = context.watch<PetProvider>();
     final healthEventProvider = context.watch<HealthEventProvider>();
+    final activityProvider = context.watch<ActivityProvider>();
     final pet = petProvider.selectedPet;
 
     final petEvents =
@@ -40,6 +41,11 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
             .where((e) => e.petId == pet?.id)
             .toList()
           ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
+
+    final recentActivities = activityProvider.activities
+        .where((a) => a.petId == pet?.id)
+        .toList()
+      ..sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
 
     return Scaffold(
       backgroundColor: Color(0xFFDA9799),
@@ -65,7 +71,6 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
               clipBehavior: Clip.none,
               actions: [
                 IconButton(
-                  onPressed: () {},
                   onPressed: () {},
                   icon: const Icon(Icons.favorite_border),
                 ),
@@ -249,9 +254,24 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          const PetwisePetActivityLog(),
-                          const PetwisePetActivityLog(),
-                          const PetwisePetActivityLog(),
+                          if (recentActivities.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                "No recent activity",
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          else
+                            ...recentActivities
+                                .take(3)
+                                .map(
+                                  (activity) => PetwisePetActivityLog(
+                                    activity: activity,
+                                  ),
+                                ),
                         ],
                       ),
                     ),

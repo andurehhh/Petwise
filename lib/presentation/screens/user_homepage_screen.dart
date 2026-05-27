@@ -3,6 +3,7 @@ import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
+import 'package:petwise/routes/app_route.dart';
 import '../widgets/petwise_pet_profile.dart';
 import '../widgets/petwise_dynamic_activity_card.dart';
 import '../widgets/petwise_app_bar.dart';
@@ -18,42 +19,26 @@ class UserHomePage extends StatefulWidget {
 }
 
 class _UserHomePageScreenState extends State<UserHomePage> {
-  // lib/presentation/screens/user_homepage_screen.dart
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-<<<<<<< HEAD
-      if (!mounted) return;
-      final userProvider = context.read<UserProvider>();
-      final userId = userProvider.user?.id;
-      if (userId != null) {
-        await context.read<PetProvider>().loadUserPets(userId);
-      }
-      if (!mounted) return;
-      final petIds = context.read<PetProvider>().pets.map((p) => p.id).toList();
-      if (petIds.isNotEmpty) {
-        context.read<ActivityProvider>().loadAllActivities(petIds);
-=======
-      final userProvider = context.read<UserProvider>();
-      final petProvider = context.read<PetProvider>();
-      final activityProvider = context.read<ActivityProvider>();
-
-      if (userProvider.user?.id != null) {
-        // 1. Load pets first
-        await petProvider.loadUserPets(userProvider.user!.id);
-
-        // 2. Get the loaded pet IDs
-        final petIds = petProvider.pets.map((p) => p.id).toList();
-
-        // 3. Load all activities for these pets
-        if (petIds.isNotEmpty) {
-          await activityProvider.loadAllActivities(petIds);
-        }
->>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
     });
+  }
+
+  Future<void> _loadData() async {
+    if (!mounted) return;
+    final userProvider = context.read<UserProvider>();
+    final userId = userProvider.user?.id;
+    if (userId != null) {
+      await context.read<PetProvider>().loadUserPets(userId);
+    }
+    if (!mounted) return;
+    final petIds = context.read<PetProvider>().pets.map((p) => p.id).toList();
+    if (petIds.isNotEmpty) {
+      await context.read<ActivityProvider>().loadAllActivities(petIds);
+    }
   }
 
   @override
@@ -62,32 +47,12 @@ class _UserHomePageScreenState extends State<UserHomePage> {
     final petList = context.watch<PetProvider>().pets;
     final activityProvider = context.watch<ActivityProvider>();
 
-<<<<<<< HEAD
-    final now = DateTime.now();
-    final activityList =
-        activityProvider.activities
-            .where(
-              (a) =>
-                  !a.isCompleted &&
-                  (a.scheduledDate.isAfter(now) ||
-                      isSameDay(a.scheduledDate, now)),
-            )
-            .toList()
-          ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
+    final activityList = activityProvider.activities
+        .where((a) => !a.isCompleted)
+        .toList()
+      ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
 
     final displayedPets = petList.take(3).toList();
-=======
-    final activityProvider = context.watch<ActivityProvider>();
-    final activityList = activityProvider.activities
-        .where((a) => !a.isCompleted || activityProvider.recentlyCompletedIds.contains(a.id))
-        .toList();
-
-// Use activityProvider.isLoading to show a spinner if you want
-    if (activityProvider.isLoading && activityList.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
->>>>>>> 4f1e79f90fa6c73255530a635373d13edfc24ce8
     final String displayName = user?.nickname ?? user?.firstName ?? "User";
 
     return Scaffold(
@@ -125,7 +90,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -166,10 +131,8 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                 children: displayedPets.map((pet) {
                   return GestureDetector(
                     onTap: () {
-                      Future.microtask(() {
-                        context.read<PetProvider>().selectPet(pet);
-                        Navigator.pushNamed(context, '/PetCardScreen');
-                      });
+                      context.read<PetProvider>().selectPet(pet);
+                      Navigator.pushNamed(context, AppRoute.petProfile);
                     },
                     child: PetCircle(
                       imagePath: pet.image_url ?? '',
@@ -193,16 +156,12 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    Future.microtask(() {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PlannerScreen(),
-                        ),
-                      );
-                    });
-                  },
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PlannerScreen(),
+                    ),
+                  ),
                   child: Text(
                     "See all",
                     style: GoogleFonts.plusJakartaSans(
@@ -240,18 +199,14 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                 itemBuilder: (context, index) {
                   final activity = activityList[index];
                   return GestureDetector(
-                    onTap: () {
-                      Future.microtask(() {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PlannerScreen(
-                              initialDate: activity.scheduledDate,
-                            ),
-                          ),
-                        );
-                      });
-                    },
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PlannerScreen(
+                          initialDate: activity.scheduledDate,
+                        ),
+                      ),
+                    ),
                     child: DynamicActivityCard(activity: activity),
                   );
                 },
@@ -260,11 +215,8 @@ class _UserHomePageScreenState extends State<UserHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Future.microtask(() {
-            Navigator.pushNamed(context, '/AddPetProfileScreen');
-          });
-        },
+        onPressed: () =>
+            Navigator.pushNamed(context, '/AddPetProfileScreen'),
         backgroundColor: const Color(0xFFF7A433),
         elevation: 4,
         shape: const CircleBorder(),

@@ -3,8 +3,6 @@ import 'package:petwise/contracts/activity/create_activity_request.dart';
 import 'package:petwise/contracts/activity/update_activity_request.dart';
 import 'package:petwise/data/models/activity_model.dart';
 import 'package:petwise/services/activity_service.dart';
-import 'package:petwise/contracts/activity/create_activity_request.dart';
-import 'package:petwise/contracts/activity/update_activity_request.dart';
 
 class ActivityProvider with ChangeNotifier {
   ActivityService _activityService;
@@ -23,26 +21,45 @@ class ActivityProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  ActivityModel _mapToModel(dynamic response, {DateTime? dateContext}) {
-    final timeParts = response.timeScheduled.split(':');
-    final hour = int.tryParse(timeParts[0]) ?? 0;
-    final minute = timeParts.length > 1 ? (int.tryParse(timeParts[1]) ?? 0) : 0;
+  /// Extracts the hidden date tag `|d:YYYY-MM-DD` from a description string.
+  /// Returns the parsed date and the clean description (tag removed).
+  static ({DateTime? date, String description}) _extractDateTag(String raw) {
+    const tag = '|d:';
+    final idx = raw.lastIndexOf(tag);
+    if (idx == -1) return (date: null, description: raw);
 
-    final base = dateContext ?? response.createdAt;
-    final scheduledDate = DateTime(
-      base.year,
-      base.month,
-      base.day,
-      hour,
-      minute,
-    );
+    final datePart = raw.substring(idx + tag.length).trim();
+    final parsed = DateTime.tryParse(datePart);
+    final cleanDesc = raw.substring(0, idx).trim();
+    return (date: parsed, description: cleanDesc);
+  }
+
+  ActivityModel _mapToModel(dynamic response, {DateTime? dateContext}) {
+    final rawDescription = (response.description as String?) ?? '';
+    final extracted = _extractDateTag(rawDescription);
+
+    // Priority: explicit dateContext (just created) > tag in description > createdAt
+    final dateBase = dateContext ?? extracted.date ?? (response.createdAt as DateTime);
+
+    final raw = response.timeScheduled as String;
+    final fullParse = DateTime.tryParse(raw);
+
+    final DateTime scheduledDate;
+    if (fullParse != null) {
+      scheduledDate = fullParse.toLocal();
+    } else {
+      final timeParts = raw.split(':');
+      final hour = int.tryParse(timeParts[0]) ?? 0;
+      final minute = timeParts.length > 1 ? (int.tryParse(timeParts[1]) ?? 0) : 0;
+      scheduledDate = DateTime(dateBase.year, dateBase.month, dateBase.day, hour, minute);
+    }
 
     return ActivityModel(
       id: response.activityId.toString(),
       createdAt: response.createdAt,
       petId: response.petId,
       title: response.title,
-      description: response.description,
+      description: extracted.description.isEmpty ? null : extracted.description,
       scheduledDate: scheduledDate,
       isCompleted: !response.isActive,
       recurrence: response.recurrence,
@@ -189,6 +206,13 @@ class ActivityProvider with ChangeNotifier {
       _error = e.toString();
       notifyListeners();
     }
+  }
+
+  void clear() {
+    _activities = [];
+    _isLoading = false;
+    _error = null;
+    notifyListeners();
   }
 
   void clearError() {

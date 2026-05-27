@@ -24,11 +24,11 @@ class ActivityResponse {
       activityId: json['activity_id'] as int,
       petId: json['pet_id'] as int,
       title: json['title'] as String,
-      description: json['description'] as String,
+      description: json['description'] as String? ?? '',
       timeScheduled: json['time_scheduled'] as String,
-      recurrence: json['recurrence'] as String,
-      isActive: json['is_active'] as bool,
-      createdAt: DateTime.parse(json['created_at']),
+      recurrence: json['recurrence'] as String? ?? 'none',
+      isActive: json['is_active'] as bool? ?? true,
+      createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
 

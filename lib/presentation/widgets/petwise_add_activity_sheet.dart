@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:petwise/contracts/activity/create_activity_request.dart';
-import 'package:petwise/services/notif_service.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
-import 'package:petwise/contracts/activity/create_activity_request.dart';
 
 class AddActivitySheet extends StatefulWidget {
   final String userId;
@@ -51,13 +49,21 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
 
     setState(() => _isSubmitting = true);
 
-    // Format time as "HH:mm:ss" to match API's timeScheduled field
-    final timeScheduled = DateFormat('HH:mm:ss').format(_selectedDate);
+    // API expects time_scheduled as HH:mm:ss (C# TimeOnly).
+    // We encode the scheduled date into the description as a hidden suffix
+    // so it survives the round-trip (the API has no date field).
+    final timeScheduled =
+        '${_selectedDate.hour.toString().padLeft(2, '0')}:${_selectedDate.minute.toString().padLeft(2, '0')}:00';
+
+    final dateTag =
+        '|d:${_selectedDate.year.toString().padLeft(4, '0')}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+
+    final rawDescription = _descriptionController.text.trim();
 
     final request = CreateActivityRequest(
       petId: _selectedPetId!,
       title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
+      description: '$rawDescription$dateTag',
       timeScheduled: timeScheduled,
       recurrence: _selectedRecurrence,
     );
@@ -67,16 +73,16 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
         request,
         _selectedDate,
       );
-      if (context.mounted) Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context);
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add activity: $e'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add activity: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -138,7 +144,7 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
 
             // Pet dropdown
             DropdownButtonFormField<int>(
-              value: _selectedPetId,
+              initialValue: _selectedPetId,
               decoration: InputDecoration(
                 labelText: "Assign to Pet",
                 border: OutlineInputBorder(
@@ -156,7 +162,7 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
 
             // Recurrence dropdown
             DropdownButtonFormField<String>(
-              value: _selectedRecurrence,
+              initialValue: _selectedRecurrence,
               decoration: InputDecoration(
                 labelText: "Recurrence",
                 border: OutlineInputBorder(
