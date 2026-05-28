@@ -183,4 +183,8 @@ class PetProvider extends ChangeNotifier {
       return false;
     }
   }
+
+//helper for getting name
+  String getPetName(int petId) =>
+      _pets.firstWhere((p) => p.id == petId, orElse: () => _pets.first).name;
 }

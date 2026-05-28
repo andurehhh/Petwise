@@ -217,7 +217,7 @@ class ActivityProvider with ChangeNotifier {
       await _activityService.deleteActivity(int.parse(baseId));
 
       // Cancel the notification when activity is deleted
-      await NotifService().cancelNotification(baseId);
+      await NotifService().cancelNotification(int.parse(baseId));
     } catch (e) {
       _error = e.toString();
       notifyListeners();

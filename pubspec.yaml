@@ -40,6 +40,7 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   timezone: ^0.10.1
   flutter_timezone: ^5.0.2
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -95,3 +96,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: "logo_no_name"
+  ios: true
+  image_path: "assets/images/logo_no_name.png"

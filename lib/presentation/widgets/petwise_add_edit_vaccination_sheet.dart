@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:petwise/providers/pet_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/data/models/vaccination_model.dart';
 import 'package:petwise/providers/vaccination_provider.dart';
@@ -86,6 +87,8 @@ class _AddEditVaccinationSheetState extends State<AddEditVaccinationSheet> {
     setState(() => _isSubmitting = true);
 
     final provider = context.read<VaccinationProvider>();
+    final petName = context.read<PetProvider>().getPetName(widget.petId);
+
     try {
       if (_isEdit) {
         await provider.updateVaccination(
@@ -94,10 +97,12 @@ class _AddEditVaccinationSheetState extends State<AddEditVaccinationSheet> {
           vaccineName: _nameController.text.trim(),
           dateGiven: _dateGiven,
           expiryDate: _expiryDate,
+          petName: petName,
         );
       } else {
         await provider.addVaccination(
           petId: widget.petId,
+          petName: petName,
           vaccineName: _nameController.text.trim(),
           dateGiven: _dateGiven,
           expiryDate: _expiryDate,

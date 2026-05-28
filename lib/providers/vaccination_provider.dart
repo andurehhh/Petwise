@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:petwise/contracts/health_event/create_health_event_request.dart';
+import 'package:petwise/data/models/notification_model.dart';
 import 'package:petwise/data/models/vaccination_model.dart';
 import 'package:petwise/services/health_event_service.dart';
+import 'package:petwise/services/notif_service.dart';
+import'package:intl/intl.dart';
 
 class VaccinationProvider with ChangeNotifier {
   HealthEventService? _healthEventService;
@@ -46,6 +49,7 @@ class VaccinationProvider with ChangeNotifier {
     required int petId,
     required String vaccineName,
     required DateTime dateGiven,
+    String? petName,
     DateTime? expiryDate,
   }) async {
     if (_healthEventService == null) throw Exception('Service unavailable');
@@ -58,7 +62,22 @@ class VaccinationProvider with ChangeNotifier {
         eventDate: dateGiven,
         type: 'vaccination',
       );
-      await _healthEventService!.createHealthEvent(request);
+      final int newEventId = await _healthEventService!.createHealthEvent(request);
+
+      if(expiryDate != null){
+        final petNameNotif = petName ?? "Your pet";
+        final dateStr = DateFormat.yMMMMd().format(expiryDate);
+
+        final notification = ActivityNotification(
+            title: "$petNameNotif: Vaccination Expiry",
+            body: "Hey! $petNameNotif's $vaccineName vaccination will expire on $dateStr. Better set that appointment soon!",
+            id: newEventId,
+            scheduleTime: expiryDate.subtract(Duration(days: 1)),
+            recurrence: "none"
+        );
+        await NotifService().scheduledNotification(notification);
+        }
+
       await loadVaccinationsForPet(petId);
     } catch (e) {
       _error = e.toString();
@@ -75,11 +94,13 @@ class VaccinationProvider with ChangeNotifier {
     required String vaccineName,
     required DateTime dateGiven,
     DateTime? expiryDate,
+    String? petName,
   }) async {
     if (_healthEventService == null) throw Exception('Service unavailable');
     _setLoading(true);
     try {
       // Delete old, create new (HealthEvent API has no PATCH for full update)
+      await NotifService().cancelNotification(eventId);
       await _healthEventService!.deleteHealthEvent(eventId);
       final encodedName = VaccinationModel.encodeEventName(vaccineName, expiryDate);
       final request = CreateHealthEventRequest(
@@ -88,7 +109,25 @@ class VaccinationProvider with ChangeNotifier {
         eventDate: dateGiven,
         type: 'vaccination',
       );
-      await _healthEventService!.createHealthEvent(request);
+      final int updatedEventId = await _healthEventService!.createHealthEvent(request);
+
+      if(expiryDate != null){
+        final petNameNotif = petName ?? "Your pet";
+        final dateStr = DateFormat.yMMMMd().format(expiryDate);
+
+        final notification = ActivityNotification(
+            title: "$petNameNotif: Vaccination Expiry",
+            body: "Hey! $petNameNotif's $vaccineName vaccination will expire on $dateStr. Better set that appointment soon!",
+            id: updatedEventId,
+            scheduleTime: expiryDate.subtract(Duration(days: 1)),
+            recurrence: "none"
+        );
+
+        await NotifService().scheduledNotification(notification);
+      }
+
+
+
       await loadVaccinationsForPet(petId);
     } catch (e) {
       _error = e.toString();
@@ -105,6 +144,7 @@ class VaccinationProvider with ChangeNotifier {
     try {
       await _healthEventService!.deleteHealthEvent(eventId);
       _vaccinations.removeWhere((v) => v.id == eventId);
+      await NotifService().cancelNotification(eventId);
       notifyListeners();
     } catch (e) {
       _error = e.toString();

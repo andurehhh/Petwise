@@ -8,7 +8,7 @@
     <application
         android:label="petwise"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/logo_no_name">
         
         <!-- Local Notifications Receivers -->
 

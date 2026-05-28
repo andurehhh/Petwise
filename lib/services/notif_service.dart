@@ -36,7 +36,7 @@ class NotifService {
     }
 
     const initSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/logo_no_name');
 
     const initSettings = InitializationSettings(android: initSettingsAndroid);
 
@@ -59,7 +59,7 @@ class NotifService {
             channelDescription: 'Reminders for your pets activity',
             importance: Importance.max,
             priority: Priority.max,
-            icon: '@mipmap/ic_launcher'));
+            icon: '@mipmap/logo_no_name'));
   }
 
   Future<void> showNotification({int id = 0, String? title, String? body}) async {
@@ -154,9 +154,8 @@ class NotifService {
   }
 
 //Cancel specific notif
-  Future<void> cancelNotification(String id) async {
-    int baseId = int.tryParse(id) ?? id.hashCode.abs();
-    await notificationsPlugin.cancel(baseId);
-    debugPrint("🚫 CANCELLED NOTIF: ID $baseId");
+  Future<void> cancelNotification(int id) async {
+    await notificationsPlugin.cancel(id);
+    debugPrint("🚫 CANCELLED NOTIF: ID $id");
   }
 }
