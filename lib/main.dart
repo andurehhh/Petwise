@@ -20,6 +20,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotifService().initNotification();
 
+  try {
+    await NotifService().cancelAllNotifications(); // clears broken cache
+  } catch (_) {}
+
   runApp(
     MultiProvider(
       providers: [
