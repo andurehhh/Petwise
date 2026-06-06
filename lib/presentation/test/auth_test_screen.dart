@@ -1,20 +1,23 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:petwise/contracts/activity/create_activity_request.dart';
 import 'package:petwise/contracts/activity/update_activity_request.dart';
+import 'package:petwise/contracts/analytics/pet_activity_health_analytics_response.dart';
+import 'package:petwise/contracts/analytics/user_dashboard_analytics_response.dart';
 import 'package:petwise/contracts/auth/signin_request.dart';
 import 'package:petwise/contracts/auth/signup_request.dart';
 import 'package:petwise/contracts/pet/update_pet_request.dart';
 import 'package:petwise/contracts/user/update_user_request.dart';
-// New imports for your HealthEvent feature
 import 'package:petwise/contracts/health_event/create_health_event_request.dart';
 import 'package:petwise/contracts/health_event/health_event_response.dart';
 import 'package:petwise/services/health_event_service.dart';
-
 import 'package:petwise/services/activity_service.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/services/pet_service.dart';
 import 'package:petwise/services/user_service.dart';
+
+import 'package:petwise/services/analytics_service.dart';
 
 class AuthTestScreen extends StatefulWidget {
   const AuthTestScreen({super.key});
@@ -31,14 +34,13 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
   late final _pet = PetService(_apiClient);
   late final _user = UserService(_apiClient);
   late final _activity = ActivityService(_apiClient);
-  // Instantiate your new service
   late final _healthEvent = HealthEventService(_apiClient);
+  late final _analytics = AnalyticsService(_apiClient);
 
   int? _lastActivityId = 6;
-  // State variable to keep track of the created health event ID dynamically
   int? _lastHealthEventId;
 
-  //SIGNIN
+  // SIGNIN
   Future<void> _testSignIn() async {
     try {
       final result = await _auth.signIn(
@@ -68,7 +70,7 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
-  //SINGUP
+  // SIGNUP
   Future<void> _testSignUp() async {
     try {
       final result = await _auth.signUp(
@@ -96,7 +98,7 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
-  //GET PET BY USER ID
+  // GET PET BY USER ID
   Future<void> _testGetPets() async {
     if (_userId == null) {
       setState(() => _output = 'ERROR: Sign in first to get a userId');
@@ -113,7 +115,7 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
-  //GET PET BY PET ID
+  // GET PET BY PET ID
   Future<void> _testGetPet2() async {
     try {
       final result = await _pet.getPet(4);
@@ -123,7 +125,7 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
-  //UPDATE PET
+  // UPDATE PET
   Future<void> _testUpdatePet() async {
     try {
       final result = await _pet.updatePet(
@@ -146,14 +148,14 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
   // DELETE PET
   Future<void> _testDeletePet() async {
     try {
-      await _pet.deletePet(5); // change to your pet id
+      await _pet.deletePet(5);
       setState(() => _output = 'DELETE PET SUCCESS');
     } catch (e) {
       setState(() => _output = 'DELETE PET ERROR: $e');
     }
   }
 
-  //USER INFO USING USER ID
+  // USER INFO USING USER ID
   Future<void> _testGetUser() async {
     if (_userId == null) {
       setState(() => _output = 'ERROR: Sign in first to get a userId');
@@ -167,7 +169,7 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
-  //UPDATE USER INFOs
+  // UPDATE USER INFOs
   Future<void> _testUpdateUser() async {
     if (_userId == null) {
       setState(() => _output = 'ERROR: Sign in first to get a userId');
@@ -256,15 +258,12 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
     }
   }
 
-  // ==========================================
-  // HEALTH EVENT SERVICE TEST METHODS
-  // ==========================================
-
+  // HEALTH EVENTS TEST METHODS
   Future<void> _testCreateHealthEvent() async {
     try {
       final resultId = await _healthEvent.createHealthEvent(
         CreateHealthEventRequest(
-          petId: 6, // Targets Pet 4 based on your previous test values
+          petId: 6,
           eventName: 'Rabies Booster Shot',
           eventDate: DateTime.now().add(const Duration(days: 7)),
           type: 'vaccination',
@@ -296,7 +295,6 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
 
   Future<void> _testGetHealthEventsByPet() async {
     try {
-      // Targets Pet 4 to grab all events assigned to it
       final List<HealthEventResponse> results = await _healthEvent
           .getHealthEventsByPet(6);
       setState(() {
@@ -337,10 +335,62 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
       final message = await _healthEvent.deleteHealthEvent(_lastHealthEventId!);
       setState(() {
         _output = 'DELETE HEALTH EVENT SUCCESS:\n$message';
-        _lastHealthEventId = null; // Clear ID out after removal
+        _lastHealthEventId = null;
       });
     } catch (e) {
       setState(() => _output = 'DELETE HEALTH EVENT ERROR: $e');
+    }
+  }
+
+  // ANALYTICS TEST METHODS
+
+  Future<void> _testGetPetAnalytics() async {
+    try {
+      // Targets Pet ID 6 (matches your health event dashboard tests)
+      final PetActivityHealthAnalyticsResponse metrics = await _analytics
+          .getPetAnalytics(12);
+
+      setState(() {
+        _output =
+            'GET PET ANALYTICS SUCCESS:\n'
+            'Activities: ${metrics.totalScheduledActivities}\n'
+            'Active Routines: ${metrics.totalActiveRoutines}\n'
+            'Monthly Health Events: ${metrics.totalHealthEvents}\n'
+            'Compliance Rate: ${metrics.medicalComplianceRate}%\n'
+            'Recurrence Map: ${metrics.activityRecurrenceDistribution}\n'
+            'Type Distribution: ${metrics.healthEventTypeDistribution}\n'
+            'Timeline Items Count: ${metrics.activityTimeline.length}';
+      });
+    } catch (e) {
+      setState(() => _output = 'GET PET ANALYTICS ERROR: $e');
+    }
+  }
+
+  Future<void> _testGetUserAnalytics() async {
+    if (_userId == null) {
+      setState(
+        () => _output = 'ERROR: Sign in first to get an authorized user UUID',
+      );
+      return;
+    }
+    try {
+      final UserDashboardAnalyticsResponse metrics = await _analytics
+          .getUserAnalytics(_userId!);
+
+      setState(() {
+        _output =
+            'GET USER GLOBAL ANALYTICS SUCCESS:\n'
+            'Total Active Pets: ${metrics.totalPets}\n'
+            'Combined Scheduled Activities: ${metrics.totalScheduledActivities}\n'
+            'Combined Active Routines: ${metrics.totalActiveRoutines}\n'
+            'Combined Health Events (This Month): ${metrics.totalHealthEvents}\n'
+            'Overall Compliance Rate: ${metrics.medicalComplianceRate}%\n'
+            'Global Recurrence Distribution: ${metrics.activityRecurrenceDistribution}\n'
+            'Global Health Event Split: ${metrics.healthEventTypeDistribution}\n'
+            'Global Timeline Data points: ${metrics.activityTimeline.length}';
+      });
+    } catch (e) {
+      setState(() => _output = 'GET USER GLOBAL ANALYTICS ERROR: $e');
     }
   }
 
@@ -392,12 +442,12 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
               onPressed: _testUpdatePet,
               child: const Text('Test Update Pet'),
             ),
-            const SizedBox(height: 16),
             const SizedBox(height: 8),
             ElevatedButton(
               onPressed: _testDeletePet,
               child: const Text('Test Delete Pet'),
             ),
+            const SizedBox(height: 16),
 
             const Text('-- USER --', textAlign: TextAlign.center),
             const SizedBox(height: 8),
@@ -444,9 +494,6 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ==========================================
-            // HEALTH EVENTS INTERFACE SECTION
-            // ==========================================
             const Text('-- HEALTH EVENTS --', textAlign: TextAlign.center),
             const SizedBox(height: 8),
             ElevatedButton(
@@ -484,6 +531,27 @@ class _AuthTestScreenState extends State<AuthTestScreen> {
                 backgroundColor: Colors.red.shade50,
               ),
               child: const Text('Test Delete Health Event'),
+            ),
+            const SizedBox(height: 16),
+
+            const Text('-- SYSTEM ANALYTICS --', textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testGetPetAnalytics,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal.shade50,
+                foregroundColor: Colors.teal.shade900,
+              ),
+              child: const Text('Test Fetch Single Pet Metrics'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _testGetUserAnalytics,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo.shade50,
+                foregroundColor: Colors.indigo.shade900,
+              ),
+              child: const Text('Test Fetch User Global Overview'),
             ),
             const SizedBox(height: 20),
 

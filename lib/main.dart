@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petwise/presentation/screens/user_homepage_screen.dart';
+import 'package:petwise/presentation/test/auth_test_screen.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
@@ -15,6 +16,10 @@ import 'package:petwise/services/user_service.dart';
 import 'package:petwise/services/activity_service.dart';
 import 'package:petwise/services/health_event_service.dart';
 import 'package:provider/provider.dart';
+
+// New Analytics Features Added Here
+import 'package:petwise/services/analytics_service.dart';
+import 'package:petwise/providers/analytics_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +47,10 @@ void main() async {
         ),
         ProxyProvider<ApiClient, HealthEventService>(
           update: (_, client, _) => HealthEventService(client),
+        ),
+        // Just Added: Analytics Service Hook
+        ProxyProvider<ApiClient, AnalyticsService>(
+          update: (_, client, _) => AnalyticsService(client),
         ),
         ChangeNotifierProxyProvider<UserService, UserProvider>(
           create: (_) => UserProvider(),
@@ -77,6 +86,15 @@ void main() async {
           update: (_, healthEventService, vaccinationProvider) {
             vaccinationProvider!.updateHealthEventService(healthEventService);
             return vaccinationProvider;
+          },
+        ),
+
+        ChangeNotifierProxyProvider<AnalyticsService, AnalyticsProvider>(
+          create: (context) =>
+              AnalyticsProvider(context.read<AnalyticsService>()),
+          update: (_, analyticsService, analyticsProvider) {
+            analyticsProvider!.updateAnalyticsService(analyticsService);
+            return analyticsProvider;
           },
         ),
         ChangeNotifierProxyProvider2<AuthService, UserProvider, AuthProvider>(
@@ -124,6 +142,7 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
       home: UserHomePage(),
+      //home: AuthTestScreen(),
     );
   }
 }
