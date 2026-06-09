@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petwise/providers/user_provider.dart';
 import 'package:provider/provider.dart';
+
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_image_picker.dart';
+import 'package:petwise/providers/user_provider.dart';
 
 class EditUserProfileScreen extends StatefulWidget {
   const EditUserProfileScreen({super.key});
@@ -16,6 +18,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _nicknameController;
+  String? _temporarySelectedImageUrl;
 
   @override
   void initState() {
@@ -24,6 +27,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     _firstNameController = TextEditingController(text: user?.firstName ?? "");
     _lastNameController = TextEditingController(text: user?.lastName ?? "");
     _nicknameController = TextEditingController(text: user?.nickname ?? "");
+    _temporarySelectedImageUrl = user?.image_url;
   }
 
   @override
@@ -32,6 +36,22 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     _lastNameController.dispose();
     _nicknameController.dispose();
     super.dispose();
+  }
+
+  void _openUserImagePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) => PetwiseUserImagePickerSheet(
+        currentImageUrl: _temporarySelectedImageUrl ?? "",
+        onImageSelected: (newImageUrl) {
+          setState(() {
+            _temporarySelectedImageUrl = newImageUrl;
+          });
+        },
+      ),
+    );
   }
 
   @override
@@ -56,7 +76,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () => _openUserImagePicker(context),
                 child: CircleAvatar(
                   radius: 72,
                   backgroundColor: const Color(0xFFF7A433),
@@ -66,38 +86,28 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                     child: ClipOval(
                       child: Stack(
                         children: [
-                          // Dynamic Network vs Asset Image Switcher
-                          Builder(
-                            builder: (context) {
-                              final imageUrl = context.select(
-                                (UserProvider p) => p.user?.image_url,
-                              );
-
-                              if (imageUrl != null && imageUrl.isNotEmpty) {
-                                return Image.network(
-                                  imageUrl,
-                                  width: 140,
-                                  height: 140,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Image.asset(
-                                        'assets/images/SUA.jpg',
-                                        width: 140,
-                                        height: 140,
-                                        fit: BoxFit.cover,
-                                      ),
-                                );
-                              } else {
-                                return Image.asset(
-                                  'assets/images/SUA.jpg',
-                                  width: 140,
-                                  height: 140,
-                                  fit: BoxFit.cover,
-                                );
-                              }
-                            },
-                          ),
-                          // Camera Icon Translucent Mask overlay
+                          if (_temporarySelectedImageUrl != null &&
+                              _temporarySelectedImageUrl!.isNotEmpty)
+                            Image.network(
+                              _temporarySelectedImageUrl!,
+                              width: 140,
+                              height: 140,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                    'assets/images/SUA.jpg',
+                                    width: 140,
+                                    height: 140,
+                                    fit: BoxFit.cover,
+                                  ),
+                            )
+                          else
+                            Image.asset(
+                              'assets/images/SUA.jpg',
+                              width: 140,
+                              height: 140,
+                              fit: BoxFit.cover,
+                            ),
                           Container(
                             color: Colors.black38,
                             width: 140,
@@ -115,7 +125,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
               SizedBox(
                 height: 50,
                 width: 300,
@@ -143,8 +152,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // --- DETAILS BOX ---
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
                 child: Container(
@@ -177,7 +184,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                         isEditable: true,
                         controller: _lastNameController,
                       ),
-
                       Consumer<UserProvider>(
                         builder: (context, userProvider, child) {
                           return Column(
@@ -190,12 +196,15 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                 isEditable: false,
                               ),
                               const SizedBox(height: 32),
-
-                              // Save Changes Button
                               FilledButton(
                                 onPressed: userProvider.isLoading
                                     ? null
                                     : () async {
+                                        final messenger = ScaffoldMessenger.of(
+                                          context,
+                                        );
+                                        final navigator = Navigator.of(context);
+
                                         bool success = await userProvider
                                             .updateProfile(
                                               firstName: _firstNameController
@@ -205,23 +214,21 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                                   .trim(),
                                               nickname: _nicknameController.text
                                                   .trim(),
+                                              image_url:
+                                                  _temporarySelectedImageUrl,
                                             );
 
-                                        if (success && context.mounted) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
+                                        if (success) {
+                                          messenger.showSnackBar(
                                             const SnackBar(
                                               content: Text("Profile Updated!"),
                                               backgroundColor:
                                                   Colors.lightGreen,
                                             ),
                                           );
-                                          Navigator.pop(context);
-                                        } else if (context.mounted) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
+                                          navigator.pop(context);
+                                        } else {
+                                          messenger.showSnackBar(
                                             SnackBar(
                                               content: Text(
                                                 userProvider.error ??
@@ -265,8 +272,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                         },
                       ),
                       const SizedBox(height: 14),
-
-                      // Cancel Button
                       OutlinedButton(
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
