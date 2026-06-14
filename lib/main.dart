@@ -8,6 +8,7 @@ import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/providers/health_event_provider.dart';
 import 'package:petwise/providers/vaccination_provider.dart';
 import 'package:petwise/routes/app_route.dart';
+import 'package:petwise/presentation/screens/pet_activity_planner_screen.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/services/notif_service.dart';
@@ -141,6 +142,25 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
+      onGenerateRoute: (settings) {
+        if (settings.name == AppRoute.petActivityPlanner) {
+          return PageRouteBuilder(
+            settings: settings,
+            pageBuilder: (_, __, ___) => const PlannerScreen(),
+            transitionsBuilder: (_, anim, __, child) => SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: anim, curve: Curves.easeInOut),
+              ),
+              child: child,
+            ),
+            transitionDuration: const Duration(milliseconds: 300),
+          );
+        }
+        return null;
+      },
       home: UserHomePage(),
       //home: AuthTestScreen(),
     );

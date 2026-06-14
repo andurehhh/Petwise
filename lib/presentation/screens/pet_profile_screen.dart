@@ -11,7 +11,7 @@ import 'package:petwise/data/models/vaccination_model.dart';
 import 'package:petwise/routes/app_route.dart';
 import 'package:petwise/utils/pet_theme.dart';
 import 'package:provider/provider.dart';
-import'package:intl/intl.dart';
+import 'package:intl/intl.dart';
 
 class PetProfileScreen extends StatefulWidget {
   const PetProfileScreen({super.key});
@@ -42,14 +42,18 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
     final vaccinationProvider = context.watch<VaccinationProvider>();
     final pet = petProvider.selectedPet;
 
-    final petEvents =
-        healthEventProvider.healthEvents
-            .where((e) => e.petId == pet?.id)
-            .toList()
-          ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
+    final petEvents = healthEventProvider.healthEvents
+        .where((e) => e.petId == pet?.id)
+        .toList()
+      ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
 
+    final today = DateTime.now();
     final recentActivities = activityProvider.activities
-        .where((a) => a.petId == pet?.id)
+        .where((a) =>
+            a.petId == pet?.id &&
+            a.scheduledDate.year == today.year &&
+            a.scheduledDate.month == today.month &&
+            a.scheduledDate.day == today.day)
         .toList()
       ..sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
 
@@ -59,73 +63,153 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
         vaccinations.where((v) => v.status == VaccinationStatus.valid).length;
     final expiredCount =
         vaccinations.where((v) => v.status == VaccinationStatus.expired).length;
-    final expiringSoonCount = vaccinations
-        .where((v) => v.status == VaccinationStatus.expiringSoon)
-        .length;
+    final expiringSoonCount =
+        vaccinations.where((v) => v.status == VaccinationStatus.expiringSoon).length;
 
     final profileColor = PetTheme.cardColor(pet?.species ?? '');
+    final detailColor = PetTheme.detailColor(pet?.species ?? '');
+    final blobColor = detailColor.withValues(alpha: 0.35);
+    final avatarRadius = 130.0;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final coloredHeight = screenHeight * 0.38;
+    final whiteOverlap = 56.0;
+    final sliverHeight = coloredHeight + avatarRadius - whiteOverlap;
 
     return Scaffold(
       backgroundColor: profileColor,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: const [0.4, 0.4],
-            colors: [profileColor, Colors.white],
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(color: profileColor),
           ),
-        ),
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverAppBar(
-              stretch: true,
-              expandedHeight: 300,
-              pinned: true,
-              backgroundColor: Colors.white,
-              surfaceTintColor: Colors.transparent,
-              clipBehavior: Clip.none,
-              actions: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.favorite_border),
-                ),
-                IconButton(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, AppRoute.editPetProfile),
-                  icon: const Icon(Icons.edit),
-                ),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  color: profileColor,
-                  child: Stack(
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverAppBar(
+                expandedHeight: sliverHeight,
+                pinned: false,
+                floating: false,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                surfaceTintColor: Colors.transparent,
+                automaticallyImplyLeading: false,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
                     clipBehavior: Clip.none,
-                    alignment: Alignment.center,
                     children: [
                       Positioned(
-                        bottom: -50,
-                        child: CircleAvatar(
-                          radius: 120,
-                          backgroundColor: Colors.white,
-                          child: CircleAvatar(
-                            radius: 119,
-                            backgroundColor: Colors.white,
-                            backgroundImage:
-                                (pet?.image_url != null &&
-                                    pet!.image_url!.startsWith('http'))
-                                ? NetworkImage(pet.image_url!)
-                                : null,
-                            child:
-                                (pet?.image_url == null ||
-                                    !pet!.image_url!.startsWith('http'))
-                                ? Icon(
-                                    Icons.pets,
-                                    size: 80,
-                                    color: Colors.grey.shade400,
-                                  )
-                                : null,
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: coloredHeight,
+                        child: Container(color: profileColor),
+                      ),
+                      Positioned(
+                        top: -20,
+                        left: -16,
+                        child: _Blob(size: 80, color: blobColor),
+                      ),
+                      Positioned(
+                        top: 30,
+                        right: -12,
+                        child: _Blob(size: 60, color: blobColor.withValues(alpha: 0.6)),
+                      ),
+                      Positioned(
+                        top: 80,
+                        left: 60,
+                        child: _Blob(size: 35, color: blobColor.withValues(alpha: 0.4)),
+                      ),
+                      Positioned(
+                        top: 50,
+                        right: 80,
+                        child: _Blob(size: 28, color: blobColor.withValues(alpha: 0.35)),
+                      ),
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: SafeArea(
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.25),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 16,
+                        right: 16,
+                        child: SafeArea(
+                          child: GestureDetector(
+                            onTap: () =>
+                                Navigator.pushNamed(context, AppRoute.editPetProfile),
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.25),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: (coloredHeight - avatarRadius * 2) / 2 + 20,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                width: 4,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: avatarRadius,
+                              backgroundColor: Colors.white.withValues(alpha: 0.3),
+                              backgroundImage: (pet?.image_url != null &&
+                                      pet!.image_url!.startsWith('http'))
+                                  ? NetworkImage(pet.image_url!)
+                                  : null,
+                              child: (pet?.image_url == null ||
+                                      !pet!.image_url!.startsWith('http'))
+                                  ? Icon(
+                                      Icons.pets,
+                                      size: 90,
+                                      color: Colors.white.withValues(alpha: 0.8),
+                                    )
+                                  : null,
+                            ),
                           ),
                         ),
                       ),
@@ -133,378 +217,467 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                   ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                ),
-                padding: const EdgeInsets.fromLTRB(20, 20, 30, 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              SliverToBoxAdapter(
+                child: Transform.translate(
+                  offset: const Offset(0, -56),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(40),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x14000000),
+                          blurRadius: 20,
+                          offset: Offset(0, -4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name → Birthday → Species • Breed
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child:Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    pet?.name ?? "Unknown Pet",
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: Colors.black,
-                                      fontSize: 23,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -1.5,
-                                    ),
-                                  ),
-                                  Text(
-                                    (pet?.species ?? "Unknown Species"),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: Colors.grey,
-                                      fontSize: 16,
-                                      letterSpacing: -1.5,
-                                    ),
-                                  ),
-                                  Text(
-                                    (pet?.breed ?? "A special guy"),
-                                    style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.grey,
-                                    fontSize: 16,
-                                    letterSpacing: -1.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                pet?.sex == "Male"
-                                ? Icon(Icons.male, color: Colors.blue, size: 38)
-                                : Icon(Icons.female, color: Colors.pink, size: 38),
-
                                 Text(
-                                  "${pet?.age ?? 0} years old",
+                                  pet?.name ?? 'Unknown Pet',
                                   style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.grey,
-                                    fontSize: 16,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFF1A2D40),
                                     letterSpacing: -1,
                                   ),
                                 ),
-                                Text(
-                                    DateFormat.yMMMMd().format(pet?.birthday ?? DateTime.now()),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Text(
+                                      pet?.species ?? '',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade500,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
+                                    if (pet?.breed != null && pet!.breed!.isNotEmpty) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                                        child: Container(
+                                          width: 5,
+                                          height: 5,
+                                          decoration: BoxDecoration(
+                                            color: detailColor,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: Text(
+                                          pet!.breed!,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 14,
+                                            color: Colors.grey.shade500,
+                                            letterSpacing: -0.3,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                if (pet?.birthday != null)
+                                  Text(
+                                    DateFormat.yMMMMd().format(pet!.birthday),
                                     style: GoogleFonts.plusJakartaSans(
-                                      color: Colors.grey,
-                                      fontSize: 16,
-                                      letterSpacing: -1,
-                                    )
-                                ),
-                              ]
-                          ),
-                        ],
-                          ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Upcoming Medical",
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.black,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: pet?.id != null
-                                    ? () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder: (context) =>
-                                              AddHealthEventSheet(
-                                                preselectedPetId: pet!.id,
-                                              ),
-                                        );
-                                      }
-                                    : null,
-                                icon: const Icon(
-                                  Icons.add,
-                                  size: 16,
-                                  color: Color(0xFFF7A433),
-                                ),
-                                label: Text(
-                                  "Add",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: const Color(0xFFF7A433),
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
+                                      fontSize: 14,
+                                      color: Colors.grey.shade500,
+                                      letterSpacing: -0.3,
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          if (healthEventProvider.isLoading)
-                            const Center(
-                              child: CircularProgressIndicator(
-                                color: Color(0xFFF7A433),
-                              ),
-                            )
-                          else if (petEvents.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              child: Text(
-                                "No upcoming medical events",
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            )
-                          else
-                            ...petEvents
-                                .take(3)
-                                .map(
-                                  (event) => PetwiseUpcomingMedicalPill(
-                                    event: event,
-                                    onTap: () {
-                                      if (!event.isCompleted) {
-                                        context
-                                            .read<HealthEventProvider>()
-                                            .markEventAsCompleted(
-                                              event.eventId,
-                                            );
-                                      }
-                                    },
-                                  ),
-                                ),
-                          const SizedBox(height: 20),
-                          // ── Vaccination Status ──────────────────────────
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Vaccination Status",
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.black,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: () => Navigator.pushNamed(
-                                  context,
-                                  AppRoute.vaccinationScreen,
-                                ),
-                                icon: const Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 13,
-                                  color: Color(0xFFF7A433),
-                                ),
-                                label: Text(
-                                  "Manage",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: const Color(0xFFF7A433),
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          if (vaccinationProvider.isLoading)
-                            const Center(
-                              child: CircularProgressIndicator(
-                                color: Color(0xFFF7A433),
-                              ),
-                            )
-                          else if (vaccinations.isEmpty)
-                            GestureDetector(
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                AppRoute.vaccinationScreen,
-                              ),
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFF4E6),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: const Color(0xFFF7A433)
-                                        .withValues(alpha: 0.4),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.vaccines_outlined,
-                                      color: Color(0xFFF7A433),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      "No vaccinations recorded — tap to add",
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: const Color(0xFFF7A433),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          else
-                            GestureDetector(
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                AppRoute.vaccinationScreen,
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.grey.shade200,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.03),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    _VaccStatusDot(
-                                      count: validCount,
-                                      label: 'Valid',
-                                      color: Colors.green,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    _VaccStatusDot(
-                                      count: expiringSoonCount,
-                                      label: 'Expiring',
-                                      color: Colors.orange,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    _VaccStatusDot(
-                                      count: expiredCount,
-                                      label: 'Expired',
-                                      color: Colors.redAccent,
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                      '${vaccinations.length} total',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.chevron_right,
-                                      color: Colors.grey,
-                                      size: 18,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 20),
-                          Text(
-                            "Recent Activity",
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.black,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.5,
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          if (recentActivities.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              child: Text(
-                                "No recent activity",
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            )
-                          else
-                            ...recentActivities
-                                .take(3)
-                                .map(
-                                  (activity) => PetwisePetActivityLog(
-                                    activity: activity,
-                                  ),
-                                ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.favorite_border,
+                              color: Color(0xFF1A2D40),
+                              size: 26,
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: profileColor.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _InfoPill(
+                              icon: Icons.vaccines_outlined,
+                              label: validCount > 0 ? 'Vaccinated' : 'Unvaccinated',
+                              color: validCount > 0 ? Colors.green : Colors.redAccent,
+                            ),
+                            _Divider(),
+                            _InfoPill(
+                              icon: (pet?.sex ?? '').toLowerCase() == 'male'
+                                  ? Icons.male
+                                  : Icons.female,
+                              label: pet?.sex ?? '—',
+                              color: (pet?.sex ?? '').toLowerCase() == 'male'
+                                  ? Colors.blue
+                                  : Colors.pink,
+                            ),
+                            _Divider(),
+                            _InfoPill(
+                              icon: Icons.cake_outlined,
+                              label: '${pet?.age ?? 0} yrs',
+                              color: detailColor,
+                            ),
+                            _Divider(),
+                            _InfoPill(
+                              icon: Icons.monitor_weight_outlined,
+                              label: (pet?.weight != null && pet!.weight! > 0)
+                                  ? '${pet.weight!.toStringAsFixed(1)} kg'
+                                  : '—',
+                              color: detailColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Upcoming Medical',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF1A2D40),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: pet?.id != null
+                                ? () => showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (_) => AddHealthEventSheet(
+                                        preselectedPetId: pet!.id,
+                                      ),
+                                    )
+                                : null,
+                            icon: const Icon(
+                              Icons.add,
+                              size: 16,
+                              color: Color(0xFFF7A433),
+                            ),
+                            label: Text(
+                              'Add',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: const Color(0xFFF7A433),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (healthEventProvider.isLoading)
+                        const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFF7A433),
+                          ),
+                        )
+                      else if (petEvents.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            'No upcoming medical events',
+                            style: GoogleFonts.plusJakartaSans(color: Colors.grey),
+                          ),
+                        )
+                      else
+                        ...petEvents.take(3).map(
+                              (event) => PetwiseUpcomingMedicalPill(
+                                event: event,
+                                onTap: () {
+                                  if (!event.isCompleted) {
+                                    context
+                                        .read<HealthEventProvider>()
+                                        .markEventAsCompleted(event.eventId);
+                                  }
+                                },
+                              ),
+                            ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Vaccination Status',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF1A2D40),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () =>
+                                Navigator.pushNamed(context, AppRoute.vaccinationScreen),
+                            icon: const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 13,
+                              color: Color(0xFFF7A433),
+                            ),
+                            label: Text(
+                              'Manage',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: const Color(0xFFF7A433),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (vaccinationProvider.isLoading)
+                        const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFF7A433),
+                          ),
+                        )
+                      else if (vaccinations.isEmpty)
+                        GestureDetector(
+                          onTap: () =>
+                              Navigator.pushNamed(context, AppRoute.vaccinationScreen),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF4E6),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFF7A433).withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.vaccines_outlined,
+                                  color: Color(0xFFF7A433),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'No vaccinations recorded — tap to add',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: const Color(0xFFF7A433),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        GestureDetector(
+                          onTap: () =>
+                              Navigator.pushNamed(context, AppRoute.vaccinationScreen),
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade200),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.03),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                _VaccDot(
+                                  count: validCount,
+                                  label: 'Valid',
+                                  color: Colors.green,
+                                ),
+                                const SizedBox(width: 12),
+                                _VaccDot(
+                                  count: expiringSoonCount,
+                                  label: 'Expiring',
+                                  color: Colors.orange,
+                                ),
+                                const SizedBox(width: 12),
+                                _VaccDot(
+                                  count: expiredCount,
+                                  label: 'Expired',
+                                  color: Colors.redAccent,
+                                ),
+                                const Spacer(),
+                                Text(
+                                  '${vaccinations.length} total',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.grey,
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Recent Activity',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF1A2D40),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      if (recentActivities.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            'No recent activity',
+                            style: GoogleFonts.plusJakartaSans(color: Colors.grey),
+                          ),
+                        )
+                      else
+                        ...recentActivities.take(3).map(
+                              (a) => PetwisePetActivityLog(activity: a),
+                            ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _VaccStatusDot extends StatelessWidget {
+class _VaccDot extends StatelessWidget {
   final int count;
   final String label;
   final Color color;
-
-  const _VaccStatusDot({
-    required this.count,
-    required this.label,
-    required this.color,
-  });
+  const _VaccDot({required this.count, required this.label, required this.color});
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          '$count $label',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 12,
-            color: color,
-            fontWeight: FontWeight.w600,
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '$count $label',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      );
+}
+
+class _InfoPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  const _InfoPill({required this.icon, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A2D40),
+            ),
+          ),
+        ],
+      );
+}
+
+class _Divider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 1,
+        height: 36,
+        color: Colors.grey.withValues(alpha: 0.25),
+      );
+}
+
+class _Blob extends StatelessWidget {
+  final double size;
+  final Color color;
+  const _Blob({required this.size, required this.color});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: size,
+        height: size * 0.85,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(size * 0.5),
+            topRight: Radius.circular(size * 0.35),
+            bottomLeft: Radius.circular(size * 0.35),
+            bottomRight: Radius.circular(size * 0.55),
           ),
         ),
-      ],
-    );
-  }
+      );
 }
+
+

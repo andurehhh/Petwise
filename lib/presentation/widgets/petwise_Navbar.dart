@@ -33,7 +33,7 @@ class PetwiseNavbar extends StatelessWidget {
           ),
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, AppRoute.userProfile);
+              Navigator.pushNamed(context, AppRoute.analyticsScreen);
             },
             icon: Icon(
               Icons.bar_chart,

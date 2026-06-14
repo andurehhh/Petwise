@@ -14,6 +14,7 @@ import '../presentation/screens/pet_card_screen.dart';
 import '../presentation/screens/add_pet_profile_screen.dart';
 import '../presentation/screens/pet_activity_planner_screen.dart';
 import '../presentation/screens/vaccination_screen.dart';
+import '../presentation/screens/analytics_screen.dart';
 //Create class
 
 class AppRoute {
@@ -30,6 +31,7 @@ class AppRoute {
   static const String addPetProfile = '/AddPetProfileScreen';
   static const String petActivityPlanner = '/PetActivityPlannerScreen';
   static const String vaccinationScreen = '/VaccinationScreen';
+  static const String analyticsScreen = '/AnalyticsScreen';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -46,6 +48,7 @@ class AppRoute {
       addPetProfile: (context) => const AddPetProfileScreen(),
       petActivityPlanner: (context) => const PlannerScreen(),
       vaccinationScreen: (context) => const VaccinationScreen(),
+      analyticsScreen: (context) => const AnalyticsScreen(),
     };
   }
 }

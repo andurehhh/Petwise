@@ -41,7 +41,11 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _petWeightController = TextEditingController(
       text: pet?.weight?.toString() ?? "0.1",
     );
-    _selectedSex = pet?.sex ?? "Male";
+    final rawSex = pet?.sex ?? 'Male';
+    _selectedSex = rawSex.isNotEmpty
+        ? rawSex[0].toUpperCase() + rawSex.substring(1).toLowerCase()
+        : 'Male';
+    if (_selectedSex != 'Male' && _selectedSex != 'Female') _selectedSex = 'Male';
     _selectedBirthday = pet?.birthday ?? DateTime.now();
     image_url = pet?.image_url ?? 'assets/images/doggie.gif';
 
@@ -499,8 +503,8 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                               _petWeightController.text,
                                             ) ??
                                             0.0,
-                                        birthday: currentPet.birthday,
-                                        sex: formatSex(currentPet.sex),
+                                        birthday: _selectedBirthday,
+                                        sex: formatSex(_selectedSex),
                                         image_url: image_url,
                                       );
 

@@ -11,6 +11,18 @@ import '../widgets/petwise_Navbar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../screens/pet_activity_planner_screen.dart';
 
+Route _slideLeft(Widget page) => PageRouteBuilder(
+      pageBuilder: (_, __, ___) => page,
+      transitionsBuilder: (_, anim, __, child) => SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(1.0, 0.0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: anim, curve: Curves.easeInOut)),
+        child: child,
+      ),
+      transitionDuration: const Duration(milliseconds: 300),
+    );
+
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
 
@@ -47,8 +59,13 @@ class _UserHomePageScreenState extends State<UserHomePage> {
     final petList = context.watch<PetProvider>().pets;
     final activityProvider = context.watch<ActivityProvider>();
 
+    final today = DateTime.now();
     final activityList = activityProvider.activities
-        .where((a) => !a.isCompleted)
+        .where((a) =>
+            !a.isCompleted &&
+            a.scheduledDate.year == today.year &&
+            a.scheduledDate.month == today.month &&
+            a.scheduledDate.day == today.day)
         .toList()
       ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
 
@@ -158,9 +175,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const PlannerScreen(),
-                    ),
+                    _slideLeft(const PlannerScreen()),
                   ),
                   child: Text(
                     "See all",
@@ -201,11 +216,9 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                   return GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => PlannerScreen(
-                          initialDate: activity.scheduledDate,
-                        ),
-                      ),
+                      _slideLeft(PlannerScreen(
+                        initialDate: activity.scheduledDate,
+                      )),
                     ),
                     child: DynamicActivityCard(activity: activity),
                   );

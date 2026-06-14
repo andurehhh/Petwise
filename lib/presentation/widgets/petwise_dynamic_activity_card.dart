@@ -100,6 +100,7 @@ class DynamicActivityCard extends StatelessWidget {
         ),
         child: IntrinsicHeight(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 width: 4,
@@ -110,10 +111,16 @@ class DynamicActivityCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
+              CircleAvatar(
+                radius: 22,
+                backgroundImage: _getPetImage(pet),
+              ),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "${pet.name.toUpperCase()} • ${pet.species.toUpperCase()}",
@@ -124,16 +131,23 @@ class DynamicActivityCard extends StatelessWidget {
                         letterSpacing: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
                       activity.title,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1A2D40),
+                        color: activity.isCompleted
+                            ? Colors.grey.shade400
+                            : const Color(0xFF1A2D40),
+                        decoration: activity.isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        decorationColor: Colors.grey.shade400,
+                        decorationThickness: 2,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         const Icon(
@@ -155,43 +169,31 @@ class DynamicActivityCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundImage: _getPetImage(pet),
-                  ),
-                  GestureDetector(
-                    onTap: () => context
-                        .read<ActivityProvider>()
-                        .toggleCompletion(activity.id),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: activity.isCompleted
-                              ? Colors.green
-                              : Colors.grey.shade300,
-                          width: 2,
-                        ),
-                        color: activity.isCompleted
-                            ? Colors.green
-                            : Colors.transparent,
-                      ),
-                      child: activity.isCompleted
-                          ? const Icon(
-                              Icons.check,
-                              size: 16,
-                              color: Colors.white,
-                            )
-                          : null,
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: () => context
+                    .read<ActivityProvider>()
+                    .toggleCompletion(activity.id),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: activity.isCompleted
+                        ? Colors.green
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: activity.isCompleted
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                      width: 2,
                     ),
                   ),
-                ],
+                  child: activity.isCompleted
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
+                      : null,
+                ),
               ),
             ],
           ),

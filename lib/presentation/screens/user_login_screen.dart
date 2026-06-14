@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/providers/auth_provider.dart';
-import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:provider/provider.dart';
 
@@ -14,9 +13,9 @@ class UserLoginScreen extends StatefulWidget {
 }
 
 class _UserLoginScreenState extends State<UserLoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _forgotEmailController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _forgotEmailController = TextEditingController();
 
   @override
   void dispose() {
@@ -24,6 +23,16 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
     _passwordController.dispose();
     _forgotEmailController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login(AuthProvider authProvider) async {
+    final success = await authProvider.login(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+    if (success && mounted) {
+      Navigator.pushReplacementNamed(context, '/UserHomePage');
+    }
   }
 
   void _showForgotPasswordDialog() {
@@ -61,12 +70,11 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                 textHint: 'name@email.com',
                 isEditable: true,
                 controller: _forgotEmailController,
+                textInputAction: TextInputAction.done,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xffF4AD44),
                   foregroundColor: Colors.white,
@@ -78,9 +86,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                 ),
                 child: Text(
                   'Done',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -93,6 +99,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -109,9 +116,8 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
               Align(
                 alignment: Alignment.topLeft,
                 child: IconButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/LoginOrSignupScreen');
-                  },
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/LoginOrSignupScreen'),
                   icon: const Icon(
                     CupertinoIcons.back,
                     color: Colors.black,
@@ -127,7 +133,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                   borderRadius: BorderRadius.circular(20.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -158,10 +164,10 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                         margin: const EdgeInsets.only(bottom: 15),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
+                          color: Colors.red.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.red.withOpacity(0.3),
+                            color: Colors.red.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -190,12 +196,18 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                       textHint: 'Enter your email address',
                       isEditable: true,
                       controller: _emailController,
+                      textInputAction: TextInputAction.next,
                     ),
                     PetwiseUserTextfield(
                       textLabel: 'PASSWORD',
                       textHint: 'Enter your password',
                       isEditable: true,
                       controller: _passwordController,
+                      obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: authProvider.isLoading
+                          ? null
+                          : () => _login(authProvider),
                     ),
                     Transform.translate(
                       offset: const Offset(0, -8),
@@ -219,27 +231,17 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 25),
-                    Center(
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
                       child: ElevatedButton(
                         onPressed: authProvider.isLoading
                             ? null
-                            : () async {
-                                bool success = await authProvider.login(
-                                  _emailController.text.trim(),
-                                  _passwordController.text.trim(),
-                                );
-                                if (success && context.mounted) {
-                                  Navigator.pushReplacementNamed(
-                                    context,
-                                    '/UserHomePage',
-                                  );
-                                }
-                              },
+                            : () => _login(authProvider),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xffF4AD44),
                           foregroundColor: Colors.white,
-                          minimumSize: const Size(180, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
@@ -264,52 +266,85 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                               ),
                       ),
                     ),
-                    SizedBox(
-                      height: 20,
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(color: Colors.grey.shade300),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'or',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xffA5927D),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(color: Colors.grey.shade300),
+                        ),
+                      ],
                     ),
-                    Center(
-                      child: ElevatedButton(
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton(
                         onPressed: authProvider.isLoading
                             ? null
                             : () async {
-                          bool success = await authProvider.loginWithGoogle();
-                          if (success && context.mounted) {
-                            Navigator.pushReplacementNamed(
-                              context,
-                              '/UserHomePage',
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white, // Standard Google button look
+                                final success =
+                                    await authProvider.loginWithGoogle();
+                                if (success && mounted) {
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/UserHomePage',
+                                  );
+                                }
+                              },
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
                           foregroundColor: const Color(0xff0B4A72),
-                          minimumSize: const Size(220, 50),
+                          side: BorderSide(color: Colors.grey.shade300),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
-                            side: const BorderSide(color: Color(0xffE5E5E5)), // Light border
                           ),
-                          elevation: 0,
                         ),
                         child: authProvider.isLoading
                             ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                            : Text(
-                          'Sign in from Google',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/google_logo.png',
+                                    height: 20,
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                      Icons.g_mobiledata,
+                                      size: 22,
+                                      color: Color(0xff0B4A72),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Continue with Google',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xff0B4A72),
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
-
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
