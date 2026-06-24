@@ -242,9 +242,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                 style: FilledButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 52),
                                   backgroundColor: const Color(0xFFF7A433),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
                                   side: const BorderSide(
                                     color: Color(0xFFDA9B44),
                                     width: 2,
@@ -276,9 +273,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 52),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
                           side: const BorderSide(
                             color: Color(0xFFF7A433),
                             width: 2,

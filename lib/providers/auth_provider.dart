@@ -13,14 +13,12 @@ class AuthProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _errorMessage;
-
   String? _userId;
 
   AuthProvider(this._authService, this._userProvider);
 
   bool get isLoading => _isLoading;
   String? get error => _errorMessage;
-
   String? get userId => _userId;
 
   void updateDependencies(AuthService service, UserProvider userProvider) {
@@ -52,19 +50,13 @@ class AuthProvider extends ChangeNotifier {
 
   // --- 2. SIGN UP ---
   Future<bool> signUp(SignUpRequest request) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
+    _setLoading(true);
     try {
       await _authService.signUp(request);
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
       return true;
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = e.toString();
-      notifyListeners();
+      _handleError(e);
       return false;
     }
   }
@@ -107,20 +99,18 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // --- 5. LOGOUT ---
   Future<void> logout({
     required PetProvider petProvider,
     required ActivityProvider activityProvider,
   }) async {
     try {
-      // 1. Clear persistent storage
       const storage = FlutterSecureStorage();
       await storage.delete(key: 'token');
 
-      // 2. Clear AuthProvider state
       _userId = null;
       _errorMessage = null;
 
-      // 3. Clear all other shared state
       _userProvider.clear();
       petProvider.clear();
       activityProvider.clear();
@@ -131,6 +121,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // --- 6. GOOGLE LOGIN ---
   Future<bool> loginWithGoogle() async {
     _setLoading(true);
     try {
@@ -150,7 +141,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Helper methods
+  // --- HELPERS ---
   void _setLoading(bool value) {
     _isLoading = value;
     if (value) _errorMessage = null;
@@ -160,6 +151,16 @@ class AuthProvider extends ChangeNotifier {
   void _handleError(dynamic e) {
     _isLoading = false;
     _errorMessage = e.toString().replaceAll('Exception: ', '');
+    notifyListeners();
+  }
+
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  void setError(String message) {
+    _errorMessage = message;
     notifyListeners();
   }
 }

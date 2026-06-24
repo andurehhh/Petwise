@@ -26,19 +26,35 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
   }
 
   Future<void> _login(AuthProvider authProvider) async {
+    // Clear any previous error before attempting login
+    authProvider.clearError();
+
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty) {
+      authProvider.setError('Please fill in all fields.');
+      return;
+    }
+
     final success = await authProvider.login(
       _emailController.text.trim(),
       _passwordController.text.trim(),
     );
+
     if (success && mounted) {
+      authProvider.clearError();
       Navigator.pushReplacementNamed(context, '/UserHomePage');
     }
   }
 
-  void _showForgotPasswordDialog() {
+  void _showForgotPasswordDialog(
+    BuildContext context,
+    AuthProvider authProvider,
+  ) {
+    _forgotEmailController.clear();
+
     showDialog(
       context: context,
-      builder: (context) => Dialog(
+      builder: (dialogContext) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: const Color(0xffFFF9EE),
         child: Padding(
@@ -56,7 +72,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Enter your email to receive a verifier link.',
+                'Enter your email to receive a reset link.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xffA5927D),
@@ -67,14 +83,53 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
               const SizedBox(height: 20),
               PetwiseUserTextfield(
                 textLabel: 'EMAIL',
-                textHint: 'name@email.com',
+                textHint: 'example@email.com',
                 isEditable: true,
                 controller: _forgotEmailController,
                 textInputAction: TextInputAction.done,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: authProvider.isLoading
+                    ? null
+                    : () async {
+                        final email = _forgotEmailController.text.trim();
+
+                        if (email.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please enter your email address.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
+                        final success = await authProvider.forgotPassword(
+                          email,
+                        );
+                        if (success && mounted) {
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Password reset link sent to your email.',
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else if (!success && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                authProvider.error ??
+                                    'Something went wrong. Try again.',
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xffF4AD44),
                   foregroundColor: Colors.white,
@@ -82,12 +137,22 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
-                  elevation: 0,
                 ),
-                child: Text(
-                  'Done',
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
-                ),
+                child: authProvider.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Send Reset Link',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -116,8 +181,10 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
               Align(
                 alignment: Alignment.topLeft,
                 child: IconButton(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/LoginOrSignupScreen'),
+                  onPressed: () {
+                    authProvider.clearError();
+                    Navigator.pushNamed(context, '/LoginOrSignupScreen');
+                  },
                   icon: const Icon(
                     CupertinoIcons.back,
                     color: Colors.black,
@@ -159,10 +226,15 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
+
                     if (authProvider.error != null)
-                      Container(
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.only(bottom: 15),
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
@@ -188,9 +260,19 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                 ),
                               ),
                             ),
+
+                            GestureDetector(
+                              onTap: authProvider.clearError,
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.red,
+                                size: 18,
+                              ),
+                            ),
                           ],
                         ),
                       ),
+
                     PetwiseUserTextfield(
                       textLabel: 'EMAIL',
                       textHint: 'Enter your email address',
@@ -214,7 +296,8 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: _showForgotPasswordDialog,
+                          onPressed: () =>
+                              _showForgotPasswordDialog(context, authProvider),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                             minimumSize: Size.zero,
@@ -269,9 +352,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(
-                          child: Divider(color: Colors.grey.shade300),
-                        ),
+                        Expanded(child: Divider(color: Colors.grey.shade300)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text(
@@ -283,9 +364,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: Divider(color: Colors.grey.shade300),
-                        ),
+                        Expanded(child: Divider(color: Colors.grey.shade300)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -296,8 +375,9 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                         onPressed: authProvider.isLoading
                             ? null
                             : () async {
-                                final success =
-                                    await authProvider.loginWithGoogle();
+                                authProvider.clearError();
+                                final success = await authProvider
+                                    .loginWithGoogle();
                                 if (success && mounted) {
                                   Navigator.pushReplacementNamed(
                                     context,
@@ -317,7 +397,9 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,

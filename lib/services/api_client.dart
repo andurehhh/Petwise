@@ -111,11 +111,7 @@ class ApiClient {
       case 409:
         throw Exception(errorMessage);
       case 401:
-        throw Exception(
-          errorMessage.contains('Unauthorized')
-              ? errorMessage
-              : 'Session expired. Please login again.',
-        );
+        throw Exception(errorMessage);
       case 500:
         throw Exception('Server error: $errorMessage');
       default:
