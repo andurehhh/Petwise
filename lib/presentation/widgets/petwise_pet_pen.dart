@@ -3,6 +3,8 @@ import 'dart:math';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:petwise/presentation/screens/pet_profile_screen.dart';
+import 'package:petwise/presentation/widgets/petwise_pet_pen_bg_picker.dart';
+import 'package:petwise/services/pet_pen_background_service.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/data/models/pet_model.dart';
@@ -184,21 +186,55 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
   Widget build(BuildContext context) {
     final pets = context.watch<PetProvider>().pets.take(3).toList();
     _syncInstances(pets);
+    final bgSvc = context.watch<PetPenBackgroundService>();
+
 
     return LayoutBuilder(builder: (context, constraints) {
       double maxRight = constraints.maxWidth - 100;
 
       return Container(
         width: double.infinity,
-        height: 180,
+        height: 240,
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF9E6),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFF7A433).withOpacity(0.3), width: 2),
+          border: Border.all(color: const Color(0xFFF7A433), width: 4),
+          color: const Color(0xFFFFF9E6), // fallback
+          image: bgSvc.uploadedFilePath != null
+              ? DecorationImage(image: FileImage(File(bgSvc.uploadedFilePath!)), fit: BoxFit.cover)
+              : bgSvc.currentAsset != null
+              ? DecorationImage(image: AssetImage(bgSvc.currentAsset!), fit: BoxFit.cover)
+              : null,
         ),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            // First child in Stack's children list:
+            Positioned(
+              top: 8, right: 8,
+              child: GestureDetector(
+                onTap: () => showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.white,
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                  builder: (_) => const PetPenBgPicker(),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFF7A433).withOpacity(0.5)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.wallpaper_rounded, size: 14, color: Color(0xFF422521)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             ..._petInstances.keys.map((id) {
               final pet = pets.firstWhere((p) => p.id == id);
               final instance = _petInstances[id]!;
@@ -391,7 +427,7 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
               const Positioned(
                 top: -15,
                 right: 0,
-                child: Text("Zzz...", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFF7A433))),
+                child: Text("Zzz...", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
               ),
             Transform(
               alignment: Alignment.center,

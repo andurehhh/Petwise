@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:async';
 
 class CloudinaryService {
-  static const String uploadPreset = 'ml_default';
+  static const String uploadPreset = 'petwise';
 
   Future<String?> uploadImage(File imageFile) async {
     // 1. Verify file exists before even trying to send
