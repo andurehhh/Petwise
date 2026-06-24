@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:petwise/services/cloudinary_service.dart';
 
 class PetwiseUserImagePickerSheet extends StatefulWidget {
   final String currentImageUrl;
@@ -18,9 +21,6 @@ class PetwiseUserImagePickerSheet extends StatefulWidget {
 
 class _PetwiseUserImagePickerSheetState
     extends State<PetwiseUserImagePickerSheet> {
-  final TextEditingController _urlController = TextEditingController();
-
-  // Preset illustrations/avatars for user profiles
   final List<Map<String, String>> _presets = [
     {
       'name': 'Avatar 1',
@@ -39,16 +39,44 @@ class _PetwiseUserImagePickerSheetState
     },
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _urlController.text = widget.currentImageUrl;
-  }
+  Future<void> _handleGalleryUpload() async {
+    final picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
 
-  @override
-  void dispose() {
-    _urlController.dispose();
-    super.dispose();
+    if (pickedFile == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final String? uploadedUrl = await CloudinaryService().uploadImage(
+        File(pickedFile.path),
+      );
+
+      if (mounted) Navigator.pop(context); // Remove loading dialog
+
+      if (uploadedUrl != null) {
+        widget.onImageSelected(uploadedUrl);
+        if (mounted) Navigator.pop(context); // Close the sheet
+      } else {
+        throw Exception("Upload failed");
+      }
+    } catch (e) {
+      if (mounted) {
+        if (Navigator.canPop(context)) Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Upload failed. Check your connection."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -64,141 +92,123 @@ class _PetwiseUserImagePickerSheetState
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "Change Profile Photo",
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1A2D40),
+            const SizedBox(height: 20),
+            Text(
+              "Change Profile Photo",
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1A2D40),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            "Select a quick preset avatar:",
-            style: GoogleFonts.plusJakartaSans(
-              color: Colors.grey.shade600,
-              fontSize: 14,
+            const SizedBox(height: 16),
+            Text(
+              "Select a quick preset avatar:",
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-
-          // Row of clickable profile styles
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: _presets.map((preset) {
-              final isSelected = widget.currentImageUrl == preset['url'];
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    widget.onImageSelected(preset['url']!);
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFFFFF4E6)
-                          : const Color(0xFFF8F7F6),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: _presets.map((preset) {
+                final isSelected = widget.currentImageUrl == preset['url'];
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      widget.onImageSelected(preset['url']!);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFFF7A433)
-                            : Colors.transparent,
-                        width: 2,
+                            ? const Color(0xFFFFF4E6)
+                            : const Color(0xFFF8F7F6),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFFF7A433)
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          ClipOval(
+                            child: Image.network(
+                              preset['url']!,
+                              height: 55,
+                              width: 55,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            preset['name']!,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        ClipOval(
-                          child: Image.network(
-                            preset['url']!,
-                            height: 55,
-                            width: 55,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          preset['name']!,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              "Or upload your own profile photo:",
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: _handleGalleryUpload,
+                icon: const Icon(Icons.photo_library, color: Colors.white),
+                label: Text(
+                  "Upload from Gallery",
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: 24),
-          Text(
-            "Or paste a custom image URL link:",
-            style: GoogleFonts.plusJakartaSans(
-              color: Colors.grey.shade600,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _urlController,
-            decoration: InputDecoration(
-              hintText: 'https://example.com/your-avatar.jpg',
-              filled: true,
-              fillColor: const Color(0xFFF8F7F6),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              prefixIcon: const Icon(Icons.link),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF7A433),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () {
-                if (_urlController.text.trim().isNotEmpty) {
-                  widget.onImageSelected(_urlController.text.trim());
-                }
-                Navigator.pop(context);
-              },
-              child: Text(
-                "Apply Custom Photo",
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF7A433),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }
