@@ -44,13 +44,31 @@ class _UserHomePageScreenState extends State<UserHomePage> {
     if (!mounted) return;
     final userProvider = context.read<UserProvider>();
     final userId = userProvider.user?.id;
-    if (userId != null) {
-      await context.read<PetProvider>().loadUserPets(userId);
+
+    // FIX: Exit immediately if no user is found.
+    // This prevents the "Task" exception on first run/no account.
+    if (userId == null) {
+      debugPrint("Skipping data initialization: No user logged in.");
+      return;
     }
-    if (!mounted) return;
-    final petIds = context.read<PetProvider>().pets.map((p) => p.id).toList();
-    if (petIds.isNotEmpty) {
-      await context.read<ActivityProvider>().loadAllActivities(petIds);
+
+    try {
+      final petProvider = context.read<PetProvider>();
+
+      // 1. Load pets first
+      await petProvider.loadUserPets(userId);
+
+      if (!mounted) return;
+
+      // 2. Only proceed to activities if we have pets
+      final petIds = petProvider.pets.map((p) => p.id).toList();
+      if (petIds.isNotEmpty) {
+        await context.read<ActivityProvider>().loadAllActivities(petIds);
+      } else {
+        debugPrint("No pets found for user $userId, skipping activities.");
+      }
+    } catch (e) {
+      debugPrint("Error loading user data: $e");
     }
   }
 

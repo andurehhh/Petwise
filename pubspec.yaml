@@ -71,6 +71,10 @@ flutter:
   assets:
      - assets/images/
      - assets/sounds/
+     - assets/images/dog/
+     - assets/images/cat/
+     - assets/images/bunny/
+     - assets/images/generic/
 
   #   - images/a_dot_ham.jpeg
 

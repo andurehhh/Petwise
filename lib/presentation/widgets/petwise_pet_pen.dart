@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:petwise/presentation/screens/pet_profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/data/models/pet_model.dart';
 import 'package:audioplayers/audioplayers.dart';
+
 class InteractivePetPen extends StatefulWidget {
   const InteractivePetPen({super.key});
 
@@ -17,28 +19,41 @@ class _PetInstance {
   final int id;
   double x;
   double yOffset;
+  double groundLevel; // Original Y to return to after falling
   bool isFacingRight;
   bool isWalking;
   bool isSleeping;
+  bool isDragging;
+  bool isFalling;
+  double verticalSpeed;
+  String? lastState;
 
   _PetInstance({
     required this.id,
     this.x = 50.0,
     this.yOffset = 25.0,
+    this.groundLevel = 25.0,
     this.isFacingRight = true,
     this.isWalking = true,
     this.isSleeping = false,
+    this.isDragging = false,
+    this.isFalling = false,
+    this.verticalSpeed = 0.0,
   });
 }
 
 class _InteractivePetPenState extends State<InteractivePetPen> {
   int _currentFrame = 1;
+  int _physicsTick = 0;
   final Map<int, _PetInstance> _petInstances = {};
   Timer? _animationTimer;
   Timer? _behaviorTimer;
   final Random _random = Random();
   final AudioPlayer _audioPlayer = AudioPlayer();
-
+  int? _showingProfileForId;
+  int? _pausedForId;
+  final Set<int> _heartsShown = {};
+  int? _showingHeartForId;
 
   @override
   void initState() {
@@ -46,22 +61,70 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
     _startAnimation();
   }
 
-  Future<void> _playPressSound(String sound) async {
+  // Helper method to play sound on pet press/interaction
+  Future<void> _playPressSound() async {
     try {
-      await _audioPlayer.play(AssetSource('sounds/$sound.mp3'));
+      int randSound = Random().nextInt(3);
+      String soundPath = 'oi.mp3';
+      if (randSound == 0) {
+        soundPath = 'huh.mp3';
+      } else if (randSound == 1) {
+        soundPath = 'yaha.mp3';
+      } else{
+        soundPath = 'oi.mp3';
+      }
+      await _audioPlayer.play(AssetSource('sounds/$soundPath'));
     } catch (e) {
       debugPrint("Error playing sound: $e");
     }
   }
 
+  // NEW: Triggers the one-time heart bubble
+  void _triggerHeart(_PetInstance instance) {
+    if (!_heartsShown.contains(instance.id)) {
+      setState(() {
+        _heartsShown.add(instance.id);
+        _showingHeartForId = instance.id;
+      });
+      Timer(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _showingHeartForId = null);
+      });
+    }
+  }
+
   void _startAnimation() {
-    _animationTimer = Timer.periodic(const Duration(milliseconds: 250), (timer) {
+    // Faster timer (50ms) for smooth dragging and falling physics
+    _animationTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       if (!mounted) return;
       setState(() {
-        _currentFrame = _currentFrame == 1 ? 2 : 1;
+        _physicsTick++;
+        // Update animation frame every 250ms (5 ticks of 50ms)
+        if (_physicsTick >= 5) {
+          _currentFrame = _currentFrame == 1 ? 2 : 1;
+          _physicsTick = 0;
+        }
+
         for (var instance in _petInstances.values) {
-          if (instance.isWalking && !instance.isSleeping) {
-            instance.x += instance.isFacingRight ? 6 : -6;
+          if (instance.isDragging) continue;
+
+          if (instance.isFalling) {
+            instance.verticalSpeed -= 2.0; // Gravity force
+            instance.yOffset += instance.verticalSpeed;
+
+            // Hit ground detection
+            if (instance.yOffset <= instance.groundLevel) {
+              instance.yOffset = instance.groundLevel;
+              instance.isFalling = false;
+              instance.verticalSpeed = 0;
+              instance.lastState = 'land';
+
+              // Stay in "land" pose for 400ms then go back to normal
+              Timer(const Duration(milliseconds: 400), () {
+                if (mounted) setState(() => instance.lastState = null);
+              });
+            }
+          } else if (instance.isWalking && !instance.isSleeping) {
+            instance.x += instance.isFacingRight ? 1.2 : -1.2;
           }
         }
       });
@@ -71,6 +134,7 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
       if (!mounted) return;
       setState(() {
         for (var instance in _petInstances.values) {
+          if (instance.isDragging || instance.isFalling) continue;
           int behavior = _random.nextInt(3);
           instance.isWalking = behavior == 0;
           instance.isSleeping = behavior == 2;
@@ -92,14 +156,28 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
     _petInstances.removeWhere((id, _) => !petIds.contains(id));
     for (var pet in pets) {
       if (!_petInstances.containsKey(pet.id)) {
+        double startY = 15.0 + _random.nextDouble() * 20.0;
         _petInstances[pet.id] = _PetInstance(
           id: pet.id,
           x: 20.0 + _random.nextDouble() * 150,
-          yOffset: 15.0 + _random.nextDouble() * 20.0,
+          yOffset: startY,
+          groundLevel: startY,
           isFacingRight: _random.nextBool(),
         );
       }
     }
+  }
+
+  String _getSpritePrefix(String species) {
+    final lowerCaseSpecies = species.toLowerCase();
+    if (lowerCaseSpecies.contains('dog') || lowerCaseSpecies.contains('puppy')) {
+      return 'dog';
+    } else if (lowerCaseSpecies.contains('cat') || lowerCaseSpecies.contains('kitten')) {
+      return 'cat';
+    } else if (lowerCaseSpecies.contains('bunny') || lowerCaseSpecies.contains('rabbit')) {
+      return 'bunny';
+    }
+    return 'generic';
   }
 
   @override
@@ -117,20 +195,69 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
           color: const Color(0xFFFFF9E6),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: const Color(0xFFF7A433).withOpacity(0.3), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Stack(
-          children: _petInstances.keys.map((id) {
-            final pet = pets.firstWhere((p) => p.id == id);
-            final instance = _petInstances[id]!;
-            return _buildPetSprite(pet, instance, maxRight);
-          }).toList(),
+          clipBehavior: Clip.none,
+          children: [
+            ..._petInstances.keys.map((id) {
+              final pet = pets.firstWhere((p) => p.id == id);
+              final instance = _petInstances[id]!;
+              return _buildPetSprite(pet, instance, maxRight);
+            }),
+            // Profile popups rendered at top level so hit area isn't clipped
+            ..._petInstances.keys.where((id) => _showingProfileForId == id).map((id) {
+              final pet = pets.firstWhere((p) => p.id == id);
+              final instance = _petInstances[id]!;
+              return Positioned(
+                left: instance.x.clamp(10.0, maxRight),
+                bottom: instance.yOffset + 60,
+                child: Builder(
+                  builder: (popupContext) => GestureDetector(
+                    onTap: () {
+                      debugPrint("Profile tapped for ${pet.name}");
+                      setState(() => _showingProfileForId = null);
+                      popupContext.read<PetProvider>().selectPet(pet);
+                      Navigator.of(popupContext, rootNavigator: true).push(
+                        MaterialPageRoute(builder: (_) => const PetProfileScreen()),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: const Color(0xFFF7A433).withOpacity(0.4),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            pet.name,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF422521),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.arrow_forward_ios, size: 10, color: Color(0xFFF7A433)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
         ),
       );
     });
@@ -143,65 +270,129 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
       instance.isFacingRight = true;
     }
 
+    // Determine current visual state
     String state = 'idle';
-    if (instance.isSleeping) state = 'sleep';
+    if (instance.isDragging) state = 'drag';
+    else if (instance.isFalling) state = 'fall';
+    else if (instance.lastState == 'land') state = 'land';
+    else if (instance.isSleeping) state = 'sleep';
     else if (instance.isWalking) state = 'walk';
 
-    String assetPath = 'assets/images/$state$_currentFrame (1).png';
+    final spritePrefix = _getSpritePrefix(pet.species);
+    String frameSuffix = (state == 'drag' || state == 'fall' || state == 'land') ? '1' : '$_currentFrame';
+    String assetPath = 'assets/images/$spritePrefix/$state$frameSuffix.png';
+    String genericIdlePath = 'assets/images/generic/idle$_currentFrame.png';
 
     // --- DYNAMIC POSITIONING ---
-    // Base Top lowered from 15 to 22
-    double faceTop = 18.0;
-    double faceLeft = instance.isFacingRight ? 35.0 : 18.0; //Face Right : Face Left
-
-    // Bobbing effect (Moves down during the second frame of animation)
-    if (_currentFrame == 2 && !instance.isSleeping) {
-      faceTop += 1.5;
-    }
-
-    // Sleep adjustment (Drops face lower to match laying down sprite)
-    if (instance.isSleeping) {
-      faceTop += 12.0;
-      faceLeft += instance.isFacingRight ? -16.0 : 14.0; // Face Left : Face Right
-    }
+    final faceOffsets = _getFaceOffsets(spritePrefix, state, instance.isFacingRight, _currentFrame);
+    double faceTop = faceOffsets['top']!;
+    double faceLeft = faceOffsets['left']!;
 
     return AnimatedPositioned(
       key: ValueKey(pet.id),
-      duration: const Duration(milliseconds: 250),
+      duration: instance.isDragging ? Duration.zero : const Duration(milliseconds: 50),
       left: instance.x.clamp(10.0, maxRight),
-      bottom: instance.yOffset,
+      bottom: instance.yOffset - (state == 'land' ? 10.0: 0.0),
       child: GestureDetector(
-        onTap: () => setState(() {
-          if (instance.isSleeping) {
-            instance.isSleeping = false;
-            instance.isWalking = true;
-          } else {
-            instance.isWalking = !instance.isWalking;
-            var sound = _random.nextInt(3);
-            switch (sound){
-              case 0:
-                _playPressSound(!instance.isWalking ? 'oi' : 'idle');
-                break;
-              case 1:
-                _playPressSound(instance.isWalking ? 'yaha' : 'idle');
-                break;
-              case 2:
-                _playPressSound(instance.isWalking ? 'huh' : 'idle');
-                break;
-            }
-
+        onPanStart: (_) {
+        },
+        onPanUpdate: (details) {
+          // Only start the "drag" state once movement is detected
+          if (!instance.isDragging) {
+            _playPressSound();
+            _triggerHeart(instance); // Trigger one-time heart bubble on first interaction
+            setState(() {
+              instance.isDragging = true;
+              instance.isWalking = false;
+              instance.isSleeping = false;
+              instance.isFalling = false;
+              instance.lastState = null;
+            });
           }
-        }),
+          setState(() {
+            instance.x = (instance.x + details.delta.dx).clamp(0.0, maxRight);
+            instance.yOffset = (instance.yOffset - details.delta.dy).clamp(instance.groundLevel, 140.0);
+          });
+        },
+        onPanEnd: (_) {
+          if (instance.isDragging) {
+            setState(() {
+              instance.isDragging = false;
+              instance.isFalling = true;
+              instance.verticalSpeed = 0;
+            });
+          }
+        },
+        onPanCancel: () {
+          if (instance.isDragging) {
+            setState(() {
+              instance.isDragging = false;
+              instance.isFalling = true;
+              instance.verticalSpeed = 0;
+            });
+          }
+        },
+        onTap: () {
+          _playPressSound();
+          _triggerHeart(instance);
+          setState(() {
+            if (instance.isSleeping) {
+              instance.isSleeping = false;
+            }
+            // Pause all movement briefly
+            instance.isWalking = false;
+            instance.isSleeping = false;
+            _pausedForId = instance.id;
+          });
+          // Resume after 1200ms
+          Timer(const Duration(milliseconds: 1200), () {
+            if (mounted) setState(() {
+              _pausedForId = null;
+              instance.isWalking = true;
+            });
+          });
+        },
+        onLongPress: () {
+          _playPressSound();
+          setState(() {
+            _showingProfileForId = instance.id;
+            instance.isWalking = false;
+            instance.isSleeping = false;
+          });
+          Timer(const Duration(seconds: 4), () {
+            if (mounted) setState(() => _showingProfileForId = null);
+          });
+        },
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            // ONE-TIME HEART SPEECH BUBBLE
+            if (_showingHeartForId == instance.id)
+              Positioned(
+                top: -35,
+                left: instance.isFacingRight ? 40 : 15,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Text("❤️", style: TextStyle(fontSize: 20)),
+                ),
+              ),
             if (instance.isSleeping)
               const Positioned(
                 top: -15,
-                right: -5,
+                right: 0,
                 child: Text("Zzz...", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFF7A433))),
               ),
-            // BASE ANIMATED SPRITE
             Transform(
               alignment: Alignment.center,
               transform: Matrix4.rotationY(instance.isFacingRight ? 0 : 3.14159),
@@ -210,21 +401,21 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                 width: 90, height: 90,
                 fit: BoxFit.contain,
                 gaplessPlayback: true,
-                errorBuilder: (_, __, ___) => Image.asset('assets/images/idle$_currentFrame.png', width: 90, height: 90,
+                errorBuilder: (_, __, ___) => Image.asset(
+                  genericIdlePath,
+                  width: 90, height: 90,
                   fit: BoxFit.contain, gaplessPlayback: true,
                   errorBuilder: (_, __, ___) => const Icon(Icons.pets, size: 50, color: Color(0xFFF7A433)),
                 ),
               ),
             ),
-            // "ZOOMED" & MIRRORED FACE OVERLAY
             Positioned(
               top: faceTop,
               left: faceLeft,
               child: Transform.rotate(
-                // Tilt the face overlay when sleeping (approx 23 degrees)
                 angle: instance.isSleeping ? (instance.isFacingRight ? -0.4 : 0.4) : 0,
                 child: Container(
-                  width: 38, // Increased size for "Zoomed" look
+                  width: 38,
                   height: 38,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -234,9 +425,8 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                   child: ClipOval(
                     child: Transform(
                       alignment: Alignment.center,
-                      // Mirrors the profile picture to match the sprite's direction
                       transform: Matrix4.rotationY(instance.isFacingRight ? 0 : 3.14159),
-                      child: _buildFaceImage(pet.image_url),
+                      child: Transform.scale(scale: 1.1, child: _buildFaceImage(pet.image_url)),
                     ),
                   ),
                 ),
@@ -249,16 +439,46 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
   }
 
   Widget _buildFaceImage(String? url) {
-    Widget image;
-    if (url == null || url.isEmpty) {
-      image = Container(color: const Color(0xFFF7A433), child: const Icon(Icons.pets, size: 20, color: Colors.white));
-    } else if (url.startsWith('http')) {
-      image = Image.network(url, fit: BoxFit.cover);
-    } else {
-      image = Image.file(File(url), fit: BoxFit.cover);
+    if (url == null || url.isEmpty) return Container(color: const Color(0xFFF7A433), child: const Icon(Icons.pets, size: 20, color: Colors.white));
+    if (url.startsWith('http')) return Image.network(url, fit: BoxFit.cover);
+    return Image.file(File(url), fit: BoxFit.cover);
+  }
+  Map<String, double> _getFaceOffsets(String spritePrefix, String state, bool isFacingRight, int currentFrame) {
+    double top = 18.0;
+    double left = isFacingRight ? 35.0 : 18.0;
+
+    switch (spritePrefix) {
+      case 'dog':
+        top = 18.0;
+        left = isFacingRight ? 32.0 : 20.0;
+        break;
+      case 'cat':
+        top = 18.0;
+        left = isFacingRight ? 34.0 : 19.0;
+        break;
+      case 'bunny':
+        top = 26.0;
+        left = isFacingRight ? 33.0 : 20.0;
+        break;
+      case 'generic':
+        top = 18.0;
+        left = isFacingRight ? 35.0 : 18.0;
+        break;
     }
 
-    // Applies the 10% Zoom (1.1 scale) as requested
-    return Transform.scale(scale: 1.1, child: image);
+    if (state == 'drag') {
+      top +=4.0;
+    } else if (state == 'fall') {
+      top -= 2.0;
+    } else if (state == 'land') {
+      top += 20.0;
+    } else if (state == 'sleep') {
+      top += 12.0;
+      left += isFacingRight ? -16.0 : 14.0;
+    } else if (currentFrame == 2) {
+      top += 1.5;
+    }
+
+    return {'top': top, 'left': left};
   }
 }
