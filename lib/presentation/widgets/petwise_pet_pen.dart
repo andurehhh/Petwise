@@ -3,6 +3,8 @@ import 'dart:math';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:petwise/presentation/screens/pet_profile_screen.dart';
+import 'package:petwise/presentation/widgets/petwise_pet_pen_bg_picker.dart';
+import 'package:petwise/services/pet_pen_background_service.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/data/models/pet_model.dart';
@@ -70,7 +72,7 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
         soundPath = 'huh.mp3';
       } else if (randSound == 1) {
         soundPath = 'yaha.mp3';
-      } else{
+      } else {
         soundPath = 'oi.mp3';
       }
       await _audioPlayer.play(AssetSource('sounds/$soundPath'));
@@ -170,11 +172,14 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
 
   String _getSpritePrefix(String species) {
     final lowerCaseSpecies = species.toLowerCase();
-    if (lowerCaseSpecies.contains('dog') || lowerCaseSpecies.contains('puppy')) {
+    if (lowerCaseSpecies.contains('dog') ||
+        lowerCaseSpecies.contains('puppy')) {
       return 'dog';
-    } else if (lowerCaseSpecies.contains('cat') || lowerCaseSpecies.contains('kitten')) {
+    } else if (lowerCaseSpecies.contains('cat') ||
+        lowerCaseSpecies.contains('kitten')) {
       return 'cat';
-    } else if (lowerCaseSpecies.contains('bunny') || lowerCaseSpecies.contains('rabbit')) {
+    } else if (lowerCaseSpecies.contains('bunny') ||
+        lowerCaseSpecies.contains('rabbit')) {
       return 'bunny';
     }
     return 'generic';
@@ -184,61 +189,72 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
   Widget build(BuildContext context) {
     final pets = context.watch<PetProvider>().pets.take(3).toList();
     _syncInstances(pets);
+    final bgSvc = context.watch<PetPenBackgroundService>();
 
-    return LayoutBuilder(builder: (context, constraints) {
-      double maxRight = constraints.maxWidth - 100;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double maxRight = constraints.maxWidth - 100;
 
-      return Container(
-        width: double.infinity,
-        height: 180,
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFF9E6),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFF7A433).withOpacity(0.3), width: 2),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
+        return Container(
+          width: double.infinity,
+          height: 240,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFF7A433), width: 4),
+            color: const Color(0xFFFFF9E6), // fallback
+            image: bgSvc.uploadedFilePath != null
+                ? DecorationImage(
+                    image: FileImage(File(bgSvc.uploadedFilePath!)),
+                    fit: BoxFit.cover,
+                  )
+                : bgSvc.currentAsset != null
+                ? DecorationImage(
+                    image: AssetImage(bgSvc.currentAsset!),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
           child: Stack(
             clipBehavior: Clip.none,
             children: [
+              // First child in Stack's children list:
               Positioned(
-                top: -28,
-                left: -20,
-                child: _PenBlob(
-                  size: 90,
-                  color: const Color(0xFFF7A433).withOpacity(0.13),
-                  animOffset: 0,
-                  ctrl: _animationTimer,
-                ),
-              ),
-              Positioned(
-                top: -10,
-                right: -16,
-                child: _PenBlob(
-                  size: 64,
-                  color: const Color(0xFFF7A433).withOpacity(0.1),
-                  animOffset: 0.3,
-                  ctrl: _animationTimer,
-                ),
-              ),
-              Positioned(
-                bottom: -18,
-                left: 60,
-                child: _PenBlob(
-                  size: 52,
-                  color: const Color(0xFFF7A433).withOpacity(0.09),
-                  animOffset: 0.6,
-                  ctrl: _animationTimer,
-                ),
-              ),
-              Positioned(
-                bottom: -10,
-                right: 40,
-                child: _PenBlob(
-                  size: 40,
-                  color: const Color(0xFFF7A433).withOpacity(0.07),
-                  animOffset: 0.9,
-                  ctrl: _animationTimer,
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () => showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    builder: (_) => const PetPenBgPicker(),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.85),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFFF7A433).withOpacity(0.5),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.wallpaper_rounded,
+                          size: 14,
+                          color: Color(0xFF422521),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               ..._petInstances.keys.map((id) {
@@ -246,63 +262,78 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                 final instance = _petInstances[id]!;
                 return _buildPetSprite(pet, instance, maxRight);
               }),
-              ..._petInstances.keys.where((id) => _showingProfileForId == id).map((id) {
-                final pet = pets.firstWhere((p) => p.id == id);
-                final instance = _petInstances[id]!;
-                return Positioned(
-                  left: instance.x.clamp(10.0, maxRight),
-                  bottom: instance.yOffset + 60,
-                  child: Builder(
-                    builder: (popupContext) => GestureDetector(
-                      onTap: () {
-                        debugPrint("Profile tapped for ${pet.name}");
-                        setState(() => _showingProfileForId = null);
-                        popupContext.read<PetProvider>().selectPet(pet);
-                        Navigator.of(popupContext, rootNavigator: true).push(
-                          MaterialPageRoute(builder: (_) => const PetProfileScreen()),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.12),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+              // Profile popups rendered at top level so hit area isn't clipped
+              ..._petInstances.keys
+                  .where((id) => _showingProfileForId == id)
+                  .map((id) {
+                    final pet = pets.firstWhere((p) => p.id == id);
+                    final instance = _petInstances[id]!;
+                    return Positioned(
+                      left: instance.x.clamp(10.0, maxRight),
+                      bottom: instance.yOffset + 60,
+                      child: Builder(
+                        builder: (popupContext) => GestureDetector(
+                          onTap: () {
+                            debugPrint("Profile tapped for ${pet.name}");
+                            setState(() => _showingProfileForId = null);
+                            popupContext.read<PetProvider>().selectPet(pet);
+                            Navigator.of(
+                              popupContext,
+                              rootNavigator: true,
+                            ).push(
+                              MaterialPageRoute(
+                                builder: (_) => const PetProfileScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
                             ),
-                          ],
-                          border: Border.all(
-                            color: const Color(0xFFF7A433).withOpacity(0.4),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              pet.name,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF422521),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.12),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                              border: Border.all(
+                                color: const Color(0xFFF7A433).withOpacity(0.4),
                               ),
                             ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.arrow_forward_ios, size: 10, color: Color(0xFFF7A433)),
-                          ],
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  pet.name,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF422521),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 10,
+                                  color: Color(0xFFF7A433),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
-              }),
+                    );
+                  }),
             ],
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   Widget _buildPetSprite(Pet pet, _PetInstance instance, double maxRight) {
@@ -314,35 +345,50 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
 
     // Determine current visual state
     String state = 'idle';
-    if (instance.isDragging) state = 'drag';
-    else if (instance.isFalling) state = 'fall';
-    else if (instance.lastState == 'land') state = 'land';
-    else if (instance.isSleeping) state = 'sleep';
-    else if (instance.isWalking) state = 'walk';
+    if (instance.isDragging)
+      state = 'drag';
+    else if (instance.isFalling)
+      state = 'fall';
+    else if (instance.lastState == 'land')
+      state = 'land';
+    else if (instance.isSleeping)
+      state = 'sleep';
+    else if (instance.isWalking)
+      state = 'walk';
 
     final spritePrefix = _getSpritePrefix(pet.species);
-    String frameSuffix = (state == 'drag' || state == 'fall' || state == 'land') ? '1' : '$_currentFrame';
+    String frameSuffix = (state == 'drag' || state == 'fall' || state == 'land')
+        ? '1'
+        : '$_currentFrame';
     String assetPath = 'assets/images/$spritePrefix/$state$frameSuffix.png';
     String genericIdlePath = 'assets/images/generic/idle$_currentFrame.png';
 
     // --- DYNAMIC POSITIONING ---
-    final faceOffsets = _getFaceOffsets(spritePrefix, state, instance.isFacingRight, _currentFrame);
+    final faceOffsets = _getFaceOffsets(
+      spritePrefix,
+      state,
+      instance.isFacingRight,
+      _currentFrame,
+    );
     double faceTop = faceOffsets['top']!;
     double faceLeft = faceOffsets['left']!;
 
     return AnimatedPositioned(
       key: ValueKey(pet.id),
-      duration: instance.isDragging ? Duration.zero : const Duration(milliseconds: 50),
+      duration: instance.isDragging
+          ? Duration.zero
+          : const Duration(milliseconds: 50),
       left: instance.x.clamp(10.0, maxRight),
-      bottom: instance.yOffset - (state == 'land' ? 10.0: 0.0),
+      bottom: instance.yOffset - (state == 'land' ? 10.0 : 0.0),
       child: GestureDetector(
-        onPanStart: (_) {
-        },
+        onPanStart: (_) {},
         onPanUpdate: (details) {
           // Only start the "drag" state once movement is detected
           if (!instance.isDragging) {
             _playPressSound();
-            _triggerHeart(instance); // Trigger one-time heart bubble on first interaction
+            _triggerHeart(
+              instance,
+            ); // Trigger one-time heart bubble on first interaction
             setState(() {
               instance.isDragging = true;
               instance.isWalking = false;
@@ -353,7 +399,10 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
           }
           setState(() {
             instance.x = (instance.x + details.delta.dx).clamp(0.0, maxRight);
-            instance.yOffset = (instance.yOffset - details.delta.dy).clamp(instance.groundLevel, 140.0);
+            instance.yOffset = (instance.yOffset - details.delta.dy).clamp(
+              instance.groundLevel,
+              140.0,
+            );
           });
         },
         onPanEnd: (_) {
@@ -388,10 +437,11 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
           });
           // Resume after 1200ms
           Timer(const Duration(milliseconds: 1200), () {
-            if (mounted) setState(() {
-              _pausedForId = null;
-              instance.isWalking = true;
-            });
+            if (mounted)
+              setState(() {
+                _pausedForId = null;
+                instance.isWalking = true;
+              });
           });
         },
         onLongPress: () {
@@ -433,21 +483,36 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
               const Positioned(
                 top: -15,
                 right: 0,
-                child: Text("Zzz...", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFF7A433))),
+                child: Text(
+                  "Zzz...",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueGrey,
+                  ),
+                ),
               ),
             Transform(
               alignment: Alignment.center,
-              transform: Matrix4.rotationY(instance.isFacingRight ? 0 : 3.14159),
+              transform: Matrix4.rotationY(
+                instance.isFacingRight ? 0 : 3.14159,
+              ),
               child: Image.asset(
                 assetPath,
-                width: 90, height: 90,
+                width: 90,
+                height: 90,
                 fit: BoxFit.contain,
                 gaplessPlayback: true,
                 errorBuilder: (_, __, ___) => Image.asset(
                   genericIdlePath,
-                  width: 90, height: 90,
-                  fit: BoxFit.contain, gaplessPlayback: true,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.pets, size: 50, color: Color(0xFFF7A433)),
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.contain,
+                  gaplessPlayback: true,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.pets,
+                    size: 50,
+                    color: Color(0xFFF7A433),
+                  ),
                 ),
               ),
             ),
@@ -455,20 +520,32 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
               top: faceTop,
               left: faceLeft,
               child: Transform.rotate(
-                angle: instance.isSleeping ? (instance.isFacingRight ? -0.4 : 0.4) : 0,
+                angle: instance.isSleeping
+                    ? (instance.isFacingRight ? -0.4 : 0.4)
+                    : 0,
                 child: Container(
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF422521), width: 0.5),
-                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                    border: Border.all(
+                      color: const Color(0xFF422521),
+                      width: 0.5,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black12, blurRadius: 4),
+                    ],
                   ),
                   child: ClipOval(
                     child: Transform(
                       alignment: Alignment.center,
-                      transform: Matrix4.rotationY(instance.isFacingRight ? 0 : 3.14159),
-                      child: Transform.scale(scale: 1.1, child: _buildFaceImage(pet.image_url)),
+                      transform: Matrix4.rotationY(
+                        instance.isFacingRight ? 0 : 3.14159,
+                      ),
+                      child: Transform.scale(
+                        scale: 1.1,
+                        child: _buildFaceImage(pet.image_url),
+                      ),
                     ),
                   ),
                 ),
@@ -481,11 +558,21 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
   }
 
   Widget _buildFaceImage(String? url) {
-    if (url == null || url.isEmpty) return Container(color: const Color(0xFFF7A433), child: const Icon(Icons.pets, size: 20, color: Colors.white));
+    if (url == null || url.isEmpty)
+      return Container(
+        color: const Color(0xFFF7A433),
+        child: const Icon(Icons.pets, size: 20, color: Colors.white),
+      );
     if (url.startsWith('http')) return Image.network(url, fit: BoxFit.cover);
     return Image.file(File(url), fit: BoxFit.cover);
   }
-  Map<String, double> _getFaceOffsets(String spritePrefix, String state, bool isFacingRight, int currentFrame) {
+
+  Map<String, double> _getFaceOffsets(
+    String spritePrefix,
+    String state,
+    bool isFacingRight,
+    int currentFrame,
+  ) {
     double top = 18.0;
     double left = isFacingRight ? 35.0 : 18.0;
 
@@ -509,7 +596,7 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
     }
 
     if (state == 'drag') {
-      top +=4.0;
+      top += 4.0;
     } else if (state == 'fall') {
       top -= 2.0;
     } else if (state == 'land') {
@@ -552,11 +639,14 @@ class _PenBlobState extends State<_PenBlob>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 2800 + (widget.animOffset * 600).toInt()),
+      duration: Duration(
+        milliseconds: 2800 + (widget.animOffset * 600).toInt(),
+      ),
     )..repeat(reverse: true);
-    _anim = Tween<double>(begin: 0.88, end: 1.1).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+    _anim = Tween<double>(
+      begin: 0.88,
+      end: 1.1,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override

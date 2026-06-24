@@ -9,6 +9,7 @@ import 'package:petwise/routes/app_route.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/services/notif_service.dart';
+import 'package:petwise/services/pet_pen_background_service.dart';
 import 'package:petwise/services/pet_service.dart';
 import 'package:petwise/services/user_service.dart';
 import 'package:petwise/services/activity_service.dart';
@@ -103,6 +104,7 @@ void main() async {
             return authProvider;
           },
         ),
+        ChangeNotifierProvider(create: (_) => PetPenBackgroundService()..load()),
       ],
       child: const MyApp(),
     ),
