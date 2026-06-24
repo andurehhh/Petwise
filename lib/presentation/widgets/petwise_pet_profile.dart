@@ -6,12 +6,14 @@ class PetCircle extends StatelessWidget {
   final String imagePath;
   final String petName;
   final String petType;
+  final bool isFavorite;
 
   const PetCircle({
     super.key,
     required this.imagePath,
     required this.petName,
     required this.petType,
+    this.isFavorite = false,
   });
 
   Widget _buildAvatar() {
@@ -72,13 +74,41 @@ class PetCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xffD0DAF0), width: 3),
-          ),
-          child: _buildAvatar(),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isFavorite
+                      ? Colors.redAccent.withValues(alpha: 0.6)
+                      : const Color(0xffD0DAF0),
+                  width: 3,
+                ),
+              ),
+              child: _buildAvatar(),
+            ),
+            if (isFavorite)
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.favorite,
+                    color: Colors.redAccent,
+                    size: 13,
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         Text(

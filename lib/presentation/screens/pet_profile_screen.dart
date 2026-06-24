@@ -77,7 +77,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
     final sliverHeight = coloredHeight + avatarRadius - whiteOverlap;
 
     return Scaffold(
-      backgroundColor: profileColor,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Positioned(
@@ -85,7 +85,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(color: profileColor),
+            child: Container(color: Colors.white),
           ),
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
@@ -307,10 +307,16 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                             ),
                           ),
                           IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.favorite_border,
-                              color: Color(0xFF1A2D40),
+                            onPressed: () {
+                              if (pet != null) {
+                                context.read<PetProvider>().toggleFavorite(pet.id);
+                              }
+                            },
+                            icon: Icon(
+                              (pet?.isFavorite ?? false)
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: Colors.redAccent,
                               size: 26,
                             ),
                           ),
@@ -556,7 +562,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                         ),
                       const SizedBox(height: 24),
                       Text(
-                        'Recent Activity',
+                        'Today\'s Activity',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -568,7 +574,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Text(
-                            'No recent activity',
+                            'No activities scheduled for today',
                             style: GoogleFonts.plusJakartaSans(color: Colors.grey),
                           ),
                         )
@@ -582,6 +588,10 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                 ),
               ),
             ),
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: ColoredBox(color: Colors.white),
+              ),
             ],
           ),
         ],

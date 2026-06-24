@@ -8,6 +8,7 @@ import 'package:petwise/presentation/widgets/petwise_image_picker_sheet.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/health_event_provider.dart';
+import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -287,16 +288,22 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Pet profile added successfully!")),
-        );
         Navigator.pop(context);
+        await PetwiseConfirmationDialog.show(
+          context: context,
+          success: true,
+          title: 'Pet Added',
+          message: '${_nameController.text.trim()} has been added to your profile.',
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+        await PetwiseConfirmationDialog.show(
+          context: context,
+          success: false,
+          title: 'Failed to Add Pet',
+          message: e.toString().replaceAll('Exception: ', ''),
+        );
       }
     }
   }
@@ -475,6 +482,82 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                     ),
                     const SizedBox(width: 16),
                   ],
+                ),
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Sex",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: ['Male', 'Female'].map((sex) {
+                          final isSelected = _selectedSex == sex;
+                          return Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _selectedSex = sex),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                margin: EdgeInsets.only(
+                                  right: sex == 'Male' ? 8 : 0,
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? (sex == 'Male'
+                                          ? const Color(0xFFDEEAFF)
+                                          : const Color(0xFFFFDEF0))
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? (sex == 'Male'
+                                            ? const Color(0xFF5B8DEF)
+                                            : const Color(0xFFEF5BAD))
+                                        : const Color(0xFFDCDCDC),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      sex == 'Male' ? Icons.male : Icons.female,
+                                      size: 20,
+                                      color: isSelected
+                                          ? (sex == 'Male'
+                                              ? const Color(0xFF5B8DEF)
+                                              : const Color(0xFFEF5BAD))
+                                          : const Color(0xFF94A3B8),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      sex,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        color: isSelected
+                                            ? (sex == 'Male'
+                                                ? const Color(0xFF5B8DEF)
+                                                : const Color(0xFFEF5BAD))
+                                            : const Color(0xFF94A3B8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Align(

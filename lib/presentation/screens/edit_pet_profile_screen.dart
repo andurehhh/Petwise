@@ -8,6 +8,7 @@ import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:petwise/presentation/widgets/petwise_image_picker_sheet.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_upcoming_medical_pill.dart';
 import 'package:petwise/presentation/widgets/petwise_add_health_event_sheet.dart';
+import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/health_event_provider.dart';
 import 'package:provider/provider.dart';
@@ -512,27 +513,22 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                           .read<PetProvider>()
                                           .updatePet(petId, request);
 
-                                      if (success && mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text("Pet Info Updated!"),
-                                            backgroundColor: Colors.lightGreen,
-                                          ),
-                                        );
+                                      if (!mounted) return;
+
+                                      if (success) {
                                         Navigator.pop(context);
-                                      } else if (mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              petProvider.errorMessage ??
-                                                  "Failed to update pet",
-                                            ),
-                                            backgroundColor: Colors.redAccent,
-                                          ),
+                                        await PetwiseConfirmationDialog.show(
+                                          context: context,
+                                          success: true,
+                                          title: 'Changes Saved',
+                                          message: 'Pet info has been updated successfully.',
+                                        );
+                                      } else {
+                                        await PetwiseConfirmationDialog.show(
+                                          context: context,
+                                          success: false,
+                                          title: 'Update Failed',
+                                          message: context.read<PetProvider>().errorMessage?.replaceAll('Exception: ', '') ?? 'Failed to update pet.',
                                         );
                                       }
                                     },

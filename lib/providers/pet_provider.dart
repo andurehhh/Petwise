@@ -72,10 +72,14 @@ class PetProvider extends ChangeNotifier {
 
     try {
       final responses = await _petService!.getPetsByUser(userid);
+      // Preserve existing favourite flags when reloading
+      final Map<int, bool> existingFavs = {
+        for (final p in _pets) p.id: p.isFavorite,
+      };
       _pets = responses
           .map(
             (res) => Pet(
-              id: res.petId, // Mapping cleanly to your ID change
+              id: res.petId,
               name: res.name,
               species: res.species,
               userId: res.userId,
@@ -84,11 +88,13 @@ class PetProvider extends ChangeNotifier {
               createdAt: res.createdAt,
               weight: res.weight,
               breed: res.breed,
-              image_url: res
-                  .image_url, // Added mapping for image_url from API contract response
+              image_url: res.image_url,
+              isFavorite: existingFavs[res.petId] ?? false,
             ),
           )
           .toList();
+
+      _sortPets();
 
       if (_pets.isNotEmpty && _selectedPet == null) {
         _selectedPet = _pets.first;
@@ -99,6 +105,27 @@ class PetProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Toggles the favourite flag for a pet and bumps it to the front of the list.
+  void toggleFavorite(int petId) {
+    final index = _pets.indexWhere((p) => p.id == petId);
+    if (index == -1) return;
+    _pets[index].isFavorite = !_pets[index].isFavorite;
+    _sortPets();
+    // Keep selectedPet reference in sync after sort
+    if (_selectedPet?.id == petId) {
+      _selectedPet = _pets.firstWhere((p) => p.id == petId);
+    }
+    notifyListeners();
+  }
+
+  /// Puts favourite pets first; order within each group is preserved.
+  void _sortPets() {
+    _pets.sort((a, b) {
+      if (a.isFavorite == b.isFavorite) return 0;
+      return a.isFavorite ? -1 : 1;
+    });
   }
 
   Future<void> createNewPet(CreatePetRequest request) async {
@@ -164,6 +191,10 @@ class PetProvider extends ChangeNotifier {
         breed: response.breed,
         image_url: response
             .image_url, // Added mapping here too so updates preserve the image
+        isFavorite: _pets.firstWhere(
+          (p) => p.id == petId,
+          orElse: () => _pets.first,
+        ).isFavorite,
       );
 
       int index = _pets.indexWhere((pet) => pet.id == petId);

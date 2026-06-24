@@ -9,6 +9,7 @@ class Pet {
   final String? breed;
   final double? weight;
   final String? image_url;
+  bool isFavorite;
 
   Pet({
     required this.id,
@@ -21,6 +22,7 @@ class Pet {
     this.image_url,
     this.breed,
     this.weight,
+    this.isFavorite = false,
   });
 
   int get age {

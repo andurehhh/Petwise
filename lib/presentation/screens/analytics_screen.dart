@@ -64,6 +64,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       backgroundColor: const Color(0xffF8F7F6),
       appBar: const PetWiseAppBar(),
       bottomNavigationBar: const PetwiseNavbar(navbarIndex: 1),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, '/AddPetProfileScreen'),
+        backgroundColor: const Color(0xFFF7A433),
+        elevation: 4,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: Column(
         children: [
           _TabBar(controller: _tabController),

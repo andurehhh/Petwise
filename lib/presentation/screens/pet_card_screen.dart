@@ -30,46 +30,56 @@ class PetCardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final petList = context.watch<PetProvider>().pets;
+    final favPets = petList.where((p) => p.isFavorite).take(3).toList();
+    final bgColor = const Color(0xffF8F7F6);
 
     return Scaffold(
-      backgroundColor: const Color(0xffF8F7F6),
+      backgroundColor: bgColor,
       appBar: const PetWiseAppBar(),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        itemCount: petList.length,
-        itemBuilder: (context, index) {
-          final pet = petList[index];
-          final String displayImage =
-              (pet.image_url != null && pet.image_url!.isNotEmpty)
-              ? pet.image_url!
-              : 'assets/images/doggie.gif';
+      body: ColoredBox(
+        color: Colors.white,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        children: [
+          if (favPets.isNotEmpty) ...[
+            _FavoritesStrip(pets: favPets),
+            const SizedBox(height: 20),
+          ],
+          ...petList.asMap().entries.map((entry) {
+            final pet = entry.value;
+            final String displayImage =
+                (pet.image_url != null && pet.image_url!.isNotEmpty)
+                ? pet.image_url!
+                : 'assets/images/doggie.gif';
 
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: GestureDetector(
-              onTap: () => _showZoom(context, pet, displayImage),
-              onDoubleTap: () {
-                context.read<PetProvider>().selectPet(pet);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const PetProfileScreen()),
-                );
-              },
-              child: PetCard(
-                id: pet.id,
-                name: pet.name,
-                species: pet.species,
-                birthday: DateFormat('MM-dd-yyyy').format(pet.birthday),
-                sex: pet.sex,
-                breed: pet.breed,
-                cardColor: PetTheme.cardColor(pet.species),
-                detailColor: PetTheme.detailColor(pet.species),
-                dataTileBackgroundColor: PetTheme.tileBackground(pet.species),
-                imagePath: displayImage,
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: GestureDetector(
+                onTap: () => _showZoom(context, pet, displayImage),
+                onDoubleTap: () {
+                  context.read<PetProvider>().selectPet(pet);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PetProfileScreen()),
+                  );
+                },
+                child: PetCard(
+                  id: pet.id,
+                  name: pet.name,
+                  species: pet.species,
+                  birthday: DateFormat('MM-dd-yyyy').format(pet.birthday),
+                  sex: pet.sex,
+                  breed: pet.breed,
+                  cardColor: PetTheme.cardColor(pet.species),
+                  detailColor: PetTheme.detailColor(pet.species),
+                  dataTileBackgroundColor: PetTheme.tileBackground(pet.species),
+                  imagePath: displayImage,
+                ),
               ),
-            ),
-          );
-        },
+            );
+          }),
+        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, '/AddPetProfileScreen'),
@@ -79,6 +89,136 @@ class PetCardScreen extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: const PetwiseNavbar(navbarIndex: 3),
+    );
+  }
+}
+
+class _FavoritesStrip extends StatelessWidget {
+  final List<Pet> pets;
+  const _FavoritesStrip({required this.pets});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.favorite, color: Colors.redAccent, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              'Favorites',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1A2D40),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: pets.map((pet) {
+            final String img =
+                (pet.image_url != null && pet.image_url!.isNotEmpty)
+                    ? pet.image_url!
+                    : 'assets/images/doggie.gif';
+            final bool isNetwork =
+                img.startsWith('http://') || img.startsWith('https://');
+            final color = PetTheme.cardColor(pet.species);
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  context.read<PetProvider>().selectPet(pet);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PetProfileScreen()),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(right: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          ClipOval(
+                            child: SizedBox(
+                              width: 36,
+                              height: 36,
+                              child: isNetwork
+                                  ? Image.network(
+                                      img,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        color: color.withValues(alpha: 0.3),
+                                        child: Icon(Icons.pets,
+                                            color: color, size: 18),
+                                      ),
+                                    )
+                                  : Image.asset(
+                                      img,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        color: color.withValues(alpha: 0.3),
+                                        child: Icon(Icons.pets,
+                                            color: color, size: 18),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: -2,
+                            right: -2,
+                            child: Container(
+                              width: 14,
+                              height: 14,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.favorite,
+                                color: Colors.redAccent,
+                                size: 10,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          pet.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1A2D40),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

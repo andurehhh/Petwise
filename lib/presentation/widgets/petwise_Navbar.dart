@@ -37,26 +37,24 @@ class PetwiseNavbar extends StatelessWidget {
             },
             icon: Icon(
               Icons.bar_chart,
-              color: navbarIndex == 1 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
             ),
           ),
-          SizedBox(width: 50),
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, AppRoute.petActivityPlanner);
+                  (r) => false,
+                );
+              }
             },
             icon: Icon(
               Icons.calendar_month_rounded,
-              color: navbarIndex == 2 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
             ),
           ),
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, AppRoute.petCardScreen);
             },
             icon: Icon(
               Icons.pets,
-              color: navbarIndex == 3 ? Color(0xFFF7A433) : Color(0xFF94A3B8),
+              color: navbarIndex == 3 ? const Color(0xFFF7A433) : const Color(0xFF94A3B8),
             ),
           ),
         ],

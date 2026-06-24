@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:petwise/presentation/screens/user_homepage_screen.dart';
-import 'package:petwise/presentation/test/auth_test_screen.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
@@ -8,7 +6,6 @@ import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/providers/health_event_provider.dart';
 import 'package:petwise/providers/vaccination_provider.dart';
 import 'package:petwise/routes/app_route.dart';
-import 'package:petwise/presentation/screens/pet_activity_planner_screen.dart';
 import 'package:petwise/services/api_client.dart';
 import 'package:petwise/services/auth_service.dart';
 import 'package:petwise/services/notif_service.dart';
@@ -17,8 +14,6 @@ import 'package:petwise/services/user_service.dart';
 import 'package:petwise/services/activity_service.dart';
 import 'package:petwise/services/health_event_service.dart';
 import 'package:provider/provider.dart';
-
-// New Analytics Features Added Here
 import 'package:petwise/services/analytics_service.dart';
 import 'package:petwise/providers/analytics_provider.dart';
 
@@ -142,27 +137,6 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: AppRoute.loginOrSignup,
       routes: AppRoute.routes,
-      onGenerateRoute: (settings) {
-        if (settings.name == AppRoute.petActivityPlanner) {
-          return PageRouteBuilder(
-            settings: settings,
-            pageBuilder: (_, __, ___) => const PlannerScreen(),
-            transitionsBuilder: (_, anim, __, child) => SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1.0, 0.0),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: anim, curve: Curves.easeInOut),
-              ),
-              child: child,
-            ),
-            transitionDuration: const Duration(milliseconds: 300),
-          );
-        }
-        return null;
-      },
-      home: UserHomePage(),
-      //home: AuthTestScreen(),
     );
   }
 }

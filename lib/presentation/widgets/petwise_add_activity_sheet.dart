@@ -5,6 +5,7 @@ import 'package:petwise/contracts/activity/create_activity_request.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
+import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
 
 class AddActivitySheet extends StatefulWidget {
   final String userId;
@@ -74,14 +75,21 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
         _selectedDate,
       );
       if (!mounted) return;
-      Navigator.pop(context);
+      Navigator.pop(context); // close the sheet first
+      await PetwiseConfirmationDialog.show(
+        context: context,
+        success: true,
+        title: 'Activity Scheduled',
+        message: '"${_titleController.text.trim()}" has been added to the planner.',
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to add activity: $e'),
-          backgroundColor: Colors.redAccent,
-        ),
+      Navigator.pop(context); // close the sheet
+      await PetwiseConfirmationDialog.show(
+        context: context,
+        success: false,
+        title: 'Failed to Add Activity',
+        message: e.toString().replaceAll('Exception: ', ''),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

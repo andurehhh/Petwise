@@ -11,6 +11,8 @@ import '../widgets/petwise_app_bar.dart';
 import '../widgets/petwise_Navbar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../screens/pet_activity_planner_screen.dart';
+import 'package:petwise/presentation/widgets/petwise_add_activity_sheet.dart';
+import 'package:intl/intl.dart';
 
 Route _slideLeft(Widget page) => PageRouteBuilder(
       pageBuilder: (_, __, ___) => page,
@@ -88,7 +90,8 @@ class _UserHomePageScreenState extends State<UserHomePage> {
         .toList()
       ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
 
-    final displayedPets = petList.take(3).toList();
+    final favPets = petList.where((p) => p.isFavorite).take(3).toList();
+    final displayedPets = favPets.isNotEmpty ? favPets : petList.take(3).toList();
     final String displayName = user?.nickname ?? user?.firstName ?? "User";
 
     return Scaffold(
@@ -102,7 +105,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
           children: [
             const SizedBox(height: 15),
             Text(
-              "Good morning, $displayName!",
+              "${today.hour < 12 ? 'Good morning' : today.hour < 17 ? 'Good afternoon' : 'Good evening'}, $displayName!",
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
@@ -140,7 +143,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "Pets",
+                  favPets.isNotEmpty ? "Favorites" : "Pets",
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -175,6 +178,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                       imagePath: pet.image_url ?? '',
                       petName: pet.name,
                       petType: pet.species,
+                      isFavorite: pet.isFavorite,
                     ),
                   );
                 }).toList(),
@@ -185,26 +189,91 @@ class _UserHomePageScreenState extends State<UserHomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  "Upcoming Activities",
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    _slideLeft(const PlannerScreen()),
-                  ),
-                  child: Text(
-                    "See all",
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xffF4AD44),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Today's Activities",
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
+                    Text(
+                      DateFormat('EEEE, MMM d').format(today),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        final userId = context.read<UserProvider>().user?.id;
+                        if (userId != null) {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => AddActivitySheet(
+                              userId: userId,
+                              selectedDate: today,
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF4E6),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFFF7A433).withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.add,
+                              color: Color(0xFFF7A433),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "Add",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFFF7A433),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        _slideLeft(PlannerScreen(initialDate: today)),
+                      ),
+                      child: Text(
+                        "See all",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xffF4AD44),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -220,9 +289,49 @@ class _UserHomePageScreenState extends State<UserHomePage> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Center(
-                  child: Text(
-                    "No pending activities",
-                    style: GoogleFonts.roboto(color: Colors.grey),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        size: 40,
+                        color: Colors.grey.shade300,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "All clear for today!",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.grey,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      GestureDetector(
+                        onTap: () {
+                          final userId =
+                              context.read<UserProvider>().user?.id;
+                          if (userId != null) {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (_) => AddActivitySheet(
+                                userId: userId,
+                                selectedDate: today,
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(
+                          "Tap + to schedule one",
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFFF7A433),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               )

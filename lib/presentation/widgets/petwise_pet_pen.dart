@@ -196,68 +196,110 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: const Color(0xFFF7A433).withOpacity(0.3), width: 2),
         ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            ..._petInstances.keys.map((id) {
-              final pet = pets.firstWhere((p) => p.id == id);
-              final instance = _petInstances[id]!;
-              return _buildPetSprite(pet, instance, maxRight);
-            }),
-            // Profile popups rendered at top level so hit area isn't clipped
-            ..._petInstances.keys.where((id) => _showingProfileForId == id).map((id) {
-              final pet = pets.firstWhere((p) => p.id == id);
-              final instance = _petInstances[id]!;
-              return Positioned(
-                left: instance.x.clamp(10.0, maxRight),
-                bottom: instance.yOffset + 60,
-                child: Builder(
-                  builder: (popupContext) => GestureDetector(
-                    onTap: () {
-                      debugPrint("Profile tapped for ${pet.name}");
-                      setState(() => _showingProfileForId = null);
-                      popupContext.read<PetProvider>().selectPet(pet);
-                      Navigator.of(popupContext, rootNavigator: true).push(
-                        MaterialPageRoute(builder: (_) => const PetProfileScreen()),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.12),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                        border: Border.all(
-                          color: const Color(0xFFF7A433).withOpacity(0.4),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            pet.name,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF422521),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: -28,
+                left: -20,
+                child: _PenBlob(
+                  size: 90,
+                  color: const Color(0xFFF7A433).withOpacity(0.13),
+                  animOffset: 0,
+                  ctrl: _animationTimer,
+                ),
+              ),
+              Positioned(
+                top: -10,
+                right: -16,
+                child: _PenBlob(
+                  size: 64,
+                  color: const Color(0xFFF7A433).withOpacity(0.1),
+                  animOffset: 0.3,
+                  ctrl: _animationTimer,
+                ),
+              ),
+              Positioned(
+                bottom: -18,
+                left: 60,
+                child: _PenBlob(
+                  size: 52,
+                  color: const Color(0xFFF7A433).withOpacity(0.09),
+                  animOffset: 0.6,
+                  ctrl: _animationTimer,
+                ),
+              ),
+              Positioned(
+                bottom: -10,
+                right: 40,
+                child: _PenBlob(
+                  size: 40,
+                  color: const Color(0xFFF7A433).withOpacity(0.07),
+                  animOffset: 0.9,
+                  ctrl: _animationTimer,
+                ),
+              ),
+              ..._petInstances.keys.map((id) {
+                final pet = pets.firstWhere((p) => p.id == id);
+                final instance = _petInstances[id]!;
+                return _buildPetSprite(pet, instance, maxRight);
+              }),
+              ..._petInstances.keys.where((id) => _showingProfileForId == id).map((id) {
+                final pet = pets.firstWhere((p) => p.id == id);
+                final instance = _petInstances[id]!;
+                return Positioned(
+                  left: instance.x.clamp(10.0, maxRight),
+                  bottom: instance.yOffset + 60,
+                  child: Builder(
+                    builder: (popupContext) => GestureDetector(
+                      onTap: () {
+                        debugPrint("Profile tapped for ${pet.name}");
+                        setState(() => _showingProfileForId = null);
+                        popupContext.read<PetProvider>().selectPet(pet);
+                        Navigator.of(popupContext, rootNavigator: true).push(
+                          MaterialPageRoute(builder: (_) => const PetProfileScreen()),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.12),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
                             ),
+                          ],
+                          border: Border.all(
+                            color: const Color(0xFFF7A433).withOpacity(0.4),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.arrow_forward_ios, size: 10, color: Color(0xFFF7A433)),
-                        ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              pet.name,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF422521),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.arrow_forward_ios, size: 10, color: Color(0xFFF7A433)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
-          ],
+                );
+              }),
+            ],
+          ),
         ),
       );
     });
@@ -480,5 +522,69 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
     }
 
     return {'top': top, 'left': left};
+  }
+}
+
+class _PenBlob extends StatefulWidget {
+  final double size;
+  final Color color;
+  final double animOffset;
+  final dynamic ctrl;
+
+  const _PenBlob({
+    required this.size,
+    required this.color,
+    required this.animOffset,
+    required this.ctrl,
+  });
+
+  @override
+  State<_PenBlob> createState() => _PenBlobState();
+}
+
+class _PenBlobState extends State<_PenBlob>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 2800 + (widget.animOffset * 600).toInt()),
+    )..repeat(reverse: true);
+    _anim = Tween<double>(begin: 0.88, end: 1.1).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) => Transform.scale(
+        scale: _anim.value,
+        child: Container(
+          width: widget.size,
+          height: widget.size * 0.85,
+          decoration: BoxDecoration(
+            color: widget.color,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(widget.size * 0.5),
+              topRight: Radius.circular(widget.size * 0.35),
+              bottomLeft: Radius.circular(widget.size * 0.35),
+              bottomRight: Radius.circular(widget.size * 0.55),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
