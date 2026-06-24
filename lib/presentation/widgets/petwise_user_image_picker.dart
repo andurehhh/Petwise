@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:petwise/services/cloudinary_service.dart';
 
 class PetwiseUserImagePickerSheet extends StatefulWidget {
@@ -48,24 +47,6 @@ class _PetwiseUserImagePickerSheetState
 
     if (pickedFile == null) return;
 
-    // Open cropper for zoom/pan/crop
-    final CroppedFile? croppedFile = await ImageCropper().cropImage(
-      sourcePath: pickedFile.path,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop & Zoom',
-          toolbarColor: const Color(0xFFF7A433),
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: true,
-        ),
-        IOSUiSettings(title: 'Crop & Zoom'),
-      ],
-    );
-
-    if (croppedFile == null) return;
-
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -74,14 +55,14 @@ class _PetwiseUserImagePickerSheetState
 
     try {
       final String? uploadedUrl = await CloudinaryService().uploadImage(
-        File(croppedFile.path),
+        File(pickedFile.path),
       );
 
-      if (mounted) Navigator.pop(context);
+      if (mounted) Navigator.pop(context); // Remove loading dialog
 
       if (uploadedUrl != null) {
         widget.onImageSelected(uploadedUrl);
-        if (mounted) Navigator.pop(context);
+        if (mounted) Navigator.pop(context); // Close the sheet
       } else {
         throw Exception("Upload failed");
       }
@@ -211,7 +192,7 @@ class _PetwiseUserImagePickerSheetState
                 onPressed: _handleGalleryUpload,
                 icon: const Icon(Icons.photo_library, color: Colors.white),
                 label: Text(
-                  "Upload & Crop",
+                  "Upload from Gallery",
                   style: GoogleFonts.plusJakartaSans(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -219,7 +200,6 @@ class _PetwiseUserImagePickerSheetState
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF7A433),
-                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
