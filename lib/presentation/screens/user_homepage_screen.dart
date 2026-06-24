@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petwise/presentation/widgets/petwise_pet_pen.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -99,21 +100,22 @@ class _UserHomePageScreenState extends State<UserHomePage> {
               ),
             ),
             const SizedBox(height: 25),
-            Container(
-              width: double.infinity,
-              height: 160,
-              decoration: BoxDecoration(
-                color: const Color(0xffF6EEE4),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   width: double.infinity,
+            //   height: 160,
+            //   decoration: BoxDecoration(
+            //     color: const Color(0xffF6EEE4),
+            //     borderRadius: BorderRadius.circular(24),
+            //     boxShadow: [
+            //       BoxShadow(
+            //         color: Colors.black.withValues(alpha: 0.03),
+            //         blurRadius: 10,
+            //         offset: const Offset(0, 4),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            const InteractivePetPen(),
             const SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
