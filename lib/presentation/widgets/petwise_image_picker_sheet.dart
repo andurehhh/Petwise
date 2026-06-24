@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart'; // Added
 import 'package:petwise/services/cloudinary_service.dart';
 
 class PetwiseImagePickerSheet extends StatefulWidget {
@@ -46,6 +47,24 @@ class _PetwiseImagePickerSheetState extends State<PetwiseImagePickerSheet> {
 
     if (pickedFile == null) return;
 
+    // --- ZOOM AND CROP LOGIC ---
+    final CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: pickedFile.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Zoom & Crop',
+          toolbarColor: const Color(0xFFF7A433),
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.square,
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(title: 'Zoom & Crop'),
+      ],
+    );
+
+    if (croppedFile == null) return; // User cancelled
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -53,8 +72,9 @@ class _PetwiseImagePickerSheetState extends State<PetwiseImagePickerSheet> {
     );
 
     try {
+      // Upload the cropped file path
       final String? uploadedUrl = await CloudinaryService().uploadImage(
-        File(pickedFile.path),
+        File(croppedFile.path),
       );
 
       if (mounted) Navigator.pop(context);
@@ -177,7 +197,7 @@ class _PetwiseImagePickerSheetState extends State<PetwiseImagePickerSheet> {
                 onPressed: _handleGalleryUpload,
                 icon: const Icon(Icons.photo_library, color: Colors.white),
                 label: const Text(
-                  "Upload from Gallery",
+                  "Upload & Crop",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
