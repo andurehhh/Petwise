@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:petwise/presentation/widgets/petwise_Navbar.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:petwise/providers/activity_provider.dart';
@@ -263,6 +264,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
+      bottomNavigationBar: PetwiseNavbar(navbarIndex: 2),
     );
   }
 }
