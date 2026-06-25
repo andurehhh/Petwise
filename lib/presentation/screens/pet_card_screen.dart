@@ -55,8 +55,8 @@ class PetCardScreen extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: GestureDetector(
-                onTap: () => _showZoom(context, pet, displayImage),
-                onDoubleTap: () {
+                onLongPress: () => _showZoom(context, pet, displayImage),
+                onTap: () {
                   context.read<PetProvider>().selectPet(pet);
                   Navigator.push(
                     context,

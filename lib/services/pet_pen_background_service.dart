@@ -6,7 +6,7 @@ class PetPenBackgroundService extends ChangeNotifier {
 
   // Built-in asset backgrounds
   static const List<({String label, String? asset, Color fallback})> presets = [
-    (label: 'Default',  asset: null,                           fallback: Color(0xFFFFF9E6)),
+    (label: 'Default',  asset: 'assets/images/default-bg.png', fallback: Color(0xFFFFF9E6)),
     (label: 'Fields',   asset: 'assets/images/fields-bg.png',  fallback: Color(0xFFE8F5E9)),
     (label: 'Sky',      asset: 'assets/images/sky-bg.png',     fallback: Color(0xFFE3F2FD)),
     (label: 'Beach',    asset: 'assets/images/beach-bg.png',   fallback: Color(0xFFDADEF5)),
