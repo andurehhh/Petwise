@@ -83,307 +83,249 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
             image: DecorationImage(
               image: AssetImage('assets/images/login_bg.png'),
               fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-            ),
+              ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 30),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/LoginOrSignupScreen');
-                      },
-                      icon: const Icon(
-                        CupertinoIcons.back,
-                        color: Colors.black,
-                        size: 28,
-                      ),
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                children: [
+                  const SizedBox(height: 30),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: IconButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/LoginOrSignupScreen');
+                    },
+                    icon: const Icon(
+                      CupertinoIcons.back,
+                      color: Colors.black,
+                      size: 28,
                     ),
-                    const SizedBox(height: 180),
-                    Container(
-                      padding: const EdgeInsets.all(20.0),
-                      decoration: BoxDecoration(
-                        color: const Color(0xffFFF9EE),
-                        borderRadius: BorderRadius.circular(20.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
+                  ),
+                  ),
+                  const SizedBox(height: 195),
+                  Container(
+                    padding: const EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffFFF9EE),
+                      borderRadius: BorderRadius.circular(20.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome to PetWise!',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xff0B4A72),
+                            fontSize: 23,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0,
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Welcome to PetWise!',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: const Color(0xff0B4A72),
-                              fontSize: 23,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0,
-                            ),
+                        ),
+                        Text(
+                          'Create an account to check on your pets.',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xffA5927D),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
-                          Text(
-                            'Create an account to check on your pets.',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: const Color(0xffA5927D),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          PetwiseUserTextfield(
-                            textLabel: 'EMAIL',
-                            textHint: 'Enter your email address',
-                            isEditable: true,
-                            controller: _emailController,
-                          ),
-                          PetwiseUserTextfield(
-                            textLabel: 'PASSWORD',
-                            textHint: 'Enter your password',
-                            isEditable: true,
-                            controller: _passwordController,
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: authProvider.isLoading
-                                  ? null
-                                  : () async {
-                                      final provider = context.read<AuthProvider>();
-                                      bool success = await provider.signUp(
-                                        SignUpRequest(
-                                          email: _emailController.text.trim(),
-                                          password: _passwordController.text.trim(),
-                                        ),
-                                      );
-                                      if (!mounted) return;
-                                      if (success) {
-                                        _showEmailValidationDialog();
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              provider.error ?? "Signup failed",
-                                            ),
-                                            backgroundColor: Colors.redAccent,
-                                          ),
-                                        );
-                                      }
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xffF4AD44),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
+                        ),
+                        const SizedBox(height: 15),
+                        PetwiseUserTextfield(
+                          textLabel: 'EMAIL',
+                          textHint: 'Enter your email address',
+                          isEditable: true,
+                          controller: _emailController,
+                        ),
+                        PetwiseUserTextfield(
+                          textLabel: 'PASSWORD',
+                          textHint: 'Enter your password',
+                          isEditable: true,
+                          controller: _passwordController,
+                          obscureText: true,
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: authProvider.isLoading
+                                ? null
+                                : () async {
+                              final provider = context.read<AuthProvider>();
+                              bool success = await provider.signUp(
+                                SignUpRequest(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text.trim(),
                                 ),
-                                elevation: 0,
-                              ),
-                              child: authProvider.isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Create Account',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                              );
+                              if (!mounted) return;
+                              if (success) {
+                                _showEmailValidationDialog();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      provider.error ?? "Signup failed",
                                     ),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xffF4AD44),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: authProvider.isLoading
+                                ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                                : Text(
+                              'Create Account',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Divider(
-                                  color: Colors.grey.shade300,
-                                  thickness: 0.8,
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Colors.grey.shade300,
+                                thickness: 0.8,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                'or',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: const Color(0xffA5927D),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Text(
-                                  'or',
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.grey.shade300,
+                                thickness: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: OutlinedButton(
+                            onPressed: authProvider.isLoading
+                                ? null
+                                : () async {
+                              final success =
+                              await authProvider.loginWithGoogle();
+                              if (!mounted) return;
+                              if (success) {
+                                final user =
+                                    context.read<UserProvider>().user;
+                                if (user != null &&
+                                    !user.hasCompletedSetup) {
+                                  await showOnboardingFlow(context);
+                                  if (mounted) {
+                                    final updatedUser = context
+                                        .read<UserProvider>()
+                                        .user;
+                                    if (updatedUser != null &&
+                                        updatedUser.hasCompletedSetup) {
+                                      return;
+                                    }
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/UserHomePage',
+                                    );
+                                  }
+                                } else {
+                                  await PetwiseConfirmationDialog.show(
+                                    context: context,
+                                    success: true,
+                                    title: 'Welcome Back!',
+                                    message:
+                                    "You're in. Let's check on your pets.",
+                                    buttonLabel: "Let's Go",
+                                  );
+                                  if (mounted) {
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/UserHomePage',
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xff0B4A72),
+                              side: BorderSide(color: Colors.grey.shade300),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/images/google_logo.png',
+                                  height: 20,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.g_mobiledata,
+                                    size: 22,
+                                    color: Color(0xff0B4A72),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Continue with Google',
                                   style: GoogleFonts.plusJakartaSans(
-                                    color: const Color(0xffA5927D),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xff0B4A72),
                                   ),
                                 ),
-                              ),
-                              Expanded(
-                                child: Divider(
-                                  color: Colors.grey.shade300,
-                                  thickness: 0.8,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: OutlinedButton(
-                              onPressed: authProvider.isLoading
-                                  ? null
-                                  : () async {
-                                      final success =
-                                          await authProvider.loginWithGoogle();
-                                      if (!mounted) return;
-                                      if (success) {
-                                        final user =
-                                            context.read<UserProvider>().user;
-                                        if (user != null &&
-                                            !user.hasCompletedSetup) {
-                                          setState(() => _preparingOnboarding = true);
-                                          await Future.delayed(const Duration(milliseconds: 600));
-                                          if (!mounted) return;
-                                          setState(() => _preparingOnboarding = false);
-                                          await showOnboardingFlow(context);
-                                          if (mounted) {
-                                            final updatedUser = context
-                                                .read<UserProvider>()
-                                                .user;
-                                            if (updatedUser != null &&
-                                                updatedUser.hasCompletedSetup) {
-                                              return;
-                                            }
-                                            Navigator.pushReplacementNamed(
-                                              context,
-                                              '/UserHomePage',
-                                            );
-                                          }
-                                        } else {
-                                          await PetwiseConfirmationDialog.show(
-                                            context: context,
-                                            success: true,
-                                            title: 'Welcome Back!',
-                                            message:
-                                                "You're in. Let's check on your pets.",
-                                            buttonLabel: "Let's Go",
-                                          );
-                                          if (mounted) {
-                                            Navigator.pushReplacementNamed(
-                                              context,
-                                              '/UserHomePage',
-                                            );
-                                          }
-                                        }
-                                      }
-                                    },
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xff0B4A72),
-                                side: BorderSide(color: Colors.grey.shade300),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/google_logo.png',
-                                    height: 20,
-                                    errorBuilder: (_, __, ___) => const Icon(
-                                      Icons.g_mobiledata,
-                                      size: 22,
-                                      color: Color(0xff0B4A72),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'Continue with Google',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xff0B4A72),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 30),
-                  ],
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              )
+
                 ),
               ),
             ),
-          ),
-        ),
-      ),
-        ),
-        if (authProvider.isLoading || _preparingOnboarding)
-          _SignupLoader(),
-      ],
-    );
-  }
-}
-
-class _SignupLoader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black.withValues(alpha: 0.55),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ColorFiltered(
-              colorFilter: const ColorFilter.mode(
-                Colors.white,
-                BlendMode.srcIn,
-              ),
-              child: Image.asset(
-                'assets/images/logo_no_name.png',
-                width: 88,
-                height: 88,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'PetWise',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                letterSpacing: -0.5,
-                decoration: TextDecoration.none,
-              ),
-            ),
-            const SizedBox(height: 28),
-            SizedBox(
-              width: 160,
-              child: LinearProgressIndicator(
-                value: null,
-                backgroundColor: Colors.white.withValues(alpha: 0.15),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                borderRadius: BorderRadius.circular(8),
-                minHeight: 4,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -95,7 +95,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Image.asset(
-                                    'assets/images/SUA.jpg',
+                                    'assets/images/user-default.jpg',
                                     width: 140,
                                     height: 140,
                                     fit: BoxFit.cover,
@@ -103,7 +103,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                             )
                           else
                             Image.asset(
-                              'assets/images/SUA.jpg',
+                              'assets/images/user-default.jpg',
                               width: 140,
                               height: 140,
                               fit: BoxFit.cover,

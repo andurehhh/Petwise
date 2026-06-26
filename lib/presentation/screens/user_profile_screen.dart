@@ -176,14 +176,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 height: 140,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Image.asset(
-                                  'assets/images/SUA.jpg',
+                                  'assets/images/user-default.png',
                                   width: 140,
                                   height: 140,
                                   fit: BoxFit.cover,
                                 ),
                               )
                             : Image.asset(
-                                'assets/images/SUA.jpg',
+                                'assets/images/user-default.png',
                                 width: 140,
                                 height: 140,
                                 fit: BoxFit.cover,
