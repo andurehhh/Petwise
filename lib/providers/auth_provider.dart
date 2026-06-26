@@ -14,12 +14,14 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String? _userId;
+  bool _isGmail = false;
 
   AuthProvider(this._authService, this._userProvider);
 
   bool get isLoading => _isLoading;
   String? get error => _errorMessage;
   String? get userId => _userId;
+  bool get is_gmail => _isGmail;
 
   void updateDependencies(AuthService service, UserProvider userProvider) {
     _authService = service;
@@ -37,7 +39,8 @@ class AuthProvider extends ChangeNotifier {
 
       const storage = FlutterSecureStorage();
       await storage.write(key: 'token', value: authResponse.accessToken);
-
+      await storage.write(key: 'login_method', value: 'manual');
+      _isGmail = false;
       await _userProvider.loadUser(authResponse.userId, force: true);
 
       _setLoading(false);
@@ -107,6 +110,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       const storage = FlutterSecureStorage();
       await storage.delete(key: 'token');
+      await storage.delete(key: 'login_method');
 
       _userId = null;
       _errorMessage = null;
@@ -130,6 +134,8 @@ class AuthProvider extends ChangeNotifier {
 
       const storage = FlutterSecureStorage();
       await storage.write(key: 'token', value: authResponse.accessToken);
+      await storage.write(key: 'login_method', value: 'google');
+      _isGmail = true;
 
       await _userProvider.loadUser(authResponse.userId, force: true);
 
@@ -139,6 +145,13 @@ class AuthProvider extends ChangeNotifier {
       _handleError(e);
       return false;
     }
+  }
+
+  Future<void> checkAuthStatus() async {
+    const storage = FlutterSecureStorage();
+    String? method = await storage.read(key: 'login_method');
+    _isGmail = (method == 'google');
+    notifyListeners();
   }
 
   // --- HELPERS ---

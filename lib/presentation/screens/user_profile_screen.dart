@@ -168,7 +168,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       radius: 70,
                       backgroundColor: const Color(0xffF6EEE4),
                       child: ClipOval(
-                        child: (user.image_url != null &&
+                        child:
+                            (user.image_url != null &&
                                 user.image_url!.isNotEmpty)
                             ? Image.network(
                                 user.image_url!,
@@ -247,29 +248,42 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                FilledButton(
-                                  onPressed: () {
-                                    final auth = context.read<AuthProvider>();
-                                    auth.clearError();
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) => _ChangePasswordDialog(
-                                        authProvider: auth,
+                                Consumer<AuthProvider>(
+                                  builder: (context, authProvider, child) {
+                                    // If the user is logged in via Google, return an empty container or nothing
+                                    if (authProvider.is_gmail) {
+                                      return const SizedBox.shrink();
+                                    }
+
+                                    // Otherwise, show the Change Password button
+                                    return FilledButton(
+                                      onPressed: () {
+                                        authProvider.clearError();
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => _ChangePasswordDialog(
+                                            authProvider: authProvider,
+                                          ),
+                                        );
+                                      },
+                                      style: FilledButton.styleFrom(
+                                        minimumSize: const Size(
+                                          double.infinity,
+                                          50,
+                                        ),
+                                        backgroundColor: const Color(
+                                          0xFF1A2D40,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        "Change Password",
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     );
                                   },
-                                  style: FilledButton.styleFrom(
-                                    minimumSize:
-                                        const Size(double.infinity, 50),
-                                    backgroundColor: const Color(0xFF1A2D40),
-                                  ),
-                                  child: Text(
-                                    "Change Password",
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
                                 ),
                                 const SizedBox(height: 20),
                                 Center(
@@ -332,9 +346,10 @@ class _DarkLoaderState extends State<_DarkLoader>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
-    _scale = Tween<double>(begin: 0.9, end: 1.08).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.9,
+      end: 1.08,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -431,169 +446,169 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
             borderRadius: BorderRadius.circular(24),
           ),
           backgroundColor: const Color(0xffFFF9EE),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 16,
+          ),
           child: SingleChildScrollView(
             child: Padding(
-            padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A2D40).withValues(alpha: 0.08),
-                    shape: BoxShape.circle,
+              padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A2D40).withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.lock_outline_rounded,
+                      color: Color(0xFF1A2D40),
+                      size: 32,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.lock_outline_rounded,
-                    color: Color(0xFF1A2D40),
-                    size: 32,
+                  const SizedBox(height: 18),
+                  Text(
+                    'Change Password',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: const Color(0xff0B4A72),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  'Change Password',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: const Color(0xff0B4A72),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
+                  const SizedBox(height: 20),
+                  PetwiseUserTextfield(
+                    textLabel: 'CURRENT',
+                    textHint: 'Current password',
+                    isEditable: true,
+                    controller: _currentCtrl,
+                    obscureText: true,
+                    textInputAction: TextInputAction.next,
                   ),
-                ),
-                const SizedBox(height: 20),
-                PetwiseUserTextfield(
-                  textLabel: 'CURRENT',
-                  textHint: 'Current password',
-                  isEditable: true,
-                  controller: _currentCtrl,
-                  obscureText: true,
-                  textInputAction: TextInputAction.next,
-                ),
-                PetwiseUserTextfield(
-                  textLabel: 'NEW',
-                  textHint: 'New password',
-                  isEditable: true,
-                  controller: _newCtrl,
-                  obscureText: true,
-                  textInputAction: TextInputAction.next,
-                ),
-                PetwiseUserTextfield(
-                  textLabel: 'CONFIRM',
-                  textHint: 'Confirm password',
-                  isEditable: true,
-                  controller: _confirmCtrl,
-                  obscureText: true,
-                  textInputAction: TextInputAction.done,
-                ),
-                if (errorMsg != null) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: Colors.red,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          errorMsg,
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.red,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                  PetwiseUserTextfield(
+                    textLabel: 'NEW',
+                    textHint: 'New password',
+                    isEditable: true,
+                    controller: _newCtrl,
+                    obscureText: true,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  PetwiseUserTextfield(
+                    textLabel: 'CONFIRM',
+                    textHint: 'Confirm password',
+                    isEditable: true,
+                    controller: _confirmCtrl,
+                    obscureText: true,
+                    textInputAction: TextInputAction.done,
+                  ),
+                  if (errorMsg != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.red,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            errorMsg,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.red,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: widget.authProvider.isLoading
+                          ? null
+                          : () async {
+                              setState(() => _localError = null);
+                              widget.authProvider.clearError();
+
+                              final current = _currentCtrl.text.trim();
+                              final newPass = _newCtrl.text.trim();
+                              final confirm = _confirmCtrl.text.trim();
+
+                              if (current.isEmpty ||
+                                  newPass.isEmpty ||
+                                  confirm.isEmpty) {
+                                setState(
+                                  () => _localError =
+                                      'Please fill in all fields.',
+                                );
+                                return;
+                              }
+                              if (newPass != confirm) {
+                                setState(
+                                  () => _localError = 'Passwords do not match.',
+                                );
+                                return;
+                              }
+                              if (newPass.length < 8) {
+                                setState(
+                                  () => _localError = 'Min. 8 characters.',
+                                );
+                                return;
+                              }
+
+                              final success = await widget.authProvider
+                                  .changePassword(current, newPass);
+
+                              if (!context.mounted) return;
+                              Navigator.pop(context);
+                              await PetwiseConfirmationDialog.show(
+                                context: context,
+                                success: success,
+                                title: success
+                                    ? 'Password Changed'
+                                    : 'Change Failed',
+                                message: success
+                                    ? 'Your password has been updated.'
+                                    : widget.authProvider.error ??
+                                          'Something went wrong.',
+                              );
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1A2D40),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                    ],
+                      child: widget.authProvider.isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Done',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
+                            ),
+                    ),
                   ),
                 ],
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: widget.authProvider.isLoading
-                        ? null
-                        : () async {
-                            setState(() => _localError = null);
-                            widget.authProvider.clearError();
-
-                            final current = _currentCtrl.text.trim();
-                            final newPass = _newCtrl.text.trim();
-                            final confirm = _confirmCtrl.text.trim();
-
-                            if (current.isEmpty ||
-                                newPass.isEmpty ||
-                                confirm.isEmpty) {
-                              setState(
-                                () =>
-                                    _localError = 'Please fill in all fields.',
-                              );
-                              return;
-                            }
-                            if (newPass != confirm) {
-                              setState(
-                                () => _localError = 'Passwords do not match.',
-                              );
-                              return;
-                            }
-                            if (newPass.length < 8) {
-                              setState(
-                                () => _localError = 'Min. 8 characters.',
-                              );
-                              return;
-                            }
-
-                            final success =
-                                await widget.authProvider.changePassword(
-                              current,
-                              newPass,
-                            );
-
-                            if (!context.mounted) return;
-                            Navigator.pop(context);
-                            await PetwiseConfirmationDialog.show(
-                              context: context,
-                              success: success,
-                              title: success
-                                  ? 'Password Changed'
-                                  : 'Change Failed',
-                              message: success
-                                  ? 'Your password has been updated.'
-                                  : widget.authProvider.error ??
-                                      'Something went wrong.',
-                            );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A2D40),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: widget.authProvider.isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            'Done',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
           ),
         );
       },
