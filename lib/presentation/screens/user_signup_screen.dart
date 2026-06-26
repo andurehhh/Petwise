@@ -101,7 +101,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                         size: 28,
                       ),
                     ),
-                    const SizedBox(height: 180),
+                    const SizedBox(height: 210),
                     Container(
                       padding: const EdgeInsets.all(20.0),
                       decoration: BoxDecoration(
@@ -147,6 +147,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                             textHint: 'Enter your password',
                             isEditable: true,
                             controller: _passwordController,
+                            obscureText: true,
                           ),
                           const SizedBox(height: 20),
                           SizedBox(

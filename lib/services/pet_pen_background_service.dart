@@ -13,7 +13,7 @@ class PetPenBackgroundService extends ChangeNotifier {
     (label: 'Chiikawa', asset: 'assets/images/chiikawa-bg.png',fallback: Color(0xFFFFF9E6)),
   ];
 
-  String? _currentAsset;        // null = default color
+  String? _currentAsset = 'assets/images/default-bg.png';        // null = default color
   String? _uploadedFilePath;    // user-uploaded local file path
 
   String? get currentAsset => _currentAsset;

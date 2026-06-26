@@ -327,16 +327,6 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
           onPressed: () => Navigator.pop(context),
           icon: const Icon(CupertinoIcons.back, color: Color(0xFF1A2D40)),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.notifications_none_outlined,
-              color: Color(0xFF1A2D40),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(

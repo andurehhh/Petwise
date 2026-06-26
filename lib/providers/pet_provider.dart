@@ -9,50 +9,8 @@ class PetProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Updated Mock Initial Data with image_url included
-  List<Pet> _pets = [
-    Pet(
-      id: 1,
-      createdAt: DateTime(2023, 10, 10),
-      userId: "100",
-      name: "Mocha",
-      species: "dog",
-      birthday: DateTime(2023, 10, 10),
-      sex: "male",
-      image_url: null, // Ready for network image URLs
-    ),
-    Pet(
-      id: 2,
-      createdAt: DateTime(2024, 06, 10),
-      userId: "100",
-      name: "Jamba",
-      species: "cat",
-      birthday: DateTime(2024, 06, 04),
-      sex: "male",
-      image_url: null,
-    ),
-    Pet(
-      id: 3,
-      createdAt: DateTime(2024, 06, 10),
-      userId: "100",
-      name: "Draeco",
-      species: "rabbit",
-      birthday: DateTime(2024, 08, 11),
-      sex: "male",
-      image_url: null,
-    ),
-  ];
-
-  Pet? _selectedPet = Pet(
-    id: 1,
-    createdAt: DateTime(2023, 10, 10),
-    userId: "100",
-    name: "Mocha",
-    species: "dog",
-    birthday: DateTime(2023, 10, 10),
-    sex: "male",
-    image_url: null,
-  );
+  List<Pet> _pets = [];
+  Pet? _selectedPet;
 
   List<Pet> get pets => _pets;
   Pet? get selectedPet => _selectedPet;
