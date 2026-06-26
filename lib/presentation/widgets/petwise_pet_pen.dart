@@ -95,52 +95,54 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
   }
 
   void _startAnimation() {
-    // Faster timer (50ms) for smooth dragging and falling physics
     _animationTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       if (!mounted) return;
-      setState(() {
-        _physicsTick++;
-        // Update animation frame every 250ms (5 ticks of 50ms)
-        if (_physicsTick >= 5) {
-          _currentFrame = _currentFrame == 1 ? 2 : 1;
-          _physicsTick = 0;
-        }
-
-        for (var instance in _petInstances.values) {
-          if (instance.isDragging) continue;
-
-          if (instance.isFalling) {
-            instance.verticalSpeed -= 2.0; // Gravity force
-            instance.yOffset += instance.verticalSpeed;
-
-            // Hit ground detection
-            if (instance.yOffset <= instance.groundLevel) {
-              instance.yOffset = instance.groundLevel;
-              instance.isFalling = false;
-              instance.verticalSpeed = 0;
-              instance.lastState = 'land';
-
-              // Stay in "land" pose for 400ms then go back to normal
-              Timer(const Duration(milliseconds: 400), () {
-                if (mounted) setState(() => instance.lastState = null);
-              });
-            }
-          } else if (instance.isWalking && !instance.isSleeping) {
-            instance.x += instance.isFacingRight ? 1.2 : -1.2;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _physicsTick++;
+          if (_physicsTick >= 5) {
+            _currentFrame = _currentFrame == 1 ? 2 : 1;
+            _physicsTick = 0;
           }
-        }
+
+          for (var instance in _petInstances.values) {
+            if (instance.isDragging) continue;
+
+            if (instance.isFalling) {
+              instance.verticalSpeed -= 2.0;
+              instance.yOffset += instance.verticalSpeed;
+
+              if (instance.yOffset <= instance.groundLevel) {
+                instance.yOffset = instance.groundLevel;
+                instance.isFalling = false;
+                instance.verticalSpeed = 0;
+                instance.lastState = 'land';
+
+                Timer(const Duration(milliseconds: 400), () {
+                  if (mounted) setState(() => instance.lastState = null);
+                });
+              }
+            } else if (instance.isWalking && !instance.isSleeping) {
+              instance.x += instance.isFacingRight ? 1.2 : -1.2;
+            }
+          }
+        });
       });
     });
 
     _behaviorTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (!mounted) return;
-      setState(() {
-        for (var instance in _petInstances.values) {
-          if (instance.isDragging || instance.isFalling) continue;
-          int behavior = _random.nextInt(3);
-          instance.isWalking = behavior == 0;
-          instance.isSleeping = behavior == 2;
-        }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          for (var instance in _petInstances.values) {
+            if (instance.isDragging || instance.isFalling) continue;
+            int behavior = _random.nextInt(3);
+            instance.isWalking = behavior == 0;
+            instance.isSleeping = behavior == 2;
+          }
+        });
       });
     });
   }

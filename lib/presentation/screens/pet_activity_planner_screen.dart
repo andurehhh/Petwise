@@ -8,6 +8,7 @@ import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/presentation/widgets/petwise_dynamic_activity_card.dart';
 import 'package:petwise/presentation/widgets/petwise_add_activity_sheet.dart';
+import 'package:petwise/data/models/activity_model.dart';
 
 class PlannerScreen extends StatefulWidget {
   final DateTime? initialDate;
@@ -136,6 +137,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
+                _ActivityBarChart(activities: activityProvider.activities),
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -267,4 +270,207 @@ class _PlannerScreenState extends State<PlannerScreen> {
       bottomNavigationBar: PetwiseNavbar(navbarIndex: 2),
     );
   }
+}
+
+class _ActivityBarChart extends StatelessWidget {
+  final List<ActivityModel> activities;
+  const _ActivityBarChart({required this.activities});
+
+  @override
+  Widget build(BuildContext context) {
+    if (activities.isEmpty) return const SizedBox.shrink();
+
+    final Map<String, int> totalMap = {};
+    final Map<String, int> doneMap = {};
+
+    for (final a in activities) {
+      final key = a.title.trim();
+      totalMap[key] = (totalMap[key] ?? 0) + 1;
+      if (a.isCompleted) doneMap[key] = (doneMap[key] ?? 0) + 1;
+    }
+
+    final sorted = totalMap.entries.toList()
+      ..sort((x, y) => (doneMap[y.key] ?? 0).compareTo(doneMap[x.key] ?? 0));
+
+    final top = sorted.take(6).toList();
+    if (top.isEmpty) return const SizedBox.shrink();
+
+    final maxVal = top
+        .map((e) => e.value)
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Most Completed Activities',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF1A2D40),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Based on all recorded activities',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 18),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final barWidth =
+                  ((constraints.maxWidth - (top.length - 1) * 10) / top.length)
+                      .clamp(28.0, 64.0);
+              const chartH = 120.0;
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: top.map((entry) {
+                  final done = (doneMap[entry.key] ?? 0).toDouble();
+                  final total = entry.value.toDouble();
+                  final doneH =
+                      maxVal > 0 ? (done / maxVal) * chartH : 0.0;
+                  final pendingH =
+                      maxVal > 0 ? ((total - done) / maxVal) * chartH : 0.0;
+                  final pct =
+                      total > 0 ? ((done / total) * 100).round() : 0;
+
+                  return SizedBox(
+                    width: barWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$pct%',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: pct >= 70
+                                ? Colors.green
+                                : pct >= 40
+                                    ? const Color(0xFFF7A433)
+                                    : Colors.redAccent,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        SizedBox(
+                          height: chartH,
+                          width: barWidth,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (pendingH > 0)
+                                Container(
+                                  height: pendingH,
+                                  width: barWidth,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF7A433)
+                                        .withValues(alpha: 0.25),
+                                    borderRadius: doneH > 0
+                                        ? BorderRadius.zero
+                                        : BorderRadius.circular(6),
+                                  ),
+                                ),
+                              if (doneH > 0)
+                                Container(
+                                  height: doneH,
+                                  width: barWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(
+                                          pendingH > 0 ? 0 : 6),
+                                      topRight: Radius.circular(
+                                          pendingH > 0 ? 0 : 6),
+                                      bottomLeft: const Radius.circular(6),
+                                      bottomRight: const Radius.circular(6),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          entry.key,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A2D40),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _Legend(color: Colors.green, label: 'Completed'),
+              const SizedBox(width: 16),
+              _Legend(
+                color: const Color(0xFFF7A433).withValues(alpha: 0.4),
+                label: 'Pending',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Legend extends StatelessWidget {
+  final Color color;
+  final String label;
+  const _Legend({required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      );
 }

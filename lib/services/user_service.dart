@@ -26,4 +26,12 @@ class UserService {
       throw Exception('Failed to update user: $e');
     }
   }
+
+  Future<void> markSetupComplete(String userId) async {
+    try {
+      await _apiClient.patch('User/$userId', {'has_completed_setup': true});
+    } catch (e) {
+      throw Exception('Failed to mark setup complete: $e');
+    }
+  }
 }

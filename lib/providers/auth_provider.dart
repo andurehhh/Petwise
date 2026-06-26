@@ -38,7 +38,7 @@ class AuthProvider extends ChangeNotifier {
       const storage = FlutterSecureStorage();
       await storage.write(key: 'token', value: authResponse.accessToken);
 
-      await _userProvider.loadUser(authResponse.userId);
+      await _userProvider.loadUser(authResponse.userId, force: true);
 
       _setLoading(false);
       return true;
@@ -131,7 +131,7 @@ class AuthProvider extends ChangeNotifier {
       const storage = FlutterSecureStorage();
       await storage.write(key: 'token', value: authResponse.accessToken);
 
-      await _userProvider.loadUser(authResponse.userId);
+      await _userProvider.loadUser(authResponse.userId, force: true);
 
       _setLoading(false);
       return true;

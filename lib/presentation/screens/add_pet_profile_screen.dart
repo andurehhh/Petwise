@@ -288,13 +288,19 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
       }
 
       if (mounted) {
-        Navigator.pop(context);
         await PetwiseConfirmationDialog.show(
           context: context,
           success: true,
           title: 'Pet Added',
           message: '${_nameController.text.trim()} has been added to your profile.',
         );
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/UserHomePage',
+            (r) => false,
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

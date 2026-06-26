@@ -165,23 +165,32 @@ class _UserHomePageScreenState extends State<UserHomePage> {
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                runSpacing: 20,
-                children: displayedPets.map((pet) {
-                  return GestureDetector(
-                    onTap: () {
-                      context.read<PetProvider>().selectPet(pet);
-                      Navigator.pushNamed(context, AppRoute.petProfile);
-                    },
-                    child: PetCircle(
-                      imagePath: pet.image_url ?? '',
-                      petName: pet.name,
-                      petType: pet.species,
-                      isFavorite: pet.isFavorite,
-                    ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final itemWidth = (constraints.maxWidth - 40) / 3;
+                  return Row(
+                    mainAxisAlignment: displayedPets.length == 1
+                        ? MainAxisAlignment.start
+                        : MainAxisAlignment.spaceBetween,
+                    children: displayedPets.map((pet) {
+                      return SizedBox(
+                        width: itemWidth,
+                        child: GestureDetector(
+                          onTap: () {
+                            context.read<PetProvider>().selectPet(pet);
+                            Navigator.pushNamed(context, AppRoute.petProfile);
+                          },
+                          child: PetCircle(
+                            imagePath: pet.image_url ?? '',
+                            petName: pet.name,
+                            petType: pet.species,
+                            isFavorite: pet.isFavorite,
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   );
-                }).toList(),
+                },
               ),
             ),
             const SizedBox(height: 35),

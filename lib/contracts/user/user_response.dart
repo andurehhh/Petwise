@@ -3,10 +3,10 @@ class UserResponse {
   final String email;
   final DateTime createdAt;
   final String? image_url;
-
   final String? firstName;
   final String? lastName;
   final String? nickname;
+  final bool hasCompletedSetup;
 
   UserResponse({
     required this.userId,
@@ -16,6 +16,7 @@ class UserResponse {
     this.firstName,
     this.lastName,
     this.nickname,
+    this.hasCompletedSetup = false,
   });
 
   factory UserResponse.fromJson(Map<String, dynamic> json) {
@@ -27,6 +28,7 @@ class UserResponse {
       firstName: json['first_name'],
       lastName: json['last_name'],
       nickname: json['nickname'],
+      hasCompletedSetup: json['has_completed_setup'] ?? false,
     );
   }
 
@@ -39,6 +41,7 @@ class UserResponse {
       'image_url': image_url,
       'last_name': lastName,
       'nickname': nickname,
+      'has_completed_setup': hasCompletedSetup,
     };
   }
 }

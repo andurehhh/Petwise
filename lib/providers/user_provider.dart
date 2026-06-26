@@ -21,8 +21,8 @@ class UserProvider extends ChangeNotifier {
     _userService = service;
   }
 
-  Future<void> loadUser(String id) async {
-    if (_user != null && _user!.id == id) {
+  Future<void> loadUser(String id, {bool force = false}) async {
+    if (!force && _user != null && _user!.id == id) {
       return;
     }
 
@@ -91,6 +91,7 @@ class UserProvider extends ChangeNotifier {
         email: _user!.email,
         nickname: _user!.nickname,
         image_url: pictureUrl,
+        hasCompletedSetup: _user!.hasCompletedSetup,
       );
       notifyListeners();
     }
@@ -110,6 +111,30 @@ class UserProvider extends ChangeNotifier {
       email: response.email,
       nickname: response.nickname,
       image_url: response.image_url,
+      hasCompletedSetup: response.hasCompletedSetup,
     );
+  }
+
+  Future<bool> completeSetup() async {
+    if (_userService == null || _user == null) return false;
+    try {
+      final response = await _userService!.updateUser(
+        _user!.id,
+        UpdateUserRequest(
+          firstName: _user!.firstName,
+          lastName: _user!.lastName,
+          nickname: _user!.nickname,
+          image_url: _user!.image_url,
+          hasCompletedSetup: true,
+        ),
+      );
+      _user = _mapResponseToModel(response);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
   }
 }

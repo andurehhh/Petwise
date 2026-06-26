@@ -75,6 +75,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
     final coloredHeight = screenHeight * 0.38;
     final whiteOverlap = 56.0;
     final sliverHeight = coloredHeight + avatarRadius - whiteOverlap;
+    final coloredExtended = coloredHeight + whiteOverlap + 40;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -106,7 +107,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: coloredHeight,
+                        height: coloredExtended,
                         child: Container(color: profileColor),
                       ),
                       Positioned(
