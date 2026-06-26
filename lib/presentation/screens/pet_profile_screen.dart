@@ -69,13 +69,19 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
     final profileColor = PetTheme.cardColor(pet?.species ?? '');
     final detailColor = PetTheme.detailColor(pet?.species ?? '');
     final blobColor = detailColor.withValues(alpha: 0.35);
-    final avatarRadius = 130.0;
 
+    final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final coloredHeight = screenHeight * 0.38;
-    final whiteOverlap = 56.0;
-    final sliverHeight = coloredHeight + avatarRadius - whiteOverlap;
-    final coloredExtended = coloredHeight + whiteOverlap + 40;
+    final avatarRadius = (screenWidth * 0.28).clamp(70.0, 110.0);
+    // Colored section ends at 42% of screen height
+    final coloredHeight = screenHeight * 0.42;
+    // Avatar is vertically centered in the colored section
+    final avatarTop = (coloredHeight / 2) - avatarRadius + 20;
+    // White sheet starts at the avatar midpoint (coloredHeight - avatarRadius)
+    // so the bottom half of the avatar overlaps the white sheet
+    final whiteSheetOffset = avatarRadius;
+    // Sliver total height = colored area + avatar bottom half that sticks into white
+    final sliverHeight = coloredHeight + avatarRadius * 0.5;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -107,7 +113,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: coloredExtended,
+                        height: coloredHeight,
                         child: Container(color: profileColor),
                       ),
                       Positioned(
@@ -176,7 +182,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                         ),
                       ),
                       Positioned(
-                        top: (coloredHeight - avatarRadius * 2) / 2 + 20,
+                        top: avatarTop,
                         left: 0,
                         right: 0,
                         child: Center(
@@ -220,12 +226,12 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
               ),
               SliverToBoxAdapter(
                 child: Transform.translate(
-                  offset: const Offset(0, -56),
+                  offset: Offset(0, -whiteSheetOffset),
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(40),
+                        top: Radius.circular(36),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -235,7 +241,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -250,10 +256,10 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                                 Text(
                                   pet?.name ?? 'Unknown Pet',
                                   style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 28,
+                                    fontSize: 24,
                                     fontWeight: FontWeight.w800,
                                     color: const Color(0xFF1A2D40),
-                                    letterSpacing: -1,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -326,19 +332,19 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                       const SizedBox(height: 20),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+                          horizontal: 10,
+                          vertical: 10,
                         ),
                         decoration: BoxDecoration(
                           color: profileColor.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             _InfoPill(
                               icon: Icons.vaccines_outlined,
-                              label: validCount > 0 ? 'Vaccinated' : 'Unvaccinated',
+                              label: validCount > 0 ? 'Vaccinated' : 'Unvax',
                               color: validCount > 0 ? Colors.green : Colors.redAccent,
                             ),
                             _Divider(),
@@ -439,12 +445,14 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Vaccination Status',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFF1A2D40),
+                          Expanded(
+                            child: Text(
+                              'Vaccination Status',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF1A2D40),
+                              ),
                             ),
                           ),
                           TextButton.icon(
@@ -452,7 +460,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                                 Navigator.pushNamed(context, AppRoute.vaccinationScreen),
                             icon: const Icon(
                               Icons.arrow_forward_ios,
-                              size: 13,
+                              size: 12,
                               color: Color(0xFFF7A433),
                             ),
                             label: Text(
@@ -460,7 +468,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                               style: GoogleFonts.plusJakartaSans(
                                 color: const Color(0xFFF7A433),
                                 fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                                fontSize: 12,
                               ),
                             ),
                           ),
@@ -492,14 +500,17 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                                 const Icon(
                                   Icons.vaccines_outlined,
                                   color: Color(0xFFF7A433),
+                                  size: 18,
                                 ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'No vaccinations recorded — tap to add',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: const Color(0xFFF7A433),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'No vaccinations recorded — tap to add',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFFF7A433),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -640,19 +651,21 @@ class _InfoPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 17),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1A2D40),
             ),

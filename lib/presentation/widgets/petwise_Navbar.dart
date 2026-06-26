@@ -3,22 +3,29 @@ import 'package:petwise/routes/app_route.dart';
 
 class PetwiseNavbar extends StatelessWidget {
   final int navbarIndex;
+  final bool showFab;
 
-  const PetwiseNavbar({super.key, required this.navbarIndex});
+  const PetwiseNavbar({super.key, required this.navbarIndex, this.showFab = false});
 
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
       elevation: 18,
       shadowColor: Colors.black,
-      notchMargin: 8,
+      notchMargin: showFab ? 8 : 0,
       color: Colors.white,
-      shape: const AutomaticNotchedShape(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-        ),
-        CircleBorder(),
-      ),
+      shape: showFab
+          ? const AutomaticNotchedShape(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+              ),
+              CircleBorder(),
+            )
+          : const AutomaticNotchedShape(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+              ),
+            ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -54,7 +61,7 @@ class PetwiseNavbar extends StatelessWidget {
               color: navbarIndex == 1 ? const Color(0xFFF7A433) : const Color(0xFF94A3B8),
             ),
           ),
-          const SizedBox(width: 50),
+          if (showFab) const SizedBox(width: 50),
           IconButton(
             onPressed: () {
               final route = ModalRoute.of(context)?.settings.name;

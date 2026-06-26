@@ -88,7 +88,7 @@ class PetCardScreen extends StatelessWidget {
         child: const Icon(Icons.add, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 3),
+      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 3, showFab: true),
     );
   }
 }

@@ -365,16 +365,8 @@ class _UserHomePageScreenState extends State<UserHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            Navigator.pushNamed(context, '/AddPetProfileScreen'),
-        backgroundColor: const Color(0xFFF7A433),
-        elevation: 4,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 0),
+      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 0, showFab: false),
     );
   }
 }
