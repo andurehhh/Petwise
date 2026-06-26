@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petwise/presentation/widgets/petwise_fading_activity_card.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_pen.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
@@ -351,14 +352,13 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                 itemCount: activityList.length > 3 ? 3 : activityList.length,
                 itemBuilder: (context, index) {
                   final activity = activityList[index];
-                  return GestureDetector(
+                  return FadingActivityCard(
+                    key: ValueKey(activity.id),
+                    activity: activity,
                     onTap: () => Navigator.push(
                       context,
-                      _slideLeft(PlannerScreen(
-                        initialDate: activity.scheduledDate,
-                      )),
+                      _slideLeft(PlannerScreen(initialDate: activity.scheduledDate)),
                     ),
-                    child: DynamicActivityCard(activity: activity),
                   );
                 },
               ),

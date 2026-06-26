@@ -10,8 +10,9 @@ import 'package:petwise/presentation/widgets/petwise_edit_activity_sheet.dart';
 
 class DynamicActivityCard extends StatelessWidget {
   final ActivityModel activity;
+  final VoidCallback? onComplete;
 
-  const DynamicActivityCard({super.key, required this.activity});
+  const DynamicActivityCard({super.key, required this.activity, this.onComplete,});
 
   @override
   Widget build(BuildContext context) {
@@ -193,9 +194,13 @@ class DynamicActivityCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               GestureDetector(
-                onTap: () => context
-                    .read<ActivityProvider>()
-                    .toggleCompletion(activity.id),
+                onTap: () {
+                  if (onComplete != null) {
+                    onComplete!();
+                  } else {
+                    context.read<ActivityProvider>().toggleCompletion(activity.id);
+                  }
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
                   width: 26,
