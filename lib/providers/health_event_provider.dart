@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:petwise/contracts/health_event/create_health_event_request.dart';
 import 'package:petwise/contracts/health_event/health_event_response.dart';
 import 'package:petwise/services/health_event_service.dart';
+import 'package:petwise/services/notif_service.dart'; // Import Notification Service
+import 'package:petwise/data/models/notification_model.dart'; // Import Notification Model
 
 class HealthEventProvider extends ChangeNotifier {
   HealthEventService? _healthEventService;
@@ -65,8 +67,22 @@ class HealthEventProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      await _healthEventService!.createHealthEvent(request);
+      // Create the event and get the ID
+      final int eventId = await _healthEventService!.createHealthEvent(request);
+
+      // Reload local data
       await loadPetHealthEvents(request.petId);
+
+      // Schedule notification for the health event
+      final notification = ActivityNotification(
+        id: eventId,
+        title: "Petwise: ${request.eventName}",
+        body: "Health event for your pet is scheduled for today!",
+        scheduleTime: request.eventDate,
+        recurrence: 'none', // Health events are typically one-time
+      );
+      await NotifService().scheduledNotification(notification);
+
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
@@ -85,8 +101,12 @@ class HealthEventProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await _healthEventService!.completeHealthEvent(eventId);
+
+      // Cancel the notification as the event is completed
+      await NotifService().cancelNotification(eventId);
+
       final index = _healthEvents.indexWhere(
-        (event) => event.eventId == eventId,
+            (event) => event.eventId == eventId,
       );
       if (index != -1) {
         final current = _healthEvents[index];
@@ -122,6 +142,10 @@ class HealthEventProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await _healthEventService!.deleteHealthEvent(eventId);
+
+      // Cancel notification when event is deleted
+      await NotifService().cancelNotification(eventId);
+
       _healthEvents.removeWhere((event) => event.eventId == eventId);
       if (_selectedEvent?.eventId == eventId) {
         _selectedEvent = null;

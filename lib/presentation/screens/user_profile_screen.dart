@@ -288,14 +288,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 const SizedBox(height: 20),
                                 Center(
                                   child: ElevatedButton(
-                                    onPressed: () async {
-                                      await context.read<AuthProvider>().logout(
-                                        petProvider: context
-                                            .read<PetProvider>(),
-                                        activityProvider: context
-                                            .read<ActivityProvider>(),
-                                      );
-                                    },
+                                    onPressed: _confirmLogout,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xffDC3545),
                                       foregroundColor: Colors.white,

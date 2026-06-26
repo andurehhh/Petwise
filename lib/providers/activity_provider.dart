@@ -189,24 +189,43 @@ class ActivityProvider with ChangeNotifier {
     final index = _activities.indexWhere((a) => a.id == id);
     if (index == -1) return;
 
-    final newIsCompleted = !_activities[index].isCompleted;
+    final activity = _activities[index];
+    final newIsCompleted = !activity.isCompleted;
 
     _activities[index].isCompleted = newIsCompleted;
     notifyListeners();
 
     try {
-      final baseId = id.contains('_') ? id.split('_')[0] : id;
+      final baseIdString = id.contains('_') ? id.split('_')[0] : id;
+      final baseId = int.parse(baseIdString);
+
       await _activityService.patchActivity(
-        int.parse(baseId),
+        baseId,
         UpdateActivityRequest(isActive: !newIsCompleted),
       );
+
+      // --- NOTIFICATION LOGIC ---
+      if (newIsCompleted) {
+        // If completed, cancel the notification
+        await NotifService().cancelNotification(baseId);
+      } else {
+        // If uncompleted, reschedule the notification
+        final notification = ActivityNotification(
+          id: baseId,
+          title: "Petwise: ${activity.title}",
+          body: activity.description ?? "It's time to take care of your pet!",
+          scheduleTime: activity.scheduledDate,
+          recurrence: activity.recurrence,
+        );
+        await NotifService().scheduledNotification(notification);
+      }
     } catch (e) {
+      // Rollback on failure
       _activities[index].isCompleted = !newIsCompleted;
       _error = e.toString();
       notifyListeners();
     }
   }
-
   Future<void> editActivity({
     required String id,
     required String title,
@@ -243,6 +262,16 @@ class ActivityProvider with ChangeNotifier {
           recurrence: recurrence,
         ),
       );
+      await NotifService().cancelNotification(int.parse(baseId));
+
+      final notification = ActivityNotification(
+        id: int.parse(baseId),
+        title: "Petwise: $title",
+        body: description ?? "It's time to take care of your pet!",
+        scheduleTime: scheduledDate,
+        recurrence: recurrence,
+      );
+      await NotifService().scheduledNotification(notification);
     } catch (e) {
       _error = e.toString();
       notifyListeners();
