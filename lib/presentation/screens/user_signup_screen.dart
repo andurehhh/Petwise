@@ -19,6 +19,7 @@ class UserSignupScreen extends StatefulWidget {
 class _UserSignupScreenState extends State<UserSignupScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _preparingOnboarding = false;
 
   @override
   void dispose() {
@@ -71,7 +72,9 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
       body: SizedBox(
         width: double.infinity,
         height: MediaQuery.of(context).size.height,
@@ -248,6 +251,10 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                                             context.read<UserProvider>().user;
                                         if (user != null &&
                                             !user.hasCompletedSetup) {
+                                          setState(() => _preparingOnboarding = true);
+                                          await Future.delayed(const Duration(milliseconds: 600));
+                                          if (!mounted) return;
+                                          setState(() => _preparingOnboarding = false);
                                           await showOnboardingFlow(context);
                                           if (mounted) {
                                             final updatedUser = context
@@ -322,6 +329,59 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
               ),
             ),
           ),
+        ),
+      ),
+        ),
+        if (authProvider.isLoading || _preparingOnboarding)
+          _SignupLoader(),
+      ],
+    );
+  }
+}
+
+class _SignupLoader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black.withValues(alpha: 0.55),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ColorFiltered(
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+              child: Image.asset(
+                'assets/images/logo_no_name.png',
+                width: 88,
+                height: 88,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'PetWise',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.5,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: 160,
+              child: LinearProgressIndicator(
+                value: null,
+                backgroundColor: Colors.white.withValues(alpha: 0.15),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                borderRadius: BorderRadius.circular(8),
+                minHeight: 4,
+              ),
+            ),
+          ],
         ),
       ),
     );

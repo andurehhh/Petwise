@@ -207,6 +207,48 @@ class ActivityProvider with ChangeNotifier {
     }
   }
 
+  Future<void> editActivity({
+    required String id,
+    required String title,
+    String? description,
+    required DateTime scheduledDate,
+    required String recurrence,
+  }) async {
+    final baseId = id.contains('_') ? id.split('_')[0] : id;
+    final index = _activities.indexWhere((a) => a.id == id);
+    if (index == -1) return;
+
+    final timeScheduled =
+        '${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}:00';
+
+    final dateTag =
+        '|d:${scheduledDate.year.toString().padLeft(4, '0')}-${scheduledDate.month.toString().padLeft(2, '0')}-${scheduledDate.day.toString().padLeft(2, '0')}';
+
+    final rawDesc = description?.trim() ?? '';
+    final encodedDesc = rawDesc.isEmpty ? dateTag : '$rawDesc$dateTag';
+
+    _activities[index].title = title;
+    _activities[index].description = rawDesc.isEmpty ? null : rawDesc;
+    _activities[index].scheduledDate = scheduledDate;
+    _activities[index].recurrence = recurrence;
+    notifyListeners();
+
+    try {
+      await _activityService.patchActivity(
+        int.parse(baseId),
+        UpdateActivityRequest(
+          title: title,
+          description: encodedDesc,
+          timeScheduled: timeScheduled,
+          recurrence: recurrence,
+        ),
+      );
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
   Future<void> deleteActivity(String id) async {
     final baseId = id.contains('_') ? id.split('_')[0] : id;
 

@@ -19,6 +19,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _forgotEmailController = TextEditingController();
+  bool _preparingOnboarding = false;
 
   @override
   void dispose() {
@@ -43,6 +44,10 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
     if (success) {
       final user = context.read<UserProvider>().user;
       if (user != null && !user.hasCompletedSetup) {
+        setState(() => _preparingOnboarding = true);
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (!mounted) return;
+        setState(() => _preparingOnboarding = false);
         await showOnboardingFlow(context);
         if (mounted) {
           final updatedUser = context.read<UserProvider>().user;
@@ -307,6 +312,10 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                           context.read<UserProvider>().user;
                                       if (user != null &&
                                           !user.hasCompletedSetup) {
+                                        setState(() => _preparingOnboarding = true);
+                                        await Future.delayed(const Duration(milliseconds: 600));
+                                        if (!mounted) return;
+                                        setState(() => _preparingOnboarding = false);
                                         await showOnboardingFlow(context);
                                         if (mounted) {
                                           final updatedUser = context
@@ -382,7 +391,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
             ),
           ),
         ),
-        if (authProvider.isLoading) const _PetwiseLoader(label: 'Signing you in...'),
+        if (authProvider.isLoading || _preparingOnboarding) const _PetwiseLoader(label: 'Signing you in...'),
       ],
     );
   }

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:petwise/data/models/activity_model.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
+import 'package:petwise/presentation/widgets/petwise_edit_activity_sheet.dart';
 
 class DynamicActivityCard extends StatelessWidget {
   final ActivityModel activity;
@@ -22,8 +23,18 @@ class DynamicActivityCard extends StatelessWidget {
 
     return Dismissible(
       key: Key(activity.id),
-      direction: DismissDirection.endToStart,
+      direction: DismissDirection.horizontal,
       background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 24),
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0B4A72),
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: const Icon(Icons.edit_outlined, color: Colors.white, size: 26),
+      ),
+      secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         margin: const EdgeInsets.only(bottom: 16),
@@ -33,7 +44,16 @@ class DynamicActivityCard extends StatelessWidget {
         ),
         child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
       ),
-      confirmDismiss: (_) async {
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => EditActivitySheet(activity: activity),
+          );
+          return false;
+        }
         bool confirmed = false;
         await showDialog(
           context: context,
@@ -75,14 +95,16 @@ class DynamicActivityCard extends StatelessWidget {
         );
         return confirmed;
       },
-      onDismissed: (_) {
-        context.read<ActivityProvider>().deleteActivity(activity.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${activity.title} deleted'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+      onDismissed: (direction) {
+        if (direction == DismissDirection.endToStart) {
+          context.read<ActivityProvider>().deleteActivity(activity.id);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${activity.title} deleted'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -204,25 +226,13 @@ class DynamicActivityCard extends StatelessWidget {
 
   ImageProvider _getPetImage(Pet pet) {
     final imageUrl = pet.image_url;
-
-    // 1. Check if we have a valid image_url
     if (imageUrl != null && imageUrl.isNotEmpty) {
-      if (imageUrl.startsWith('http')) {
-        return NetworkImage(imageUrl);
-      }
+      if (imageUrl.startsWith('http')) return NetworkImage(imageUrl);
       return AssetImage(imageUrl);
     }
-
-    // 2. Fallback to species-specific defaults
     final species = pet.species.toLowerCase();
-    if (species.contains('cat')) {
-      return const AssetImage('assets/images/cat.png');
-    }
-    if (species.contains('dog')) {
-      return const AssetImage('assets/images/dog.png');
-    }
-
-    // 3. Final fallback
+    if (species.contains('cat')) return const AssetImage('assets/images/cat.png');
+    if (species.contains('dog')) return const AssetImage('assets/images/dog.png');
     return const AssetImage('assets/images/doggie.gif');
   }
 }

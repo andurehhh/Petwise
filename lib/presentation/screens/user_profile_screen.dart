@@ -431,7 +431,14 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
             borderRadius: BorderRadius.circular(24),
           ),
           backgroundColor: const Color(0xffFFF9EE),
-          child: Padding(
+          insetPadding: EdgeInsets.fromLTRB(
+            24,
+            MediaQuery.of(context).padding.top + 16,
+            24,
+            MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
             padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -591,6 +598,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                 ),
               ],
             ),
+          ),
           ),
         );
       },
