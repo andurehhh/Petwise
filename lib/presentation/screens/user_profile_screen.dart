@@ -431,12 +431,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
             borderRadius: BorderRadius.circular(24),
           ),
           backgroundColor: const Color(0xffFFF9EE),
-          insetPadding: EdgeInsets.fromLTRB(
-            24,
-            MediaQuery.of(context).padding.top + 16,
-            24,
-            MediaQuery.of(context).viewInsets.bottom + 16,
-          ),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: SingleChildScrollView(
             child: Padding(
             padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
@@ -543,9 +538,9 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                               );
                               return;
                             }
-                            if (newPass.length < 6) {
+                            if (newPass.length < 8) {
                               setState(
-                                () => _localError = 'Min. 6 characters.',
+                                () => _localError = 'Min. 8 characters.',
                               );
                               return;
                             }

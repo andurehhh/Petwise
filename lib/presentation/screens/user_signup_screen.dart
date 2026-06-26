@@ -326,6 +326,8 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                 ),
               ),
             ),
+    ),
+    ],
     );
   }
 }
