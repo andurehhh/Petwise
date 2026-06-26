@@ -53,7 +53,7 @@ class _PetwiseUserTextfieldState extends State<PetwiseUserTextfield> {
             ),
             Container(
               margin: const EdgeInsets.all(5),
-              padding: const EdgeInsets.only(left: 20, right: 8, bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               width: double.infinity,
               height: 50,
               decoration: BoxDecoration(
@@ -62,7 +62,9 @@ class _PetwiseUserTextfieldState extends State<PetwiseUserTextfield> {
                 border: Border.all(width: 1.5, color: const Color(0xFFDCDCDC)),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
                       controller: widget.controller,
@@ -78,6 +80,8 @@ class _PetwiseUserTextfieldState extends State<PetwiseUserTextfield> {
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: widget.textHint,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
                       ),
                     ),
                   ),
@@ -85,7 +89,7 @@ class _PetwiseUserTextfieldState extends State<PetwiseUserTextfield> {
                     GestureDetector(
                       onTap: () => setState(() => _hidden = !_hidden),
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Icon(
                           _hidden
                               ? Icons.visibility_off_outlined
