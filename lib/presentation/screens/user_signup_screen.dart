@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/contracts/auth/signup_request.dart';
 import 'package:petwise/providers/auth_provider.dart';
+import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
 import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
+import 'package:petwise/presentation/widgets/petwise_onboarding_flow.dart';
 import 'package:provider/provider.dart';
 
 class UserSignupScreen extends StatefulWidget {
@@ -242,19 +244,39 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                                           await authProvider.loginWithGoogle();
                                       if (!mounted) return;
                                       if (success) {
-                                        await PetwiseConfirmationDialog.show(
-                                          context: context,
-                                          success: true,
-                                          title: 'Welcome!',
-                                          message:
-                                              "Your account is ready. Let's check on your pets.",
-                                          buttonLabel: 'Let\'s Go',
-                                        );
-                                        if (mounted) {
-                                          Navigator.pushReplacementNamed(
-                                            context,
-                                            '/UserHomePage',
+                                        final user =
+                                            context.read<UserProvider>().user;
+                                        if (user != null &&
+                                            !user.hasCompletedSetup) {
+                                          await showOnboardingFlow(context);
+                                          if (mounted) {
+                                            final updatedUser = context
+                                                .read<UserProvider>()
+                                                .user;
+                                            if (updatedUser != null &&
+                                                updatedUser.hasCompletedSetup) {
+                                              return;
+                                            }
+                                            Navigator.pushReplacementNamed(
+                                              context,
+                                              '/UserHomePage',
+                                            );
+                                          }
+                                        } else {
+                                          await PetwiseConfirmationDialog.show(
+                                            context: context,
+                                            success: true,
+                                            title: 'Welcome Back!',
+                                            message:
+                                                "You're in. Let's check on your pets.",
+                                            buttonLabel: "Let's Go",
                                           );
+                                          if (mounted) {
+                                            Navigator.pushReplacementNamed(
+                                              context,
+                                              '/UserHomePage',
+                                            );
+                                          }
                                         }
                                       }
                                     },
