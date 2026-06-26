@@ -287,22 +287,33 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 ),
                                 const SizedBox(height: 20),
                                 Center(
-                                  child: TextButton(
-                                    onPressed: _confirmLogout,
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.redAccent,
-                                      overlayColor: Colors.redAccent,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 10,
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      await context.read<AuthProvider>().logout(
+                                        petProvider: context
+                                            .read<PetProvider>(),
+                                        activityProvider: context
+                                            .read<ActivityProvider>(),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xffDC3545),
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size(
+                                        double.infinity,
+                                        50,
                                       ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                      elevation: 0,
                                     ),
                                     child: Text(
-                                      'Log Out',
+                                      'Logout',
                                       style: GoogleFonts.plusJakartaSans(
-                                        color: Colors.redAccent,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 14,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                                   ),
