@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../utils/app_config.dart';
 
 class ApiClient {
-  static const String baseUrl =
-      'https://petwise-api-425628448755.asia-southeast1.run.app';
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   final FlutterSecureStorage storage;
 

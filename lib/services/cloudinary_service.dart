@@ -2,9 +2,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import '../utils/app_config.dart';
 
 class CloudinaryService {
-  static const String uploadPreset = 'petwise';
+  static const String uploadPreset = AppConfig.cloudinaryUploadPreset;
 
   Future<String?> uploadImage(File imageFile) async {
     // 1. Verify file exists before even trying to send
@@ -15,7 +16,7 @@ class CloudinaryService {
 
     try {
       final url = Uri.parse(
-        'https://api.cloudinary.com/v1_1/djd5lcang/image/upload',
+        'https://api.cloudinary.com/v1_1/${AppConfig.cloudinaryCloudName}/image/upload',
       );
 
       // 2. Use a client with a dedicated timeout

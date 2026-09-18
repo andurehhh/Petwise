@@ -3,3 +3,6 @@
 -keep class com.google.gson.reflect.TypeToken { *; }
 -keep class * extends com.google.gson.reflect.TypeToken
 -keep class com.dexterous.** { *; }
+-keep class com.petwise.app.** { *; }
+-keep class io.flutter.** { *; }
+-dontwarn com.google.android.play.core.**

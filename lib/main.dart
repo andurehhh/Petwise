@@ -17,9 +17,13 @@ import 'package:petwise/services/health_event_service.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/services/analytics_service.dart';
 import 'package:petwise/providers/analytics_provider.dart';
+import 'package:petwise/utils/app_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  AppConfig.validate();
+
   await NotifService().initNotification();
 
   try {

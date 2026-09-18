@@ -1,4 +1,4 @@
-package com.decaf.petwise;
+package com.petwise.app;
 
 import io.flutter.embedding.android.FlutterActivity;
 

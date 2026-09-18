@@ -3,10 +3,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../contracts/auth/signin_request.dart';
 import '../contracts/auth/signup_request.dart';
 import '../contracts/auth/auth_response.dart';
+import '../utils/app_config.dart';
 
 class AuthService {
   final ApiClient _apiClient;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: AppConfig.googleServerClientId,
+  );
 
   AuthService(this._apiClient);
 
