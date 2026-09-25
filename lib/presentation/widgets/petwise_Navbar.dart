@@ -94,6 +94,23 @@ class PetwiseNavbar extends StatelessWidget {
               color: navbarIndex == 3 ? const Color(0xFFF7A433) : const Color(0xFF94A3B8),
             ),
           ),
+  IconButton(
+      onPressed: () {
+        final route = ModalRoute.of(context)?.settings.name;
+        if (route != AppRoute.essentialServicesScreen) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoute.essentialServicesScreen,
+            (r) => false,
+          );
+        }
+      },
+      icon: Icon(
+        Icons.location_on_rounded,
+        color: navbarIndex == 4 ? const Color(0xFFF7A433) : const Color(0xFF94A3B8),
+      ),
+    ),
+
         ],
       ),
     );

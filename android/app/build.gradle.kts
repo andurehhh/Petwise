@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,6 +8,12 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+val envProperties = Properties()
+val envFile = rootProject.file("../.env")
+
+if (envFile.exists()) {
+    envProperties.load(FileInputStream(envFile))
+}
 android {
     namespace = "com.petwise.app"
     compileSdk = flutter.compileSdkVersion
@@ -30,6 +39,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true
+        manifestPlaceholders["MAPS_API_KEY"] = envProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: ""
     }
 
     buildTypes {
