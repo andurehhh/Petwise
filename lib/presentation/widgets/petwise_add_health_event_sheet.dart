@@ -179,8 +179,16 @@ class _AddHealthEventSheetState extends State<AddHealthEventSheet> {
               initialValue: _selectedPetId,
               decoration: InputDecoration(
                 labelText: "Assign to Pet",
+                filled: widget.preselectedPetId != null,
+                fillColor: widget.preselectedPetId != null
+                    ? const Color(0xFFF5F5F5)
+                    : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
               items: petProvider.pets
@@ -188,7 +196,9 @@ class _AddHealthEventSheetState extends State<AddHealthEventSheet> {
                     (p) => DropdownMenuItem(value: p.id, child: Text(p.name)),
                   )
                   .toList(),
-              onChanged: (val) => setState(() => _selectedPetId = val),
+              onChanged: widget.preselectedPetId != null
+                  ? null
+                  : (val) => setState(() => _selectedPetId = val),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
