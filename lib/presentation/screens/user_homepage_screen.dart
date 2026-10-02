@@ -7,17 +7,16 @@ import 'package:provider/provider.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/routes/app_route.dart';
 import '../widgets/petwise_pet_profile.dart';
-import '../widgets/petwise_dynamic_activity_card.dart';
 import '../widgets/petwise_app_bar.dart';
-import '../widgets/petwise_Navbar.dart';
+import '../widgets/petwise_navbar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../screens/pet_activity_planner_screen.dart';
 import 'package:petwise/presentation/widgets/petwise_add_activity_sheet.dart';
 import 'package:intl/intl.dart';
 
 Route _slideLeft(Widget page) => PageRouteBuilder(
-      pageBuilder: (_, __, ___) => page,
-      transitionsBuilder: (_, anim, __, child) => SlideTransition(
+      pageBuilder: (_, _, _) => page,
+      transitionsBuilder: (_, anim, _, child) => SlideTransition(
         position: Tween<Offset>(
           begin: const Offset(1.0, 0.0),
           end: Offset.zero,
@@ -182,7 +181,7 @@ class _UserHomePageScreenState extends State<UserHomePage> {
                             Navigator.pushNamed(context, AppRoute.petProfile);
                           },
                           child: PetCircle(
-                            imagePath: pet.image_url ?? '',
+                            imagePath: pet.imageUrl ?? '',
                             petName: pet.name,
                             petType: pet.species,
                             isFavorite: pet.isFavorite,

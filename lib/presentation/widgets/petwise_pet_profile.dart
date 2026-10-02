@@ -26,7 +26,7 @@ class PetCircle extends StatelessWidget {
         radius: 40,
         backgroundColor: const Color(0xffFFF9F2),
         backgroundImage: NetworkImage(imagePath),
-        onBackgroundImageError: (_, __) {},
+        onBackgroundImageError: (_, _) {},
         child: null,
       );
     }
@@ -56,7 +56,7 @@ class PetCircle extends StatelessWidget {
           width: 80,
           height: 80,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _pawFallback(),
+          errorBuilder: (_, _, _) => _pawFallback(),
         ),
       ),
     );

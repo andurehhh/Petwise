@@ -230,7 +230,7 @@ class DynamicActivityCard extends StatelessWidget {
   }
 
   ImageProvider _getPetImage(Pet pet) {
-    final imageUrl = pet.image_url;
+    final imageUrl = pet.imageUrl;
     if (imageUrl != null && imageUrl.isNotEmpty) {
       if (imageUrl.startsWith('http')) return NetworkImage(imageUrl);
       return AssetImage(imageUrl);

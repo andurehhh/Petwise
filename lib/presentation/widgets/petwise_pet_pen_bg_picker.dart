@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +59,7 @@ class _PetPenBgPickerState extends State<PetPenBgPicker> {
                       ),
                       image: p.asset != null
                           ? DecorationImage(image: AssetImage(p.asset!), fit: BoxFit.cover,
-                          onError: (_, __) {})
+                          onError: (_, _) {})
                           : null,
                     ),
                     alignment: Alignment.bottomLeft,
@@ -83,11 +82,12 @@ class _PetPenBgPickerState extends State<PetPenBgPicker> {
                   icon: const Icon(Icons.upload_rounded, size: 18),
                   label: const Text('Upload image'),
                   onPressed: () async {
+                    final navigator = Navigator.of(context);
                     final picker = ImagePicker();
                     final file = await picker.pickImage(source: ImageSource.gallery);
                     if (file != null && mounted) {
                       await svc.setUploadedFile(file.path);
-                      if (mounted) Navigator.pop(context);
+                      if (mounted) navigator.pop();
                     }
                   },
                   style: OutlinedButton.styleFrom(
@@ -100,10 +100,11 @@ class _PetPenBgPickerState extends State<PetPenBgPicker> {
               const SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () async {
+                  final navigator = Navigator.of(context);
                   if (_selectedAsset != _sentinel) {
                     await svc.setPreset(_selectedAsset);
                   }
-                  if (mounted) Navigator.pop(context);
+                  if (mounted) navigator.pop();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF7A433),

@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:petwise/contracts/pet/update_pet_request.dart';
-import 'package:petwise/contracts/health_event/create_health_event_request.dart';
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_image_picker_sheet.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_upcoming_medical_pill.dart';
 import 'package:petwise/presentation/widgets/petwise_add_health_event_sheet.dart';
@@ -23,13 +22,153 @@ class EditPetProfileScreen extends StatefulWidget {
 class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   late TextEditingController _petNameController;
   late TextEditingController _petSpeciesController;
-  late TextEditingController _petBreedController;
+  late TextEditingController _customBreedController;
   late TextEditingController _petAgeController;
   late TextEditingController _petWeightController;
-  late String image_url;
+  late String imageUrl;
   late String _selectedSex;
   late DateTime _selectedBirthday;
 
+  String? _selectedBreed;
+  String _speciesState = '';
+
+  final Map<String, List<String>> _speciesBreedsMap = {
+    'Dog': [
+      'Aspin (Asong Pinoy)',
+      'Shih Tzu',
+      'Pomeranian',
+      'Poodle (Toy / Standard)',
+      'Golden Retriever',
+      'Labrador Retriever',
+      'German Shepherd',
+      'Chow Chow',
+      'Siberian Husky',
+      'Pug',
+      'Beagle',
+      'French Bulldog',
+      'Pembroke Welsh Corgi',
+      'Dachshund',
+      'Chihuahua',
+      'American Bully / Pitbull',
+      'Doberman Pinscher',
+      'Other',
+    ],
+    'Cat': [
+      'Puspin (Pusang Pinoy)',
+      'Persian',
+      'Siamese',
+      'British Shorthair',
+      'Maine Coon',
+      'Scottish Fold',
+      'Ragdoll',
+      'Bengal',
+      'Munchkin',
+      'American Shorthair',
+      'Exotic Shorthair',
+      'Sphynx',
+      'Other',
+    ],
+    'Bird': [
+      'Parakeet / Budgie',
+      'Cockatiel',
+      'Lovebird (African Lovebird)',
+      'Canary',
+      'Macaw',
+      'Conure (Sun / Green Cheek)',
+      'Finch',
+      'Cockatoo',
+      'Pigeon / Dove',
+      'Other',
+    ],
+    'Rabbit': [
+      'Holland Lop',
+      'Netherland Dwarf',
+      'Mini Rex',
+      'Lionhead',
+      'Flemish Giant',
+      'Angora',
+      'New Zealand White',
+      'Other',
+    ],
+    'Hamster': [
+      'Syrian',
+      'Dwarf Campbell',
+      'Roborovski',
+      'Winter White',
+      'Chinese Hamster',
+      'Other',
+    ],
+    'Other': ['Other'],
+  };
+
+  String? _getMatchedSpeciesKey(String input) {
+    final trimmed = input.trim().toLowerCase();
+    for (final key in _speciesBreedsMap.keys) {
+      if (key.toLowerCase() == trimmed) return key;
+    }
+    return null;
+  }
+
+  OutlineInputBorder _pillBorder(Color color) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(30),
+    borderSide: BorderSide(color: color, width: 1.5),
+  );
+
+  bool get _hasSpecies => _petSpeciesController.text.trim().isNotEmpty;
+  String? get _matchedKey => _getMatchedSpeciesKey(_petSpeciesController.text);
+  bool get _isKnownSpecies => _matchedKey != null && _matchedKey != 'Other';
+  bool get _isBreedLocked => _hasSpecies && !_isKnownSpecies;
+
+  List<String> get _breedOptions {
+    if (!_hasSpecies) return const [];
+    return _isKnownSpecies ? _speciesBreedsMap[_matchedKey]! : const ['Other'];
+  }
+
+  bool get _showCustomBreedField => _selectedBreed == 'Other';
+
+  String get finalSpecies =>
+      _isKnownSpecies ? _matchedKey! : _petSpeciesController.text.trim();
+
+  String get finalBreed {
+    if (_selectedBreed == null) return '';
+    if (_selectedBreed == 'Other') return _customBreedController.text.trim();
+    return _selectedBreed!;
+  }
+
+  String _computeSpeciesState() =>
+      !_hasSpecies ? '' : (_matchedKey ?? '__custom__');
+
+  void _onSpeciesChanged() {
+    final newState = _computeSpeciesState();
+    if (newState == _speciesState) return;
+
+    final wasLocked = _speciesState == 'Other' || _speciesState == '__custom__';
+
+    setState(() {
+      _speciesState = newState;
+
+      if (!_hasSpecies) {
+        _selectedBreed = null;
+        _customBreedController.clear();
+      } else if (_isBreedLocked) {
+        _selectedBreed = 'Other';
+      } else {
+        final invalid =
+            _selectedBreed != null && !_breedOptions.contains(_selectedBreed);
+        if (wasLocked || invalid) {
+          _selectedBreed = null;
+          _customBreedController.clear();
+        }
+      }
+    });
+  }
+
+  void _onBreedChanged(String? value) {
+    setState(() {
+      _selectedBreed = value;
+      if (value != 'Other') _customBreedController.clear();
+    });
+  }
 
   @override
   void initState() {
@@ -37,7 +176,34 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     final pet = context.read<PetProvider>().selectedPet;
     _petNameController = TextEditingController(text: pet?.name ?? "");
     _petSpeciesController = TextEditingController(text: pet?.species ?? "");
-    _petBreedController = TextEditingController(text: pet?.breed ?? "");
+    _customBreedController = TextEditingController();
+
+    _speciesState = _computeSpeciesState();
+    final savedBreed = (pet?.breed ?? '').trim();
+
+    if (_isKnownSpecies) {
+      if (savedBreed.isNotEmpty) {
+        final match = _breedOptions.firstWhere(
+          (b) => b.toLowerCase() == savedBreed.toLowerCase(),
+          orElse: () => '',
+        );
+        if (match.isNotEmpty) {
+          _selectedBreed = match;
+        } else {
+          // Old free-text breed not in the list -> show it under "Other"
+          _selectedBreed = 'Other';
+          _customBreedController.text = savedBreed;
+        }
+      }
+    } else if (_isBreedLocked) {
+      _selectedBreed = 'Other';
+      if (savedBreed.toLowerCase() != 'other') {
+        _customBreedController.text = savedBreed;
+      }
+    }
+
+    _petSpeciesController.addListener(_onSpeciesChanged);
+
     _petAgeController = TextEditingController(text: pet?.age.toString() ?? "0");
     _petWeightController = TextEditingController(
       text: pet?.weight?.toString() ?? "0.1",
@@ -46,9 +212,11 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _selectedSex = rawSex.isNotEmpty
         ? rawSex[0].toUpperCase() + rawSex.substring(1).toLowerCase()
         : 'Male';
-    if (_selectedSex != 'Male' && _selectedSex != 'Female') _selectedSex = 'Male';
+    if (_selectedSex != 'Male' && _selectedSex != 'Female') {
+      _selectedSex = 'Male';
+    }
     _selectedBirthday = pet?.birthday ?? DateTime.now();
-    image_url = pet?.image_url ?? 'assets/images/doggie.gif';
+    imageUrl = pet?.imageUrl ?? 'assets/images/doggie.gif';
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -61,10 +229,11 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
 
   @override
   void dispose() {
+    _petSpeciesController.removeListener(_onSpeciesChanged);
     _petAgeController.dispose();
     _petNameController.dispose();
     _petSpeciesController.dispose();
-    _petBreedController.dispose();
+    _customBreedController.dispose();
     _petWeightController.dispose();
     super.dispose();
   }
@@ -76,10 +245,10 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return PetwiseImagePickerSheet(
-          currentImageUrl: image_url,
+          currentImageUrl: imageUrl,
           onImageSelected: (newUrl) {
             setState(() {
-              image_url = newUrl;
+              imageUrl = newUrl;
             });
           },
         );
@@ -97,10 +266,10 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   }
 
   ImageProvider _getProfileImage() {
-    if (image_url.startsWith('http://') || image_url.startsWith('https://')) {
-      return NetworkImage(image_url);
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return NetworkImage(imageUrl);
     }
-    return AssetImage(image_url);
+    return AssetImage(imageUrl);
   }
 
   @override
@@ -215,12 +384,80 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                         controller: _petSpeciesController,
                         isEditable: true,
                       ),
-                      PetwiseUserTextfield(
-                        textLabel: "Breed",
-                        textHint: "Enter pet Breed here",
-                        controller: _petBreedController,
-                        isEditable: true,
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Breed",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            DropdownButtonFormField<String>(
+                              initialValue: _breedOptions.contains(_selectedBreed)
+                                  ? _selectedBreed
+                                  : null,
+                              isExpanded: true,
+                              borderRadius: BorderRadius.circular(16),
+                              hint: Text(
+                                _hasSpecies
+                                    ? "Select a breed"
+                                    : "Enter a species first",
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 15,
+                                ),
+                              ),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                border: _pillBorder(const Color(0xFFDCDCDC)),
+                                enabledBorder: _pillBorder(
+                                  const Color(0xFFDCDCDC),
+                                ),
+                                disabledBorder: _pillBorder(
+                                  const Color(0xFFDCDCDC),
+                                ),
+                                focusedBorder: _pillBorder(
+                                  const Color(0xFFF7A433),
+                                ),
+                              ),
+                              items: _breedOptions
+                                  .map(
+                                    (b) => DropdownMenuItem(
+                                      value: b,
+                                      child: Text(
+                                        b,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 15,
+                                          color: const Color(0xFF1A2D40),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (!_hasSpecies || _isBreedLocked)
+                                  ? null
+                                  : _onBreedChanged,
+                            ),
+                          ],
+                        ),
                       ),
+                      if (_showCustomBreedField)
+                        PetwiseUserTextfield(
+                          textLabel: "Custom Breed",
+                          textHint: "Enter breed here",
+                          controller: _customBreedController,
+                          isEditable: true,
+                        ),
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 10),
                         width: double.infinity,
@@ -248,7 +485,12 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                               },
                               child: Container(
                                 margin: const EdgeInsets.all(5),
-                                padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+                                padding: const EdgeInsets.only(
+                                  left: 20,
+                                  right: 20,
+                                  top: 10,
+                                  bottom: 10,
+                                ),
                                 width: double.infinity,
                                 height: 50,
                                 decoration: BoxDecoration(
@@ -261,9 +503,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                 ),
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  _selectedBirthday == null
-                                      ? "Select Date"
-                                      : DateFormat('MM/dd/yyyy').format(_selectedBirthday!),
+                                  DateFormat('MM/dd/yyyy').format(_selectedBirthday),
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 15,
                                     color: const Color(0xFF1A2D40),
@@ -288,7 +528,9 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                             ),
                             Expanded(
                               child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -301,7 +543,12 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                     ),
                                     Container(
                                       margin: const EdgeInsets.all(5),
-                                      padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+                                      padding: const EdgeInsets.only(
+                                        left: 20,
+                                        right: 20,
+                                        top: 10,
+                                        bottom: 10,
+                                      ),
                                       width: double.infinity,
                                       height: 50,
                                       decoration: BoxDecoration(
@@ -316,21 +563,28 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                         child: DropdownButton<String>(
                                           value: _selectedSex,
                                           isExpanded: true,
-                                          items: ["Male", "Female"].map((String value) {
+                                          items: ["Male", "Female"].map((
+                                            String value,
+                                          ) {
                                             return DropdownMenuItem<String>(
                                               value: value,
                                               child: Text(
                                                 value,
-                                                style: GoogleFonts.plusJakartaSans(
-                                                  fontSize: 15,
-                                                  color: const Color(0xFF1A2D40),
-                                                ),
+                                                style:
+                                                    GoogleFonts.plusJakartaSans(
+                                                      fontSize: 15,
+                                                      color: const Color(
+                                                        0xFF1A2D40,
+                                                      ),
+                                                    ),
                                               ),
                                             );
                                           }).toList(),
                                           onChanged: (val) {
                                             if (val != null) {
-                                              setState(() => _selectedSex = val);
+                                              setState(
+                                                () => _selectedSex = val,
+                                              );
                                             }
                                           },
                                         ),
@@ -483,12 +737,31 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                       final currentPet =
                                           petProvider.selectedPet;
                                       final petId = petProvider.selectedPet?.id;
-                                      if (currentPet == null || petId == null)
+                                      if (currentPet == null || petId == null) {
                                         return;
+                                      }
+
+                                      if (_petNameController.text
+                                              .trim()
+                                              .isEmpty ||
+                                          !_hasSpecies ||
+                                          finalBreed.isEmpty) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Please fill out Name, Species, and Breed.",
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
 
                                       String? formatSex(String? sex) {
-                                        if (sex == null || sex.trim().isEmpty)
+                                        if (sex == null || sex.trim().isEmpty) {
                                           return null;
+                                        }
                                         final clean = sex.trim().toLowerCase();
                                         return clean[0].toUpperCase() +
                                             clean.substring(1);
@@ -496,9 +769,8 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
 
                                       final request = UpdatePetRequest(
                                         name: _petNameController.text.trim(),
-                                        species: _petSpeciesController.text
-                                            .trim(),
-                                        breed: _petBreedController.text.trim(),
+                                        species: finalSpecies,
+                                        breed: finalBreed,
                                         weight:
                                             double.tryParse(
                                               _petWeightController.text,
@@ -506,29 +778,31 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                             0.0,
                                         birthday: _selectedBirthday,
                                         sex: formatSex(_selectedSex),
-                                        image_url: image_url,
+                                        imageUrl: imageUrl,
                                       );
 
-                                      bool success = await context
-                                          .read<PetProvider>()
+                                      final navigator = Navigator.of(context);
+                                      final petProv = context.read<PetProvider>();
+                                      bool success = await petProv
                                           .updatePet(petId, request);
 
-                                      if (!mounted) return;
+                                      if (!context.mounted) return;
 
                                       if (success) {
-                                        Navigator.pop(context);
+                                        navigator.pop();
                                         await PetwiseConfirmationDialog.show(
                                           context: context,
                                           success: true,
                                           title: 'Changes Saved',
-                                          message: 'Pet info has been updated successfully.',
+                                          message:
+                                              'Pet info has been updated successfully.',
                                         );
                                       } else {
                                         await PetwiseConfirmationDialog.show(
                                           context: context,
                                           success: false,
                                           title: 'Update Failed',
-                                          message: context.read<PetProvider>().errorMessage?.replaceAll('Exception: ', '') ?? 'Failed to update pet.',
+                                          message: petProv.errorMessage?.replaceAll('Exception: ', '') ?? 'Failed to update pet.',
                                         );
                                       }
                                     },

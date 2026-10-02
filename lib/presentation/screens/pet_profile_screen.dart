@@ -211,7 +211,7 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                                         ),
                                         Flexible(
                                           child: Text(
-                                            pet!.breed!,
+                                            pet.breed!,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: GoogleFonts.plusJakartaSans(
@@ -474,12 +474,12 @@ class _PetProfileScreenState extends State<PetProfileScreen> {
                 child: CircleAvatar(
                   radius: avatarRadius,
                   backgroundColor: profileColor.withValues(alpha: 0.4),
-                  backgroundImage: (pet?.image_url != null &&
-                          pet!.image_url!.startsWith('http'))
-                      ? NetworkImage(pet.image_url!)
+                  backgroundImage: (pet?.imageUrl != null &&
+                          pet!.imageUrl!.startsWith('http'))
+                      ? NetworkImage(pet.imageUrl!)
                       : null,
-                  child: (pet?.image_url == null ||
-                          !pet!.image_url!.startsWith('http'))
+                  child: (pet?.imageUrl == null ||
+                          !pet!.imageUrl!.startsWith('http'))
                       ? Icon(Icons.pets,
                           size: avatarRadius * 0.75,
                           color: Colors.white.withValues(alpha: 0.8))

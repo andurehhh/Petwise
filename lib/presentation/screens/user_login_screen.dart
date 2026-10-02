@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
 import 'package:petwise/presentation/widgets/petwise_onboarding_flow.dart';
 import 'package:provider/provider.dart';
@@ -306,7 +306,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                 : () async {
                                     final success =
                                         await authProvider.loginWithGoogle();
-                                    if (!mounted) return;
+                                    if (!context.mounted) return;
                                     if (success) {
                                       final user =
                                           context.read<UserProvider>().user;
@@ -314,10 +314,10 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                           !user.hasCompletedSetup) {
                                         setState(() => _preparingOnboarding = true);
                                         await Future.delayed(const Duration(milliseconds: 600));
-                                        if (!mounted) return;
+                                        if (!context.mounted) return;
                                         setState(() => _preparingOnboarding = false);
                                         await showOnboardingFlow(context);
-                                        if (mounted) {
+                                        if (context.mounted) {
                                           final updatedUser = context
                                               .read<UserProvider>()
                                               .user;
@@ -339,7 +339,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                               "You're in. Let's check on your pets.",
                                           buttonLabel: "Let's Go",
                                         );
-                                        if (mounted) {
+                                        if (context.mounted) {
                                           Navigator.pushReplacementNamed(
                                             context,
                                             '/UserHomePage',
@@ -362,7 +362,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                 Image.asset(
                                   'assets/images/google_logo.png',
                                   height: 20,
-                                  errorBuilder: (_, __, ___) => const Icon(
+                                  errorBuilder: (_, _, _) => const Icon(
                                     Icons.g_mobiledata,
                                     size: 22,
                                     color: Color(0xff0B4A72),

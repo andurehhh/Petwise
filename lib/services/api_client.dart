@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/app_config.dart';
@@ -98,7 +99,7 @@ class ApiClient {
       return decodedBody;
     }
 
-    print("API ERROR BODY: $decodedBody");
+    debugPrint("API ERROR BODY: $decodedBody");
 
     String errorMessage = 'An unexpected error occurred';
     if (decodedBody is Map) {

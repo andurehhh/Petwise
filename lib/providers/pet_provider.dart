@@ -46,7 +46,7 @@ class PetProvider extends ChangeNotifier {
               createdAt: res.createdAt,
               weight: res.weight,
               breed: res.breed,
-              image_url: res.image_url,
+              imageUrl: res.imageUrl,
               isFavorite: existingFavs[res.petId] ?? false,
             ),
           )
@@ -147,8 +147,7 @@ class PetProvider extends ChangeNotifier {
         createdAt: response.createdAt,
         weight: response.weight,
         breed: response.breed,
-        image_url: response
-            .image_url, // Added mapping here too so updates preserve the image
+        imageUrl: response.imageUrl,
         isFavorite: _pets.firstWhere(
           (p) => p.id == petId,
           orElse: () => _pets.first,

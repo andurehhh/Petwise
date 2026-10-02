@@ -4,7 +4,7 @@ class UserModel {
   final String lastName;
   final String email;
   final String? nickname;
-  final String? image_url;
+  final String? imageUrl;
   final DateTime? createdAt;
   final bool hasCompletedSetup;
 
@@ -13,7 +13,7 @@ class UserModel {
     required this.firstName,
     required this.lastName,
     required this.email,
-    this.image_url,
+    this.imageUrl,
     this.nickname,
     this.createdAt,
     this.hasCompletedSetup = false,
@@ -25,7 +25,7 @@ class UserModel {
       firstName: json['first_name'],
       lastName: json['last_name'],
       email: json['email'],
-      image_url: json['image_url'],
+      imageUrl: json['image_url'],
       nickname: json['nickname'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
