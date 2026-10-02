@@ -108,7 +108,9 @@ void main() async {
             return authProvider;
           },
         ),
-        ChangeNotifierProvider(create: (_) => PetPenBackgroundService()..load()),
+        ChangeNotifierProvider(
+          create: (_) => PetPenBackgroundService()..load(),
+        ),
       ],
       child: const MyApp(),
     ),
