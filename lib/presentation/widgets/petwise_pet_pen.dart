@@ -132,8 +132,9 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
           for (var instance in _petInstances.values) {
             if (instance.isDragging ||
                 instance.isFalling ||
-                instance.id == _pausedForId)
+                instance.id == _pausedForId) {
               continue;
+            }
             int behavior = _random.nextInt(3);
             instance.isWalking = behavior == 0;
             instance.isSleeping = behavior == 2;
