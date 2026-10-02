@@ -21,7 +21,14 @@ class PetPenBackgroundService extends ChangeNotifier {
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    _currentAsset = prefs.getString(_key);
+    final saved = prefs.getString(_key);
+    if (saved != null && saved.startsWith('file:')) {
+      _uploadedFilePath = saved.substring(5);
+      _currentAsset = null;
+    } else {
+      _currentAsset = saved ?? 'assets/images/default-bg.png';
+      _uploadedFilePath = null;
+    }
     notifyListeners();
   }
 

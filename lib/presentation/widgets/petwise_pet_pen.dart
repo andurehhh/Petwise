@@ -58,7 +58,6 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
     _startAnimation();
   }
 
-  // Helper method to play sound on pet press/interaction
   Future<void> _playPressSound() async {
     try {
       int randSound = Random().nextInt(3);
@@ -76,7 +75,6 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
     }
   }
 
-  // NEW: Triggers the one-time heart bubble
   void _triggerHeart(_PetInstance instance) {
     if (!_heartsShown.contains(instance.id)) {
       setState(() {
@@ -132,7 +130,10 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
         if (!mounted) return;
         setState(() {
           for (var instance in _petInstances.values) {
-            if (instance.isDragging || instance.isFalling || instance.id == _pausedForId) continue;
+            if (instance.isDragging ||
+                instance.isFalling ||
+                instance.id == _pausedForId)
+              continue;
             int behavior = _random.nextInt(3);
             instance.isWalking = behavior == 0;
             instance.isSleeping = behavior == 2;
@@ -221,10 +222,11 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                 child: GestureDetector(
                   onTap: () => showModalBottomSheet(
                     context: context,
+                    isScrollControlled: true,
                     backgroundColor: Colors.white,
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(20),
+                        top: Radius.circular(24),
                       ),
                     ),
                     builder: (_) => const PetPenBgPicker(),
@@ -299,7 +301,9 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                                 ),
                               ],
                               border: Border.all(
-                                color: const Color(0xFFF7A433).withValues(alpha: 0.4),
+                                color: const Color(
+                                  0xFFF7A433,
+                                ).withValues(alpha: 0.4),
                               ),
                             ),
                             child: Row(
@@ -340,7 +344,6 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
       instance.isFacingRight = true;
     }
 
-    // Determine current visual state
     String state = 'idle';
     if (instance.isDragging) {
       state = 'drag';
@@ -361,7 +364,6 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
     String assetPath = 'assets/images/$spritePrefix/$state$frameSuffix.png';
     String genericIdlePath = 'assets/images/generic/idle$_currentFrame.png';
 
-    // --- DYNAMIC POSITIONING ---
     final faceOffsets = _getFaceOffsets(
       spritePrefix,
       state,
@@ -384,9 +386,7 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
           // Only start the "drag" state once movement is detected
           if (!instance.isDragging) {
             _playPressSound();
-            _triggerHeart(
-              instance,
-            ); // Trigger one-time heart bubble on first interaction
+            _triggerHeart(instance);
             setState(() {
               instance.isDragging = true;
               instance.isWalking = false;
@@ -457,7 +457,6 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // ONE-TIME HEART SPEECH BUBBLE
             if (_showingHeartForId == instance.id)
               Positioned(
                 top: -35,
