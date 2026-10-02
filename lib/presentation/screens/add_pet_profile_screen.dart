@@ -37,8 +37,13 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _speciesController = TextEditingController();
-  final TextEditingController _breedController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
+
+  final TextEditingController _customBreedController = TextEditingController();
+  String? _selectedBreed;
+
+  String _speciesState = '';
+
   DateTime? _selectedBirthday;
   String _selectedSex = "Male";
   String? _pickedImagePath;
@@ -46,10 +51,95 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
       'https://i.pinimg.com/736x/54/34/81/543481c0ca5a909bd4d23863c6262339.jpg';
   final List<MedicalRecord> _medicalRecords = [];
 
+  final Map<String, List<String>> _speciesBreedsMap = {
+    'Dog': [
+      'Aspin (Asong Pinoy)',
+      'Shih Tzu',
+      'Pomeranian',
+      'Poodle (Toy / Standard)',
+      'Golden Retriever',
+      'Labrador Retriever',
+      'German Shepherd',
+      'Chow Chow',
+      'Siberian Husky',
+      'Pug',
+      'Beagle',
+      'French Bulldog',
+      'Pembroke Welsh Corgi',
+      'Dachshund',
+      'Chihuahua',
+      'American Bully / Pitbull',
+      'Doberman Pinscher',
+      'Other',
+    ],
+    'Cat': [
+      'Puspin (Pusang Pinoy)',
+      'Persian',
+      'Siamese',
+      'British Shorthair',
+      'Maine Coon',
+      'Scottish Fold',
+      'Ragdoll',
+      'Bengal',
+      'Munchkin',
+      'American Shorthair',
+      'Exotic Shorthair',
+      'Sphynx',
+      'Other',
+    ],
+    'Bird': [
+      'Parakeet / Budgie',
+      'Cockatiel',
+      'Lovebird (African Lovebird)',
+      'Canary',
+      'Macaw',
+      'Conure (Sun / Green Cheek)',
+      'Finch',
+      'Cockatoo',
+      'Pigeon / Dove',
+      'Other',
+    ],
+    'Rabbit': [
+      'Holland Lop',
+      'Netherland Dwarf',
+      'Mini Rex',
+      'Lionhead',
+      'Flemish Giant',
+      'Angora',
+      'New Zealand White',
+      'Other',
+    ],
+    'Hamster': [
+      'Syrian',
+      'Dwarf Campbell',
+      'Roborovski',
+      'Winter White',
+      'Chinese Hamster',
+      'Other',
+    ],
+    'Other': ['Other'],
+  };
+
+  String? _getMatchedSpeciesKey(String input) {
+    final trimmed = input.trim().toLowerCase();
+    for (var key in _speciesBreedsMap.keys) {
+      if (key.toLowerCase() == trimmed) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  OutlineInputBorder _pillBorder(Color color) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(30),
+    borderSide: BorderSide(color: color, width: 1.5),
+  );
+
   @override
   void initState() {
     super.initState();
     _nameController.addListener(_onNameChanged);
+    _speciesController.addListener(_onSpeciesChanged);
   }
 
   void _onNameChanged() {
@@ -59,11 +149,69 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
   @override
   void dispose() {
     _nameController.removeListener(_onNameChanged);
+    _speciesController.removeListener(_onSpeciesChanged);
     _nameController.dispose();
     _speciesController.dispose();
-    _breedController.dispose();
     _weightController.dispose();
+    _customBreedController.dispose();
     super.dispose();
+  }
+
+  bool get _hasSpecies => _speciesController.text.trim().isNotEmpty;
+
+  String? get _matchedKey => _getMatchedSpeciesKey(_speciesController.text);
+
+  bool get _isKnownSpecies => _matchedKey != null && _matchedKey != 'Other';
+
+  bool get _isBreedLocked => _hasSpecies && !_isKnownSpecies;
+
+  List<String> get _breedOptions {
+    if (!_hasSpecies) return const [];
+    return _isKnownSpecies ? _speciesBreedsMap[_matchedKey]! : const ['Other'];
+  }
+
+  bool get _showCustomBreedField => _selectedBreed == 'Other';
+
+  String get finalSpecies =>
+      _isKnownSpecies ? _matchedKey! : _speciesController.text.trim();
+
+  String get finalBreed {
+    if (_selectedBreed == null) return '';
+    if (_selectedBreed == 'Other') return _customBreedController.text.trim();
+    return _selectedBreed!;
+  }
+
+  void _onSpeciesChanged() {
+    final key = _matchedKey;
+    final newState = !_hasSpecies ? '' : (key ?? '__custom__');
+    if (newState == _speciesState) return;
+
+    final wasLocked = _speciesState == 'Other' || _speciesState == '__custom__';
+
+    setState(() {
+      _speciesState = newState;
+
+      if (!_hasSpecies) {
+        _selectedBreed = null;
+        _customBreedController.clear();
+      } else if (_isBreedLocked) {
+        _selectedBreed = 'Other';
+      } else {
+        final invalid =
+            _selectedBreed != null && !_breedOptions.contains(_selectedBreed);
+        if (wasLocked || invalid) {
+          _selectedBreed = null;
+          _customBreedController.clear();
+        }
+      }
+    });
+  }
+
+  void _onBreedChanged(String? value) {
+    setState(() {
+      _selectedBreed = value;
+      if (value != 'Other') _customBreedController.clear();
+    });
   }
 
   void _openPetwiseImagePicker() {
@@ -233,7 +381,8 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
   Future<void> _submitPetProfile() async {
     if (_nameController.text.trim().isEmpty ||
         _speciesController.text.trim().isEmpty ||
-        _breedController.text.trim().isEmpty) {
+        _selectedBreed == null ||
+        finalBreed.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Please fill out Name, Species, and Breed."),
@@ -255,7 +404,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
     final request = CreatePetRequest(
       name: _nameController.text.trim(),
       species: _speciesController.text.trim(),
-      breed: _breedController.text.trim(),
+      breed: finalBreed,
       weight: double.tryParse(_weightController.text) ?? 0.0,
       birthday: _selectedBirthday ?? DateTime.now(),
       sex: _selectedSex.toLowerCase(),
@@ -292,7 +441,8 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
           context: context,
           success: true,
           title: 'Pet Added',
-          message: '${_nameController.text.trim()} has been added to your profile.',
+          message:
+              '${_nameController.text.trim()} has been added to your profile.',
         );
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(
@@ -405,12 +555,73 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                   controller: _speciesController,
                   isEditable: true,
                 ),
-                PetwiseUserTextfield(
-                  textLabel: "Breed",
-                  textHint: "Enter breed",
-                  controller: _breedController,
-                  isEditable: true,
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Breed",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      DropdownButtonFormField<String>(
+                        value: _breedOptions.contains(_selectedBreed)
+                            ? _selectedBreed
+                            : null,
+                        isExpanded: true,
+                        borderRadius: BorderRadius.circular(16),
+                        hint: Text(
+                          _hasSpecies
+                              ? "Select a breed"
+                              : "Enter a species first",
+                          style: GoogleFonts.plusJakartaSans(fontSize: 15),
+                        ),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          border: _pillBorder(const Color(0xFFDCDCDC)),
+                          enabledBorder: _pillBorder(const Color(0xFFDCDCDC)),
+                          disabledBorder: _pillBorder(const Color(0xFFDCDCDC)),
+                          focusedBorder: _pillBorder(const Color(0xFFF7A433)),
+                        ),
+                        items: _breedOptions
+                            .map(
+                              (b) => DropdownMenuItem(
+                                value: b,
+                                child: Text(
+                                  b,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 15,
+                                    color: const Color(0xFF1A2D40),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        // null onChanged = disabled/locked
+                        onChanged: (!_hasSpecies || _isBreedLocked)
+                            ? null
+                            : _onBreedChanged,
+                      ),
+                    ],
+                  ),
                 ),
+                if (_showCustomBreedField)
+                  PetwiseUserTextfield(
+                    textLabel: "Custom Breed",
+                    textHint: "Enter breed",
+                    controller: _customBreedController,
+                    isEditable: true,
+                  ),
                 // Birthday field in its own row, styled like PetwiseUserTextfield
                 Container(
                   margin: const EdgeInsets.symmetric(vertical: 10),
@@ -439,7 +650,12 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                         },
                         child: Container(
                           margin: const EdgeInsets.all(5),
-                          padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            top: 10,
+                            bottom: 10,
+                          ),
                           width: double.infinity,
                           height: 50,
                           decoration: BoxDecoration(
@@ -454,7 +670,9 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                           child: Text(
                             _selectedBirthday == null
                                 ? "Select Date"
-                                : DateFormat('MM/dd/yyyy').format(_selectedBirthday!),
+                                : DateFormat(
+                                    'MM/dd/yyyy',
+                                  ).format(_selectedBirthday!),
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 15,
                               color: const Color(0xFF1A2D40),
@@ -503,19 +721,21 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                                 margin: EdgeInsets.only(
                                   right: sex == 'Male' ? 8 : 0,
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? (sex == 'Male'
-                                          ? const Color(0xFFDEEAFF)
-                                          : const Color(0xFFFFDEF0))
+                                            ? const Color(0xFFDEEAFF)
+                                            : const Color(0xFFFFDEF0))
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(30),
                                   border: Border.all(
                                     color: isSelected
                                         ? (sex == 'Male'
-                                            ? const Color(0xFF5B8DEF)
-                                            : const Color(0xFFEF5BAD))
+                                              ? const Color(0xFF5B8DEF)
+                                              : const Color(0xFFEF5BAD))
                                         : const Color(0xFFDCDCDC),
                                     width: 1.5,
                                   ),
@@ -528,8 +748,8 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                                       size: 20,
                                       color: isSelected
                                           ? (sex == 'Male'
-                                              ? const Color(0xFF5B8DEF)
-                                              : const Color(0xFFEF5BAD))
+                                                ? const Color(0xFF5B8DEF)
+                                                : const Color(0xFFEF5BAD))
                                           : const Color(0xFF94A3B8),
                                     ),
                                     const SizedBox(width: 6),
@@ -540,8 +760,8 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                                         fontSize: 14,
                                         color: isSelected
                                             ? (sex == 'Male'
-                                                ? const Color(0xFF5B8DEF)
-                                                : const Color(0xFFEF5BAD))
+                                                  ? const Color(0xFF5B8DEF)
+                                                  : const Color(0xFFEF5BAD))
                                             : const Color(0xFF94A3B8),
                                       ),
                                     ),
