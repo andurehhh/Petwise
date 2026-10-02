@@ -571,7 +571,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                       ),
                       const SizedBox(height: 5),
                       DropdownButtonFormField<String>(
-                        value: _breedOptions.contains(_selectedBreed)
+                        initialValue: _breedOptions.contains(_selectedBreed)
                             ? _selectedBreed
                             : null,
                         isExpanded: true,

@@ -212,8 +212,9 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _selectedSex = rawSex.isNotEmpty
         ? rawSex[0].toUpperCase() + rawSex.substring(1).toLowerCase()
         : 'Male';
-    if (_selectedSex != 'Male' && _selectedSex != 'Female')
+    if (_selectedSex != 'Male' && _selectedSex != 'Female') {
       _selectedSex = 'Male';
+    }
     _selectedBirthday = pet?.birthday ?? DateTime.now();
     imageUrl = pet?.imageUrl ?? 'assets/images/doggie.gif';
 
@@ -398,7 +399,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                             ),
                             const SizedBox(height: 5),
                             DropdownButtonFormField<String>(
-                              value: _breedOptions.contains(_selectedBreed)
+                              initialValue: _breedOptions.contains(_selectedBreed)
                                   ? _selectedBreed
                                   : null,
                               isExpanded: true,
