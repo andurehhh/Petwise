@@ -24,6 +24,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   late TextEditingController _petNameController;
   late TextEditingController _petSpeciesController;
   late TextEditingController _customBreedController;
+  late TextEditingController _customSpeciesController;
   late TextEditingController _petAgeController;
   late TextEditingController _petWeightController;
   late String image_url;
@@ -31,6 +32,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   late DateTime _selectedBirthday;
 
   String? _selectedBreed;
+  String? _selectedSpeciesDropdown;
   String _speciesState = '';
 
   final Map<String, List<String>> _speciesBreedsMap = {
@@ -127,8 +129,12 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
 
   bool get _showCustomBreedField => _selectedBreed == 'Other';
 
-  String get finalSpecies =>
-      _isKnownSpecies ? _matchedKey! : _petSpeciesController.text.trim();
+  String get finalSpecies {
+    if (_selectedSpeciesDropdown == 'Other') {
+      return _customSpeciesController.text.trim();
+    }
+    return _isKnownSpecies ? _matchedKey! : _petSpeciesController.text.trim();
+  }
 
   String get finalBreed {
     if (_selectedBreed == null) return '';
@@ -178,6 +184,23 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _petNameController = TextEditingController(text: pet?.name ?? "");
     _petSpeciesController = TextEditingController(text: pet?.species ?? "");
     _customBreedController = TextEditingController();
+    _customSpeciesController = TextEditingController();
+
+    // Initialize species dropdown from saved value
+    final savedSpecies = (pet?.species ?? '').trim();
+    if (savedSpecies.isNotEmpty) {
+      final matchedKey = _speciesBreedsMap.keys.firstWhere(
+        (k) => k.toLowerCase() == savedSpecies.toLowerCase(),
+        orElse: () => '',
+      );
+      if (matchedKey.isNotEmpty) {
+        _selectedSpeciesDropdown = matchedKey;
+      } else {
+        // Species not in list → show as 'Other' with custom text
+        _selectedSpeciesDropdown = 'Other';
+        _customSpeciesController.text = savedSpecies;
+      }
+    }
 
     _speciesState = _computeSpeciesState();
     final savedBreed = (pet?.breed ?? '').trim();
@@ -234,6 +257,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _petNameController.dispose();
     _petSpeciesController.dispose();
     _customBreedController.dispose();
+    _customSpeciesController.dispose();
     _petWeightController.dispose();
     super.dispose();
   }
@@ -378,11 +402,83 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                         controller: _petNameController,
                         isEditable: true,
                       ),
-                      PetwiseUserTextfield(
-                        textLabel: "Species",
-                        textHint: "e.g. Dog, Cat",
-                        controller: _petSpeciesController,
-                        isEditable: true,
+                      // ── Species dropdown ────────────────────────────────
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Species",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            DropdownButtonFormField<String>(
+                              value: _selectedSpeciesDropdown,
+                              isExpanded: true,
+                              borderRadius: BorderRadius.circular(16),
+                              hint: Text(
+                                "Select a species",
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 15,
+                                ),
+                              ),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                border: _pillBorder(const Color(0xFFDCDCDC)),
+                                enabledBorder:
+                                    _pillBorder(const Color(0xFFDCDCDC)),
+                                focusedBorder:
+                                    _pillBorder(const Color(0xFFF7A433)),
+                              ),
+                              items: _speciesBreedsMap.keys
+                                  .map(
+                                    (s) => DropdownMenuItem(
+                                      value: s,
+                                      child: Text(
+                                        s,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 15,
+                                          color: const Color(0xFF1A2D40),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedSpeciesDropdown = value;
+                                  // Sync to controller so breed logic works
+                                  _petSpeciesController.text = value ?? '';
+                                  // When 'Other' species, breed is also locked to 'Other'
+                                  _selectedBreed =
+                                      (value == 'Other') ? 'Other' : null;
+                                  _customBreedController.clear();
+                                  _customSpeciesController.clear();
+                                });
+                              },
+                            ),
+                            // Show custom species field when 'Other' selected
+                            if (_selectedSpeciesDropdown == 'Other') ...[
+                              const SizedBox(height: 8),
+                              PetwiseUserTextfield(
+                                textLabel: "Custom Species",
+                                textHint: "Enter your pet's species",
+                                controller: _customSpeciesController,
+                                isEditable: true,
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 10),

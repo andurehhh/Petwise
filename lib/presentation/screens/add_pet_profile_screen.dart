@@ -40,7 +40,10 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
   final TextEditingController _weightController = TextEditingController();
 
   final TextEditingController _customBreedController = TextEditingController();
+  final TextEditingController _customSpeciesController =
+      TextEditingController();
   String? _selectedBreed;
+  String? _selectedSpeciesDropdown;
 
   String _speciesState = '';
 
@@ -154,6 +157,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
     _speciesController.dispose();
     _weightController.dispose();
     _customBreedController.dispose();
+    _customSpeciesController.dispose();
     super.dispose();
   }
 
@@ -172,8 +176,12 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
 
   bool get _showCustomBreedField => _selectedBreed == 'Other';
 
-  String get finalSpecies =>
-      _isKnownSpecies ? _matchedKey! : _speciesController.text.trim();
+  String get finalSpecies {
+    if (_selectedSpeciesDropdown == 'Other') {
+      return _customSpeciesController.text.trim();
+    }
+    return _isKnownSpecies ? _matchedKey! : _speciesController.text.trim();
+  }
 
   String get finalBreed {
     if (_selectedBreed == null) return '';
@@ -549,11 +557,79 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                   controller: _nameController,
                   isEditable: true,
                 ),
-                PetwiseUserTextfield(
-                  textLabel: "Species",
-                  textHint: "e.g. Dog, Cat",
-                  controller: _speciesController,
-                  isEditable: true,
+                // ── Species dropdown ──────────────────────────────────────
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Species",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      DropdownButtonFormField<String>(
+                        value: _selectedSpeciesDropdown,
+                        isExpanded: true,
+                        borderRadius: BorderRadius.circular(16),
+                        hint: Text(
+                          "Select a species",
+                          style: GoogleFonts.plusJakartaSans(fontSize: 15),
+                        ),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          border: _pillBorder(const Color(0xFFDCDCDC)),
+                          enabledBorder: _pillBorder(const Color(0xFFDCDCDC)),
+                          focusedBorder: _pillBorder(const Color(0xFFF7A433)),
+                        ),
+                        items: _speciesBreedsMap.keys
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(
+                                  s,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 15,
+                                    color: const Color(0xFF1A2D40),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedSpeciesDropdown = value;
+                            // Sync to _speciesController so breed logic works
+                            _speciesController.text = value ?? '';
+                            // When 'Other' species, breed is also locked to 'Other'
+                            _selectedBreed =
+                                (value == 'Other') ? 'Other' : null;
+                            _customBreedController.clear();
+                            _customSpeciesController.clear();
+                          });
+                        },
+                      ),
+                      // Show custom species field when 'Other' is selected
+                      if (_selectedSpeciesDropdown == 'Other') ...[
+                        const SizedBox(height: 8),
+                        PetwiseUserTextfield(
+                          textLabel: "Custom Species",
+                          textHint: "Enter your pet's species",
+                          controller: _customSpeciesController,
+                          isEditable: true,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
                 Container(
                   margin: const EdgeInsets.symmetric(vertical: 10),
