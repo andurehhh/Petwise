@@ -573,7 +573,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                       ),
                       const SizedBox(height: 5),
                       DropdownButtonFormField<String>(
-                        value: _selectedSpeciesDropdown,
+                        initialValue: _selectedSpeciesDropdown,
                         isExpanded: true,
                         borderRadius: BorderRadius.circular(16),
                         hint: Text(
