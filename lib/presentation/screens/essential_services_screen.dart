@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/pet_establishment_model.dart';
 import '../../providers/essential_services_provider.dart';
 import '../widgets/petwise_Navbar.dart';
+import '../widgets/petwise_app_bar.dart';
 
 class EssentialServicesScreen extends StatefulWidget {
   const EssentialServicesScreen({super.key});
 
   @override
-  State<EssentialServicesScreen> createState() => _EssentialServicesScreenState();
+  State<EssentialServicesScreen> createState() =>
+      _EssentialServicesScreenState();
 }
 
 class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
@@ -21,8 +24,8 @@ class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<EssentialServicesProvider>().initLocationAndFetch(
-        onMarkerTap: _showEstablishmentDetails,
-      );
+            onMarkerTap: _showEstablishmentDetails,
+          );
     });
   }
 
@@ -46,35 +49,112 @@ class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      backgroundColor: Colors.white,
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
                 children: [
-                  Icon(Icons.emergency, color: Colors.red, size: 26),
-                  SizedBox(width: 8),
-                  Text('Emergency Hotlines & Care', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.emergency_rounded,
+                      color: Colors.red,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Emergency Hotlines & Care',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF1A2D40),
+                          ),
+                        ),
+                        Text(
+                          '24/7 veterinary triage, rescue & poison lines',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: const Color(0xFF94A3B8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               ...kDefaultPetHotlines.map(
-                (h) => Card(
-                  elevation: 0,
-                  color: Colors.red.shade50,
+                (h) => Container(
                   margin: const EdgeInsets.only(bottom: 10),
-                  child: ListTile(
-                    title: Text(h.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(h.description),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.phone, color: Colors.red),
-                      onPressed: () => launchUrl(Uri.parse('tel:${h.phone}')),
-                    ),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.red.shade100),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              h.title,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: const Color(0xFF1A2D40),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              h.description,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filled(
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.red.shade600,
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.phone, size: 20),
+                        onPressed: () => launchUrl(Uri.parse('tel:${h.phone}')),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -90,21 +170,12 @@ class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
     final provider = context.watch<EssentialServicesProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nearby Services'),
-        backgroundColor: const Color(0xFFF7A433),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            tooltip: 'Emergency Hotlines',
-            icon: const Icon(Icons.emergency, color: Colors.white),
-            onPressed: _showHotlinesModal,
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xffF8F7F6),
+      appBar: const PetWiseAppBar(),
+      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 4),
       body: Stack(
-
         children: [
+          // Google Map Background
           if (provider.userLocation != null)
             GoogleMap(
               initialCameraPosition: CameraPosition(
@@ -115,130 +186,351 @@ class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
               markers: provider.markers,
               circles: provider.circles,
               myLocationEnabled: true,
-              myLocationButtonEnabled: true,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              mapToolbarEnabled: false,
             )
           else
-            const Center(child: CircularProgressIndicator(color: Color(0xFFF7A433))),
+            const Center(
+              child: CircularProgressIndicator(color: Color(0xFFF7A433)),
+            ),
 
-          // Filters and Radius Bar
+          // Top Floating Control Card (Matches PetWise Design System)
           Positioned(
-            top: 12,
-            left: 12,
-            right: 12,
-            child: Column(
-              children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildChip('Clinics', EstablishmentCategory.clinic, provider),
-                      const SizedBox(width: 8),
-                      _buildChip('Grooming', EstablishmentCategory.grooming, provider),
-                      const SizedBox(width: 8),
-                      _buildChip('Pet Shops', EstablishmentCategory.shop, provider),
-                    ],
+            top: 14,
+            left: 14,
+            right: 14,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.96),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.92),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Subheader Row: Title & Emergency Hotline Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.radar, size: 18, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Text('${(provider.radiusMeters / 1000).toStringAsFixed(0)} km'),
-                      Slider(
-                        value: provider.radiusMeters,
-                        min: 2000,
-                        max: 20000,
-                        divisions: 9,
-                        activeColor: const Color(0xFFF7A433),
-                        onChanged: (val) {
-                          provider.setRadius(val, onMarkerTap: _showEstablishmentDetails);
-                        },
-                        onChangeEnd: (_) {
-                          if (provider.userLocation != null && _mapController != null) {
-                            _mapController!.animateCamera(
-                              CameraUpdate.newLatLngZoom(
-                                provider.userLocation!,
-                                _calculateZoom(provider.radiusMeters),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF7A433)
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.location_on_rounded,
+                              color: Color(0xFFF7A433),
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Essential Services',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF1A2D40),
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Emergency Hotlines Pill Button
+                      InkWell(
+                        onTap: _showHotlinesModal,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.red.shade200),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.emergency_rounded,
+                                color: Colors.red.shade700,
+                                size: 14,
                               ),
-                            );
-                          }
-                          provider.fetchPlaces(onMarkerTap: _showEstablishmentDetails);
-                        },
+                              const SizedBox(width: 4),
+                              Text(
+                                'Emergency',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.red.shade800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+
+                  // Category Filter Chips
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildCategoryChip(
+                          'Clinics',
+                          Icons.local_hospital_rounded,
+                          EstablishmentCategory.clinic,
+                          provider,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildCategoryChip(
+                          'Grooming',
+                          Icons.content_cut_rounded,
+                          EstablishmentCategory.grooming,
+                          provider,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildCategoryChip(
+                          'Pet Shops',
+                          Icons.storefront_rounded,
+                          EstablishmentCategory.shop,
+                          provider,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Radius Slider Row
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.radar_rounded,
+                        size: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Radius: ${(provider.radiusMeters / 1000).toStringAsFixed(0)} km',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A2D40),
+                        ),
+                      ),
+                      Expanded(
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 3,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 6,
+                            ),
+                            overlayShape: const RoundSliderOverlayShape(
+                              overlayRadius: 14,
+                            ),
+                            activeTrackColor: const Color(0xFFF7A433),
+                            inactiveTrackColor: Colors.grey.shade200,
+                            thumbColor: const Color(0xFFF7A433),
+                            overlayColor: const Color(0xFFF7A433)
+                                .withValues(alpha: 0.2),
+                          ),
+                          child: Slider(
+                            value: provider.radiusMeters,
+                            min: 2000,
+                            max: 20000,
+                            divisions: 9,
+                            onChanged: (val) {
+                              provider.setRadius(
+                                val,
+                                onMarkerTap: _showEstablishmentDetails,
+                              );
+                            },
+                            onChangeEnd: (_) {
+                              if (provider.userLocation != null &&
+                                  _mapController != null) {
+                                _mapController!.animateCamera(
+                                  CameraUpdate.newLatLngZoom(
+                                    provider.userLocation!,
+                                    _calculateZoom(provider.radiusMeters),
+                                  ),
+                                );
+                              }
+                              provider.fetchPlaces(
+                                onMarkerTap: _showEstablishmentDetails,
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
 
+          // Floating Action Button: Recenter on My Location
+          if (provider.userLocation != null)
+            Positioned(
+              bottom: 24,
+              right: 16,
+              child: FloatingActionButton.small(
+                heroTag: 'recenter_my_location',
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF1A2D40),
+                elevation: 3,
+                onPressed: () {
+                  if (provider.userLocation != null && _mapController != null) {
+                    _mapController!.animateCamera(
+                      CameraUpdate.newLatLngZoom(
+                        provider.userLocation!,
+                        _calculateZoom(provider.radiusMeters),
+                      ),
+                    );
+                  }
+                },
+                child: const Icon(
+                  Icons.my_location_rounded,
+                  color: Color(0xFFF7A433),
+                ),
+              ),
+            ),
+
+          // Loading & Empty States
           if (provider.isLoading)
             Positioned(
               bottom: 24,
-              left: MediaQuery.of(context).size.width / 2 - 20,
-              child: const CircularProgressIndicator(color: Color(0xFFF7A433)),
-            )
-          else if (provider.error != null)
-            Positioned(
-              bottom: 24,
-              left: 16,
-              right: 16,
+              left: 20,
+              right: 76,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade700,
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withValues(alpha: 0.95),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
                   ],
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        provider.error!,
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFFF7A433),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Finding nearby establishments...',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1A2D40),
                       ),
                     ),
                   ],
                 ),
               ),
             )
-          else if (provider.establishments.isEmpty && provider.userLocation != null)
+          else if (provider.error != null)
+            Positioned(
+              bottom: 24,
+              left: 16,
+              right: 76,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade700,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline,
+                        color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        provider.error!,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else if (provider.establishments.isEmpty &&
+              provider.userLocation != null)
             Positioned(
               bottom: 24,
               left: 20,
-              right: 20,
+              right: 76,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.92),
+                  color: Colors.white.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.info_outline, size: 18, color: Colors.grey),
-                    SizedBox(width: 8),
-                    Text(
-                      'No establishments found nearby. Try increasing the radius.',
-                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: Color(0xFFF7A433),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'No places found. Try expanding radius.',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1A2D40),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -246,31 +538,59 @@ class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
             ),
         ],
       ),
-
-      bottomNavigationBar: const 
-      PetwiseNavbar(navbarIndex: 4),
     );
   }
 
-  Widget _buildChip(
+  Widget _buildCategoryChip(
     String label,
+    IconData icon,
     EstablishmentCategory category,
     EssentialServicesProvider provider,
   ) {
     final isSelected = provider.selectedCategory == category;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: const Color(0xFFF7A433),
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black87,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    return InkWell(
+      onTap: () => provider.setCategory(
+        category,
+        onMarkerTap: _showEstablishmentDetails,
       ),
-      onSelected: (selected) {
-        if (selected) {
-          provider.setCategory(category, onMarkerTap: _showEstablishmentDetails);
-        }
-      },
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color:
+              isSelected ? const Color(0xFFF7A433) : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFF7A433).withValues(alpha: 0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 15,
+              color: isSelected ? Colors.white : const Color(0xFF64748B),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? Colors.white : const Color(0xFF334155),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -281,7 +601,8 @@ class _EstablishmentDetailSheet extends StatefulWidget {
   const _EstablishmentDetailSheet({required this.place});
 
   @override
-  State<_EstablishmentDetailSheet> createState() => _EstablishmentDetailSheetState();
+  State<_EstablishmentDetailSheet> createState() =>
+      _EstablishmentDetailSheetState();
 }
 
 class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
@@ -296,7 +617,10 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
         (p.photoName != null && p.photoUrl == null)) {
       _isLoadingDetails = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<EssentialServicesProvider>().loadDetails(widget.place).then((_) {
+        context
+            .read<EssentialServicesProvider>()
+            .loadDetails(widget.place)
+            .then((_) {
           if (mounted) {
             setState(() {
               _isLoadingDetails = false;
@@ -309,7 +633,8 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
 
   Future<void> _openDirections(double lat, double lng) async {
     final googleMapsAppUri = Uri.parse('google.navigation:q=$lat,$lng');
-    final webMapsUri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+    final webMapsUri = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
 
     if (await canLaunchUrl(googleMapsAppUri)) {
       await launchUrl(googleMapsAppUri, mode: LaunchMode.externalApplication);
@@ -346,7 +671,11 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
         color: Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Row(
@@ -356,7 +685,7 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
           const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.bold,
               color: color,
@@ -404,7 +733,7 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
           const SizedBox(height: 6),
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.plusJakartaSans(
               fontWeight: FontWeight.w600,
               color: color,
               fontSize: 14,
@@ -440,7 +769,8 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
                   ),
                 );
               },
-              errorBuilder: (ctx, error, stackTrace) => _buildFallbackBanner(place),
+              errorBuilder: (ctx, error, stackTrace) =>
+                  _buildFallbackBanner(place),
             ),
           ),
           Positioned(
@@ -458,14 +788,20 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
           color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Color(0xFFF7A433), strokeWidth: 2.5),
-            SizedBox(height: 10),
+            const CircularProgressIndicator(
+              color: Color(0xFFF7A433),
+              strokeWidth: 2.5,
+            ),
+            const SizedBox(height: 10),
             Text(
               'Loading establishment photo...',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
             ),
           ],
         ),
@@ -521,30 +857,38 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
                     Expanded(
                       child: Text(
                         place.name,
-                        style: const TextStyle(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                           letterSpacing: -0.3,
+                          color: const Color(0xFF1A2D40),
                         ),
                       ),
                     ),
                     if (place.isOpenNow != null)
                       Container(
                         margin: const EdgeInsets.only(left: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 9, vertical: 4),
                         decoration: BoxDecoration(
-                          color: place.isOpenNow! ? Colors.green.shade50 : Colors.red.shade50,
+                          color: place.isOpenNow!
+                              ? Colors.green.shade50
+                              : Colors.red.shade50,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: place.isOpenNow! ? Colors.green.shade300 : Colors.red.shade300,
+                            color: place.isOpenNow!
+                                ? Colors.green.shade300
+                                : Colors.red.shade300,
                           ),
                         ),
                         child: Text(
                           place.isOpenNow! ? 'OPEN' : 'CLOSED',
-                          style: TextStyle(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: place.isOpenNow! ? Colors.green.shade800 : Colors.red.shade800,
+                            fontWeight: FontWeight.w800,
+                            color: place.isOpenNow!
+                                ? Colors.green.shade800
+                                : Colors.red.shade800,
                           ),
                         ),
                       ),
@@ -554,16 +898,23 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
                 if (place.rating != null)
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
+                      const Icon(Icons.star_rounded,
+                          color: Colors.amber, size: 20),
                       const SizedBox(width: 4),
                       Text(
                         place.rating!.toStringAsFixed(1),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '(${place.userRatingsTotal ?? 0} reviews)',
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.grey.shade600,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -571,38 +922,54 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.location_on_outlined, size: 18, color: Colors.grey.shade600),
+                    Icon(Icons.location_on_outlined,
+                        size: 18, color: Colors.grey.shade600),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         place.address,
-                        style: TextStyle(color: Colors.grey.shade700, fontSize: 13, height: 1.3),
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                          height: 1.3,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                if (place.weekdayDescriptions != null && place.weekdayDescriptions!.isNotEmpty) ...[
+                if (place.weekdayDescriptions != null &&
+                    place.weekdayDescriptions!.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   Theme(
-                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    data: Theme.of(context)
+                        .copyWith(dividerColor: Colors.transparent),
                     child: ExpansionTile(
                       tilePadding: EdgeInsets.zero,
                       childrenPadding: EdgeInsets.zero,
-                      leading: Icon(Icons.access_time_rounded, size: 18, color: Colors.grey.shade600),
-                      title: const Text(
+                      leading: Icon(Icons.access_time_rounded,
+                          size: 18, color: Colors.grey.shade600),
+                      title: Text(
                         'Operating Hours',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A2D40),
+                        ),
                       ),
                       children: place.weekdayDescriptions!
                           .map(
                             (desc) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 24),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 2, horizontal: 24),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Text(
                                       desc,
-                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade700,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -620,31 +987,50 @@ class _EstablishmentDetailSheetState extends State<_EstablishmentDetailSheet> {
                       child: ElevatedButton.icon(
                         onPressed: place.phoneNumber == null
                             ? null
-                            : () => launchUrl(Uri.parse('tel:${place.phoneNumber}')),
+                            : () => launchUrl(
+                                Uri.parse('tel:${place.phoneNumber}')),
                         icon: const Icon(Icons.phone),
                         label: Text(
-                          place.phoneNumber ?? (_isLoadingDetails ? 'Loading...' : 'No Phone'),
+                          place.phoneNumber ??
+                              (_isLoadingDetails ? 'Loading...' : 'No Phone'),
                           overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green.shade600,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => _openDirections(place.latitude, place.longitude),
+                        onPressed: () => _openDirections(
+                          place.latitude,
+                          place.longitude,
+                        ),
                         icon: const Icon(Icons.directions),
-                        label: const Text('Directions'),
+                        label: Text(
+                          'Directions',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF7A433),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
