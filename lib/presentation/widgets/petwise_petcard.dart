@@ -150,13 +150,13 @@ class _PetCardState extends State<PetCard> {
                                 ? Image.network(
                                     widget.imagePath,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
+                                    errorBuilder: (_, _, _) =>
                                         _fallback(widget.detailColor),
                                   )
                                 : Image.asset(
                                     widget.imagePath,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
+                                    errorBuilder: (_, _, _) =>
                                         _fallback(widget.detailColor),
                                   ),
                           ),

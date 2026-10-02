@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petwise/presentation/widgets/petwise_Navbar.dart';
+import 'package:petwise/presentation/widgets/petwise_navbar.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:petwise/providers/activity_provider.dart';
@@ -8,7 +8,6 @@ import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/presentation/widgets/petwise_dynamic_activity_card.dart';
 import 'package:petwise/presentation/widgets/petwise_add_activity_sheet.dart';
-import 'package:petwise/data/models/activity_model.dart';
 
 class PlannerScreen extends StatefulWidget {
   final DateTime? initialDate;
@@ -155,7 +154,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: pendingCount == 0
-                              ? Colors.green.withOpacity(0.1)
+                              ? Colors.green.withValues(alpha: 0.1)
                               : const Color(0xFFFFF4E6),
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -244,24 +243,21 @@ class _PlannerScreenState extends State<PlannerScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFF7A433),
         onPressed: () {
-          Future.microtask(() {
-            if (!mounted) return;
-            if (userId != null) {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => AddActivitySheet(
-                  userId: userId,
-                  selectedDate: _selectedDay,
-                ),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("User session not found.")),
-              );
-            }
-          });
+          if (userId != null) {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => AddActivitySheet(
+                userId: userId,
+                selectedDate: _selectedDay,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("User session not found.")),
+            );
+          }
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),

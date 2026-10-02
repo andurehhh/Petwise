@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'api_client.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../contracts/auth/signin_request.dart';
@@ -109,7 +110,7 @@ class AuthService {
       );
       return authResponse;
     } catch (e) {
-      print('Google Sign-In error: $e');
+      debugPrint('Google Sign-In error: $e');
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }

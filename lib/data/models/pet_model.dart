@@ -8,7 +8,7 @@ class Pet {
   final String sex;
   final String? breed;
   final double? weight;
-  final String? image_url;
+  final String? imageUrl;
   bool isFavorite;
 
   Pet({
@@ -19,7 +19,7 @@ class Pet {
     required this.species,
     required this.birthday,
     required this.sex,
-    this.image_url,
+    this.imageUrl,
     this.breed,
     this.weight,
     this.isFavorite = false,
@@ -47,7 +47,7 @@ class Pet {
       birthday: DateTime.parse(json['birthday']).toLocal(),
       sex: json['sex'],
       breed: json['breed'],
-      image_url: json['image_url'],
+      imageUrl: json['image_url'],
       weight: json['weight'] != null
           ? (json['weight'] as num).toDouble()
           : null,
@@ -62,7 +62,7 @@ class Pet {
       'name': name,
       'species': species,
       'birthday': birthday.toIso8601String(),
-      'image_url': image_url,
+      'image_url': imageUrl,
       'sex': sex,
       'breed': breed,
       'weight': weight,

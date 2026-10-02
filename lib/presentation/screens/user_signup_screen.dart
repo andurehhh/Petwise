@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/contracts/auth/signup_request.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
 import 'package:petwise/presentation/widgets/petwise_onboarding_flow.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +19,6 @@ class UserSignupScreen extends StatefulWidget {
 class _UserSignupScreenState extends State<UserSignupScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _preparingOnboarding = false;
 
   @override
   void dispose() {
@@ -168,7 +167,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                                               .trim(),
                                         ),
                                       );
-                                      if (!mounted) return;
+                                      if (!context.mounted) return;
                                       if (success) {
                                         _showEmailValidationDialog();
                                       } else {
@@ -251,7 +250,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                                   : () async {
                                       final success = await authProvider
                                           .loginWithGoogle();
-                                      if (!mounted) return;
+                                      if (!context.mounted) return;
                                       if (success) {
                                         final user = context
                                             .read<UserProvider>()
@@ -259,7 +258,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                                         if (user != null &&
                                             !user.hasCompletedSetup) {
                                           await showOnboardingFlow(context);
-                                          if (mounted) {
+                                          if (context.mounted) {
                                             final updatedUser = context
                                                 .read<UserProvider>()
                                                 .user;
@@ -281,7 +280,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                                                 "You're in. Let's check on your pets.",
                                             buttonLabel: "Let's Go",
                                           );
-                                          if (mounted) {
+                                          if (context.mounted) {
                                             Navigator.pushReplacementNamed(
                                               context,
                                               '/UserHomePage',
@@ -304,7 +303,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                                   Image.asset(
                                     'assets/images/google_logo.png',
                                     height: 20,
-                                    errorBuilder: (_, __, ___) => const Icon(
+                                    errorBuilder: (_, _, _) => const Icon(
                                       Icons.g_mobiledata,
                                       size: 22,
                                       color: Color(0xff0B4A72),

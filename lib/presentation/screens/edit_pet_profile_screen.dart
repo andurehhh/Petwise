@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:petwise/contracts/pet/update_pet_request.dart';
-import 'package:petwise/contracts/health_event/create_health_event_request.dart';
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_image_picker_sheet.dart';
 import 'package:petwise/presentation/widgets/petwise_pet_upcoming_medical_pill.dart';
 import 'package:petwise/presentation/widgets/petwise_add_health_event_sheet.dart';
@@ -26,7 +25,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   late TextEditingController _customBreedController;
   late TextEditingController _petAgeController;
   late TextEditingController _petWeightController;
-  late String image_url;
+  late String imageUrl;
   late String _selectedSex;
   late DateTime _selectedBirthday;
 
@@ -213,10 +212,11 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
     _selectedSex = rawSex.isNotEmpty
         ? rawSex[0].toUpperCase() + rawSex.substring(1).toLowerCase()
         : 'Male';
-    if (_selectedSex != 'Male' && _selectedSex != 'Female')
+    if (_selectedSex != 'Male' && _selectedSex != 'Female') {
       _selectedSex = 'Male';
+    }
     _selectedBirthday = pet?.birthday ?? DateTime.now();
-    image_url = pet?.image_url ?? 'assets/images/doggie.gif';
+    imageUrl = pet?.imageUrl ?? 'assets/images/doggie.gif';
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -245,10 +245,10 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return PetwiseImagePickerSheet(
-          currentImageUrl: image_url,
+          currentImageUrl: imageUrl,
           onImageSelected: (newUrl) {
             setState(() {
-              image_url = newUrl;
+              imageUrl = newUrl;
             });
           },
         );
@@ -266,10 +266,10 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   }
 
   ImageProvider _getProfileImage() {
-    if (image_url.startsWith('http://') || image_url.startsWith('https://')) {
-      return NetworkImage(image_url);
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return NetworkImage(imageUrl);
     }
-    return AssetImage(image_url);
+    return AssetImage(imageUrl);
   }
 
   @override
@@ -399,7 +399,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                             ),
                             const SizedBox(height: 5),
                             DropdownButtonFormField<String>(
-                              value: _breedOptions.contains(_selectedBreed)
+                              initialValue: _breedOptions.contains(_selectedBreed)
                                   ? _selectedBreed
                                   : null,
                               isExpanded: true,
@@ -503,11 +503,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                 ),
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  _selectedBirthday == null
-                                      ? "Select Date"
-                                      : DateFormat(
-                                          'MM/dd/yyyy',
-                                        ).format(_selectedBirthday!),
+                                  DateFormat('MM/dd/yyyy').format(_selectedBirthday),
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 15,
                                     color: const Color(0xFF1A2D40),
@@ -741,8 +737,9 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                       final currentPet =
                                           petProvider.selectedPet;
                                       final petId = petProvider.selectedPet?.id;
-                                      if (currentPet == null || petId == null)
+                                      if (currentPet == null || petId == null) {
                                         return;
+                                      }
 
                                       if (_petNameController.text
                                               .trim()
@@ -762,8 +759,9 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                       }
 
                                       String? formatSex(String? sex) {
-                                        if (sex == null || sex.trim().isEmpty)
+                                        if (sex == null || sex.trim().isEmpty) {
                                           return null;
+                                        }
                                         final clean = sex.trim().toLowerCase();
                                         return clean[0].toUpperCase() +
                                             clean.substring(1);
@@ -780,17 +778,18 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                             0.0,
                                         birthday: _selectedBirthday,
                                         sex: formatSex(_selectedSex),
-                                        image_url: image_url,
+                                        imageUrl: imageUrl,
                                       );
 
-                                      bool success = await context
-                                          .read<PetProvider>()
+                                      final navigator = Navigator.of(context);
+                                      final petProv = context.read<PetProvider>();
+                                      bool success = await petProv
                                           .updatePet(petId, request);
 
-                                      if (!mounted) return;
+                                      if (!context.mounted) return;
 
                                       if (success) {
-                                        Navigator.pop(context);
+                                        navigator.pop();
                                         await PetwiseConfirmationDialog.show(
                                           context: context,
                                           success: true,
@@ -803,15 +802,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
                                           context: context,
                                           success: false,
                                           title: 'Update Failed',
-                                          message:
-                                              context
-                                                  .read<PetProvider>()
-                                                  .errorMessage
-                                                  ?.replaceAll(
-                                                    'Exception: ',
-                                                    '',
-                                                  ) ??
-                                              'Failed to update pet.',
+                                          message: petProv.errorMessage?.replaceAll('Exception: ', '') ?? 'Failed to update pet.',
                                         );
                                       }
                                     },

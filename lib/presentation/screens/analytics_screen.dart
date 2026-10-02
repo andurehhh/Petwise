@@ -11,7 +11,7 @@ import 'package:petwise/contracts/analytics/user_dashboard_analytics_response.da
 import 'package:petwise/contracts/analytics/activity_timeline_slot.dart';
 import 'package:petwise/data/models/pet_model.dart';
 import 'package:petwise/utils/pet_theme.dart';
-import '../widgets/petwise_Navbar.dart';
+import '../widgets/petwise_navbar.dart';
 import '../widgets/petwise_app_bar.dart';
 
 class AnalyticsScreen extends StatefulWidget {
@@ -320,7 +320,7 @@ class _PetSelector extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: pets.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
           final pet = pets[i];
           final isActive = selected?.id == pet.id;

@@ -46,7 +46,7 @@ class UserProvider extends ChangeNotifier {
     required String firstName,
     required String lastName,
     required String nickname,
-    String? image_url, // FIXED: Changed to snake_case style
+    String? imageUrl,
   }) async {
     if (_userService == null || _user == null) return false;
 
@@ -59,7 +59,7 @@ class UserProvider extends ChangeNotifier {
         firstName: firstName,
         lastName: lastName,
         nickname: nickname,
-        image_url: image_url ?? _user!.image_url,
+        imageUrl: imageUrl ?? _user!.imageUrl,
       );
 
       final response = await _userService!.updateUser(_user!.id, request);
@@ -90,7 +90,7 @@ class UserProvider extends ChangeNotifier {
         lastName: _user!.lastName,
         email: _user!.email,
         nickname: _user!.nickname,
-        image_url: pictureUrl,
+        imageUrl: pictureUrl,
         hasCompletedSetup: _user!.hasCompletedSetup,
       );
       notifyListeners();
@@ -110,7 +110,7 @@ class UserProvider extends ChangeNotifier {
       lastName: response.lastName ?? '',
       email: response.email,
       nickname: response.nickname,
-      image_url: response.image_url,
+      imageUrl: response.imageUrl,
       hasCompletedSetup: response.hasCompletedSetup,
     );
   }
@@ -124,7 +124,7 @@ class UserProvider extends ChangeNotifier {
           firstName: _user!.firstName,
           lastName: _user!.lastName,
           nickname: _user!.nickname,
-          image_url: _user!.image_url,
+          imageUrl: _user!.imageUrl,
           hasCompletedSetup: true,
         ),
       );

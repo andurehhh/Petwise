@@ -46,6 +46,7 @@ class _PetwiseUserImagePickerSheetState
     );
 
     if (pickedFile == null) return;
+    if (!mounted) return;
 
     showDialog(
       context: context,

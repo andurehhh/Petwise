@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petwise/contracts/pet/create_pet_request.dart';
 import 'package:petwise/contracts/health_event/create_health_event_request.dart';
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_image_picker_sheet.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/auth_provider.dart';
@@ -270,7 +270,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: dialogSelectedType,
+                  initialValue: dialogSelectedType,
                   decoration: InputDecoration(
                     labelText: "Type",
                     border: OutlineInputBorder(
@@ -409,20 +409,21 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
       birthday: _selectedBirthday ?? DateTime.now(),
       sex: _selectedSex.toLowerCase(),
       userId: currentUserId,
-      image_url: _pickedImagePath ?? _defaultAssetPath,
+      imageUrl: _pickedImagePath ?? _defaultAssetPath,
     );
 
+    final petProvider = context.read<PetProvider>();
+    final healthEventProvider = context.read<HealthEventProvider>();
+
     try {
-      await context.read<PetProvider>().createNewPet(request);
+      await petProvider.createNewPet(request);
 
       if (_medicalRecords.isNotEmpty) {
-        final petProvider = context.read<PetProvider>();
         final newPetId = petProvider.pets.isNotEmpty
             ? petProvider.pets.last.id
             : null;
 
         if (newPetId != null) {
-          final healthEventProvider = context.read<HealthEventProvider>();
           for (final record in _medicalRecords) {
             await healthEventProvider.createNewHealthEvent(
               CreateHealthEventRequest(
@@ -570,7 +571,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                       ),
                       const SizedBox(height: 5),
                       DropdownButtonFormField<String>(
-                        value: _breedOptions.contains(_selectedBreed)
+                        initialValue: _breedOptions.contains(_selectedBreed)
                             ? _selectedBreed
                             : null,
                         isExpanded: true,
