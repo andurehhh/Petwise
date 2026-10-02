@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
@@ -169,14 +169,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       backgroundColor: const Color(0xffF6EEE4),
                       child: ClipOval(
                         child:
-                            (user.image_url != null &&
-                                user.image_url!.isNotEmpty)
+                            (user.imageUrl != null &&
+                                user.imageUrl!.isNotEmpty)
                             ? Image.network(
-                                user.image_url!,
+                                user.imageUrl!,
                                 width: 140,
                                 height: 140,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Image.asset(
+                                errorBuilder: (_, _, _) => Image.asset(
                                   'assets/images/user-default.png',
                                   width: 140,
                                   height: 140,
@@ -232,15 +232,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           const SizedBox(height: 20),
                           PetwiseUserTextfield(
                             textLabel: "First Name",
-                            textHint: user.firstName ?? '',
+                            textHint: user.firstName,
                           ),
                           PetwiseUserTextfield(
                             textLabel: "Last Name",
-                            textHint: user.lastName ?? '',
+                            textHint: user.lastName,
                           ),
                           PetwiseUserTextfield(
                             textLabel: "Email",
-                            textHint: user.email ?? '',
+                            textHint: user.email,
                           ),
                           const SizedBox(height: 40),
                           ConstrainedBox(
@@ -251,7 +251,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 Consumer<AuthProvider>(
                                   builder: (context, authProvider, child) {
                                     // If the user is logged in via Google, return an empty container or nothing
-                                    if (authProvider.is_gmail) {
+                                    if (authProvider.isGmail) {
                                       return const SizedBox.shrink();
                                     }
 
@@ -372,7 +372,7 @@ class _DarkLoaderState extends State<_DarkLoader>
           children: [
             AnimatedBuilder(
               animation: _ctrl,
-              builder: (_, __) => Transform.scale(
+              builder: (_, _) => Transform.scale(
                 scale: _scale.value,
                 child: Image.asset(
                   'assets/images/logo_no_name.png',

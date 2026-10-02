@@ -2,7 +2,7 @@ class UserResponse {
   final String userId;
   final String email;
   final DateTime createdAt;
-  final String? image_url;
+  final String? imageUrl;
   final String? firstName;
   final String? lastName;
   final String? nickname;
@@ -12,7 +12,7 @@ class UserResponse {
     required this.userId,
     required this.email,
     required this.createdAt,
-    this.image_url,
+    this.imageUrl,
     this.firstName,
     this.lastName,
     this.nickname,
@@ -24,7 +24,7 @@ class UserResponse {
       userId: json['user_id'],
       email: json['email'],
       createdAt: DateTime.parse(json['created_at']).toLocal(),
-      image_url: json['image_url'],
+      imageUrl: json['image_url'],
       firstName: json['first_name'],
       lastName: json['last_name'],
       nickname: json['nickname'],
@@ -38,7 +38,7 @@ class UserResponse {
       'email': email,
       'created_at': createdAt.toIso8601String(),
       'first_name': firstName,
-      'image_url': image_url,
+      'image_url': imageUrl,
       'last_name': lastName,
       'nickname': nickname,
       'has_completed_setup': hasCompletedSetup,

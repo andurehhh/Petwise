@@ -9,7 +9,7 @@ on:
 jobs:
   lint-and-test:
     name: Lint and Test Code
-    runs-on: ubuntu-Latest
+    runs-on: ubuntu-latest
 
     steps: 
       - name: Checkout Code

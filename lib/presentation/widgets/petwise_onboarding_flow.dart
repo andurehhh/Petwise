@@ -8,8 +8,8 @@ Future<void> showOnboardingFlow(BuildContext context) async {
     PageRouteBuilder(
       opaque: false,
       barrierColor: Colors.black.withValues(alpha: 0.55),
-      pageBuilder: (_, __, ___) => const _OnboardingFlow(),
-      transitionsBuilder: (_, anim, __, child) =>
+      pageBuilder: (_, _, _) => const _OnboardingFlow(),
+      transitionsBuilder: (_, anim, _, child) =>
           FadeTransition(opacity: anim, child: child),
       transitionDuration: const Duration(milliseconds: 300),
     ),

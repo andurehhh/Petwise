@@ -7,7 +7,7 @@ import 'package:petwise/utils/pet_theme.dart';
 import '../widgets/petwise_app_bar.dart';
 import '../widgets/petwise_petcard.dart';
 import 'package:intl/intl.dart';
-import '../widgets/petwise_Navbar.dart';
+import '../widgets/petwise_navbar.dart';
 import 'package:petwise/presentation/screens/pet_profile_screen.dart';
 import 'package:petwise/data/models/pet_model.dart';
 
@@ -19,9 +19,9 @@ class PetCardScreen extends StatelessWidget {
       PageRouteBuilder(
         opaque: false,
         barrierDismissible: true,
-        pageBuilder: (_, __, ___) =>
+        pageBuilder: (_, _, _) =>
             _ZoomOverlay(pet: pet, displayImage: displayImage),
-        transitionsBuilder: (_, anim, __, child) =>
+        transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
     );
@@ -48,8 +48,8 @@ class PetCardScreen extends StatelessWidget {
           ...petList.asMap().entries.map((entry) {
             final pet = entry.value;
             final String displayImage =
-                (pet.image_url != null && pet.image_url!.isNotEmpty)
-                ? pet.image_url!
+                (pet.imageUrl != null && pet.imageUrl!.isNotEmpty)
+                ? pet.imageUrl!
                 : 'assets/images/doggie.gif';
 
             return Padding(
@@ -120,8 +120,8 @@ class _FavoritesStrip extends StatelessWidget {
         Row(
           children: pets.map((pet) {
             final String img =
-                (pet.image_url != null && pet.image_url!.isNotEmpty)
-                    ? pet.image_url!
+                (pet.imageUrl != null && pet.imageUrl!.isNotEmpty)
+                    ? pet.imageUrl!
                     : 'assets/images/doggie.gif';
             final bool isNetwork =
                 img.startsWith('http://') || img.startsWith('https://');
@@ -162,7 +162,7 @@ class _FavoritesStrip extends StatelessWidget {
                                   ? Image.network(
                                       img,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
+                                      errorBuilder: (_, _, _) => Container(
                                         color: color.withValues(alpha: 0.3),
                                         child: Icon(Icons.pets,
                                             color: color, size: 18),
@@ -171,7 +171,7 @@ class _FavoritesStrip extends StatelessWidget {
                                   : Image.asset(
                                       img,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
+                                      errorBuilder: (_, _, _) => Container(
                                         color: color.withValues(alpha: 0.3),
                                         child: Icon(Icons.pets,
                                             color: color, size: 18),
@@ -253,7 +253,7 @@ class _ZoomOverlayState extends State<_ZoomOverlay> {
       parsed = widget.pet.birthday;
     }
     final birthday =
-        parsed != null ? DateFormat('MMMM d, yyyy').format(parsed) : '';
+        DateFormat('MMMM d, yyyy').format(parsed);
     final breedText =
         (widget.pet.breed != null && widget.pet.breed!.isNotEmpty)
             ? widget.pet.breed!
@@ -362,13 +362,13 @@ class _ZoomOverlayState extends State<_ZoomOverlay> {
                                           ? Image.network(
                                               widget.displayImage,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) =>
+                                              errorBuilder: (_, _, _) =>
                                                   const SizedBox.shrink(),
                                             )
                                           : Image.asset(
                                               widget.displayImage,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) =>
+                                              errorBuilder: (_, _, _) =>
                                                   const SizedBox.shrink(),
                                             ),
                                     ),
@@ -455,11 +455,6 @@ class _ZoomOverlayState extends State<_ZoomOverlay> {
       ),
     );
   }
-
-  Widget _fallback(Color c) => Container(
-        color: c.withValues(alpha: 0.15),
-        child: Icon(Icons.pets, color: c, size: 40),
-      );
 }
 
 class _Field extends StatelessWidget {

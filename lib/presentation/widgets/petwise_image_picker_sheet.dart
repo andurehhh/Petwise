@@ -45,6 +45,7 @@ class _PetwiseImagePickerSheetState extends State<PetwiseImagePickerSheet> {
     );
 
     if (pickedFile == null) return;
+    if (!mounted) return;
 
     showDialog(
       context: context,

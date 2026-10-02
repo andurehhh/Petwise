@@ -23,11 +23,11 @@ class _PetInstance {
   double yOffset;
   double groundLevel; // Original Y to return to after falling
   bool isFacingRight;
-  bool isWalking;
-  bool isSleeping;
-  bool isDragging;
-  bool isFalling;
-  double verticalSpeed;
+  bool isWalking = true;
+  bool isSleeping = false;
+  bool isDragging = false;
+  bool isFalling = false;
+  double verticalSpeed = 0.0;
   String? lastState;
 
   _PetInstance({
@@ -36,11 +36,6 @@ class _PetInstance {
     this.yOffset = 25.0,
     this.groundLevel = 25.0,
     this.isFacingRight = true,
-    this.isWalking = true,
-    this.isSleeping = false,
-    this.isDragging = false,
-    this.isFalling = false,
-    this.verticalSpeed = 0.0,
   });
 }
 
@@ -137,7 +132,7 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
         if (!mounted) return;
         setState(() {
           for (var instance in _petInstances.values) {
-            if (instance.isDragging || instance.isFalling) continue;
+            if (instance.isDragging || instance.isFalling || instance.id == _pausedForId) continue;
             int behavior = _random.nextInt(3);
             instance.isWalking = behavior == 0;
             instance.isSleeping = behavior == 2;
@@ -240,10 +235,10 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: const Color(0xFFF7A433).withOpacity(0.5),
+                        color: const Color(0xFFF7A433).withValues(alpha: 0.5),
                       ),
                     ),
                     child: const Row(
@@ -298,13 +293,13 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.12),
+                                  color: Colors.black.withValues(alpha: 0.12),
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
                               border: Border.all(
-                                color: const Color(0xFFF7A433).withOpacity(0.4),
+                                color: const Color(0xFFF7A433).withValues(alpha: 0.4),
                               ),
                             ),
                             child: Row(
@@ -347,16 +342,17 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
 
     // Determine current visual state
     String state = 'idle';
-    if (instance.isDragging)
+    if (instance.isDragging) {
       state = 'drag';
-    else if (instance.isFalling)
+    } else if (instance.isFalling) {
       state = 'fall';
-    else if (instance.lastState == 'land')
+    } else if (instance.lastState == 'land') {
       state = 'land';
-    else if (instance.isSleeping)
+    } else if (instance.isSleeping) {
       state = 'sleep';
-    else if (instance.isWalking)
+    } else if (instance.isWalking) {
       state = 'walk';
+    }
 
     final spritePrefix = _getSpritePrefix(pet.species);
     String frameSuffix = (state == 'drag' || state == 'fall' || state == 'land')
@@ -439,11 +435,12 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
           });
           // Resume after 1200ms
           Timer(const Duration(milliseconds: 1200), () {
-            if (mounted)
+            if (mounted) {
               setState(() {
                 _pausedForId = null;
                 instance.isWalking = true;
               });
+            }
           });
         },
         onLongPress: () {
@@ -472,7 +469,7 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -504,13 +501,13 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                 height: 90,
                 fit: BoxFit.contain,
                 gaplessPlayback: true,
-                errorBuilder: (_, __, ___) => Image.asset(
+                errorBuilder: (_, _, _) => Image.asset(
                   genericIdlePath,
                   width: 90,
                   height: 90,
                   fit: BoxFit.contain,
                   gaplessPlayback: true,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  errorBuilder: (_, _, _) => const Icon(
                     Icons.pets,
                     size: 50,
                     color: Color(0xFFF7A433),
@@ -546,7 +543,7 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
                       ),
                       child: Transform.scale(
                         scale: 1.1,
-                        child: _buildFaceImage(pet.image_url),
+                        child: _buildFaceImage(pet.imageUrl),
                       ),
                     ),
                   ),
@@ -560,11 +557,12 @@ class _InteractivePetPenState extends State<InteractivePetPen> {
   }
 
   Widget _buildFaceImage(String? url) {
-    if (url == null || url.isEmpty)
+    if (url == null || url.isEmpty) {
       return Container(
         color: const Color(0xFFF7A433),
         child: const Icon(Icons.pets, size: 20, color: Colors.white),
       );
+    }
     if (url.startsWith('http')) return Image.network(url, fit: BoxFit.cover);
     return Image.file(File(url), fit: BoxFit.cover);
   }
@@ -661,7 +659,7 @@ class _PenBlobState extends State<_PenBlob>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Transform.scale(
+      builder: (_, _) => Transform.scale(
         scale: _anim.value,
         child: Container(
           width: widget.size,

@@ -4,7 +4,7 @@ class CreateUserRequest {
   final String email;
   final String nickname;
   final String password;
-  final String image_url;
+  final String imageUrl;
 
   CreateUserRequest({
     required this.firstName,
@@ -12,7 +12,7 @@ class CreateUserRequest {
     required this.email,
     required this.nickname,
     required this.password,
-    required this.image_url,
+    this.imageUrl = '',
   });
 
   factory CreateUserRequest.fromJson(Map<String, dynamic> json) {
@@ -21,7 +21,7 @@ class CreateUserRequest {
       lastName: json['last_name'],
       email: json['email'],
       nickname: json['nickname'],
-      image_url: json['image_url'],
+      imageUrl: json['image_url'],
 
       password: json['password'],
     );
@@ -32,7 +32,7 @@ class CreateUserRequest {
       'first_name': firstName,
       'last_name': lastName,
       'email': email,
-      'image_url': image_url,
+      'image_url': imageUrl,
       'nickname': nickname,
       'password': password,
     };

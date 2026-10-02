@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_user_image_picker.dart';
 import 'package:petwise/providers/user_provider.dart';
 
@@ -27,7 +27,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     _firstNameController = TextEditingController(text: user?.firstName ?? "");
     _lastNameController = TextEditingController(text: user?.lastName ?? "");
     _nicknameController = TextEditingController(text: user?.nickname ?? "");
-    _temporarySelectedImageUrl = user?.image_url;
+    _temporarySelectedImageUrl = user?.imageUrl;
   }
 
   @override
@@ -214,7 +214,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                                   .trim(),
                                               nickname: _nicknameController.text
                                                   .trim(),
-                                              image_url:
+                                              imageUrl:
                                                   _temporarySelectedImageUrl,
                                             );
 
@@ -226,7 +226,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                                   Colors.lightGreen,
                                             ),
                                           );
-                                          navigator.pop(context);
+                                          navigator.pop();
                                         } else {
                                           messenger.showSnackBar(
                                             SnackBar(

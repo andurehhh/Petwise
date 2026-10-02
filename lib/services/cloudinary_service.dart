@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -10,7 +11,7 @@ class CloudinaryService {
   Future<String?> uploadImage(File imageFile) async {
     // 1. Verify file exists before even trying to send
     if (!await imageFile.exists()) {
-      print('DEBUG: File does not exist at ${imageFile.path}');
+      debugPrint('DEBUG: File does not exist at ${imageFile.path}');
       return null;
     }
 
@@ -24,7 +25,7 @@ class CloudinaryService {
         ..fields['upload_preset'] = uploadPreset
         ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
 
-      print('DEBUG: Uploading file: ${imageFile.path}');
+      debugPrint('DEBUG: Uploading file: ${imageFile.path}');
 
       final response = await request.send().timeout(
         const Duration(seconds: 45),
@@ -37,14 +38,14 @@ class CloudinaryService {
         return jsonMap['secure_url'];
       } else {
         final error = await response.stream.bytesToString();
-        print('DEBUG: Cloudinary Error (${response.statusCode}): $error');
+        debugPrint('DEBUG: Cloudinary Error (${response.statusCode}): $error');
         return null;
       }
     } on TimeoutException {
-      print('DEBUG: Upload timed out. Check your firewall.');
+      debugPrint('DEBUG: Upload timed out. Check your firewall.');
       return null;
     } catch (e) {
-      print('DEBUG: Unexpected error: $e');
+      debugPrint('DEBUG: Unexpected error: $e');
       return null;
     }
   }
