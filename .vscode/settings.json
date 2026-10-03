@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/Nix/Petwise/linux"
+    "cmake.sourceDirectory": "C:/Users/Nix/Petwise/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
