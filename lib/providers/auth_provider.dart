@@ -21,7 +21,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _errorMessage;
   String? get userId => _userId;
-  bool get is_gmail => _isGmail;
+  bool get isGmail => _isGmail;
 
   void updateDependencies(AuthService service, UserProvider userProvider) {
     _authService = service;

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petwise/presentation/widgets/petwise_user_textField.dart';
+import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:petwise/data/models/user_model.dart';
 
 class UserProfileSignupScreen extends StatefulWidget {
   const UserProfileSignupScreen({super.key});
@@ -30,7 +29,7 @@ class _UserProfileSignupScreenState extends State<UserProfileSignupScreen> {
   }
 
   void _pickImage() {
-    print("Open Gallery/Camera");
+    debugPrint("Open Gallery/Camera");
   }
 
   @override

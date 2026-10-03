@@ -112,7 +112,9 @@ void main() async {
             return authProvider;
           },
         ),
-        ChangeNotifierProvider(create: (_) => PetPenBackgroundService()..load()),
+        ChangeNotifierProvider(
+          create: (_) => PetPenBackgroundService()..load(),
+        ),
       ChangeNotifierProxyProvider<PlacesService, EssentialServicesProvider>(
   create: (_) => EssentialServicesProvider(),
   update: (_, placesService, essentialProvider) {
