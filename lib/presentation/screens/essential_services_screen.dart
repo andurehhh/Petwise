@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/pet_establishment_model.dart';
 import '../../providers/essential_services_provider.dart';
-import '../widgets/petwise_Navbar.dart';
+import '../widgets/petwise_navbar.dart';
 import '../widgets/petwise_app_bar.dart';
 
 class EssentialServicesScreen extends StatefulWidget {
