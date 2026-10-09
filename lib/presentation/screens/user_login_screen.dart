@@ -6,6 +6,7 @@ import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
 import 'package:petwise/presentation/widgets/petwise_onboarding_flow.dart';
+import 'package:petwise/presentation/widgets/petwise_offline_snackbar.dart';
 import 'package:provider/provider.dart';
 
 class UserLoginScreen extends StatefulWidget {
@@ -65,6 +66,59 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
           buttonLabel: "Let's Go",
         );
         if (mounted) Navigator.pushReplacementNamed(context, '/UserHomePage');
+      }
+    } else {
+      if (authProvider.lastError != null &&
+          authProvider.lastError!.isOffline) {
+        PetwiseOfflineSnackbar.show(
+          context,
+          title: authProvider.lastError!.title,
+          message: authProvider.lastError!.message,
+          onRetry: () => _login(authProvider),
+          onCancel: () => authProvider.clearError(),
+        );
+      }
+    }
+  }
+
+  Future<void> _loginWithGoogle(AuthProvider authProvider) async {
+    final success = await authProvider.loginWithGoogle();
+    if (!mounted) return;
+    if (success) {
+      final user = context.read<UserProvider>().user;
+      if (user != null && !user.hasCompletedSetup) {
+        setState(() => _preparingOnboarding = true);
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (!mounted) return;
+        setState(() => _preparingOnboarding = false);
+        await showOnboardingFlow(context);
+        if (mounted) {
+          final updatedUser = context.read<UserProvider>().user;
+          if (updatedUser != null && updatedUser.hasCompletedSetup) {
+            return;
+          }
+          Navigator.pushReplacementNamed(context, '/UserHomePage');
+        }
+      } else {
+        await PetwiseConfirmationDialog.show(
+          context: context,
+          success: true,
+          title: 'Welcome Back!',
+          message: "You're in. Let's check on your pets.",
+          buttonLabel: "Let's Go",
+        );
+        if (mounted) Navigator.pushReplacementNamed(context, '/UserHomePage');
+      }
+    } else {
+      if (authProvider.lastError != null &&
+          authProvider.lastError!.isOffline) {
+        PetwiseOfflineSnackbar.show(
+          context,
+          title: authProvider.lastError!.title,
+          message: authProvider.lastError!.message,
+          onRetry: () => _loginWithGoogle(authProvider),
+          onCancel: () => authProvider.clearError(),
+        );
       }
     }
   }
@@ -303,51 +357,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                           child: OutlinedButton(
                             onPressed: authProvider.isLoading
                                 ? null
-                                : () async {
-                                    final success =
-                                        await authProvider.loginWithGoogle();
-                                    if (!context.mounted) return;
-                                    if (success) {
-                                      final user =
-                                          context.read<UserProvider>().user;
-                                      if (user != null &&
-                                          !user.hasCompletedSetup) {
-                                        setState(() => _preparingOnboarding = true);
-                                        await Future.delayed(const Duration(milliseconds: 600));
-                                        if (!context.mounted) return;
-                                        setState(() => _preparingOnboarding = false);
-                                        await showOnboardingFlow(context);
-                                        if (context.mounted) {
-                                          final updatedUser = context
-                                              .read<UserProvider>()
-                                              .user;
-                                          if (updatedUser != null &&
-                                              updatedUser.hasCompletedSetup) {
-                                            return;
-                                          }
-                                          Navigator.pushReplacementNamed(
-                                            context,
-                                            '/UserHomePage',
-                                          );
-                                        }
-                                      } else {
-                                        await PetwiseConfirmationDialog.show(
-                                          context: context,
-                                          success: true,
-                                          title: 'Welcome Back!',
-                                          message:
-                                              "You're in. Let's check on your pets.",
-                                          buttonLabel: "Let's Go",
-                                        );
-                                        if (context.mounted) {
-                                          Navigator.pushReplacementNamed(
-                                            context,
-                                            '/UserHomePage',
-                                          );
-                                        }
-                                      }
-                                    }
-                                  },
+                                : () => _loginWithGoogle(authProvider),
                             style: OutlinedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: const Color(0xff0B4A72),

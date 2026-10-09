@@ -6,6 +6,7 @@ import 'package:petwise/providers/activity_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/services/auth_service.dart';
+import 'package:petwise/utils/error_mapper.dart';
 
 class AuthProvider extends ChangeNotifier {
   AuthService _authService;
@@ -13,6 +14,7 @@ class AuthProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _errorMessage;
+  AppError? _lastError;
   String? _userId;
   bool _isGmail = false;
 
@@ -20,6 +22,7 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get error => _errorMessage;
+  AppError? get lastError => _lastError;
   String? get userId => _userId;
   bool get isGmail => _isGmail;
 
@@ -157,23 +160,30 @@ class AuthProvider extends ChangeNotifier {
   // --- HELPERS ---
   void _setLoading(bool value) {
     _isLoading = value;
-    if (value) _errorMessage = null;
+    if (value) {
+      _errorMessage = null;
+      _lastError = null;
+    }
     notifyListeners();
   }
 
   void _handleError(dynamic e) {
     _isLoading = false;
-    _errorMessage = e.toString().replaceAll('Exception: ', '');
+    final appError = ErrorMapper.from(e);
+    _errorMessage = appError.message;
+    _lastError = appError;
     notifyListeners();
   }
 
   void clearError() {
     _errorMessage = null;
+    _lastError = null;
     notifyListeners();
   }
 
   void setError(String message) {
     _errorMessage = message;
+    _lastError = null;
     notifyListeners();
   }
 }

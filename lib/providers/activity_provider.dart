@@ -5,6 +5,7 @@ import 'package:petwise/data/models/activity_model.dart';
 import 'package:petwise/services/activity_service.dart';
 import 'package:petwise/services/notif_service.dart';
 import 'package:petwise/data/models/notification_model.dart';
+import 'package:petwise/utils/error_mapper.dart';
 
 class ActivityProvider with ChangeNotifier {
   ActivityService _activityService;
@@ -18,10 +19,12 @@ class ActivityProvider with ChangeNotifier {
   List<ActivityModel> _activities = [];
   bool _isLoading = false;
   String? _error;
+  AppError? _lastError;
 
   List<ActivityModel> get activities => _activities;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  AppError? get lastError => _lastError;
 
   /// Extracts the hidden date tag `|d:YYYY-MM-DD` from a description string.
   /// Returns the parsed date and the clean description (tag removed).
@@ -142,7 +145,9 @@ class ActivityProvider with ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      _error = e.toString();
+      final appError = ErrorMapper.from(e);
+      _error = appError.message;
+      _lastError = appError;
       notifyListeners();
     } finally {
       _setLoading(false);
@@ -177,7 +182,9 @@ class ActivityProvider with ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      _error = e.toString();
+      final appError = ErrorMapper.from(e);
+      _error = appError.message;
+      _lastError = appError;
       notifyListeners();
       rethrow;
     } finally {
@@ -222,7 +229,9 @@ class ActivityProvider with ChangeNotifier {
     } catch (e) {
       // Rollback on failure
       _activities[index].isCompleted = !newIsCompleted;
-      _error = e.toString();
+      final appError = ErrorMapper.from(e);
+      _error = appError.message;
+      _lastError = appError;
       notifyListeners();
     }
   }
@@ -273,7 +282,9 @@ class ActivityProvider with ChangeNotifier {
       );
       await NotifService().scheduledNotification(notification);
     } catch (e) {
-      _error = e.toString();
+      final appError = ErrorMapper.from(e);
+      _error = appError.message;
+      _lastError = appError;
       notifyListeners();
     }
   }
@@ -290,7 +301,9 @@ class ActivityProvider with ChangeNotifier {
       // Cancel the notification when activity is deleted
       await NotifService().cancelNotification(int.parse(baseId));
     } catch (e) {
-      _error = e.toString();
+      final appError = ErrorMapper.from(e);
+      _error = appError.message;
+      _lastError = appError;
       notifyListeners();
     }
   }
@@ -299,11 +312,13 @@ class ActivityProvider with ChangeNotifier {
     _activities = [];
     _isLoading = false;
     _error = null;
+    _lastError = null;
     notifyListeners();
   }
 
   void clearError() {
     _error = null;
+    _lastError = null;
     notifyListeners();
   }
 

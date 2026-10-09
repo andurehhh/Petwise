@@ -8,6 +8,7 @@ import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/presentation/widgets/petwise_dynamic_activity_card.dart';
 import 'package:petwise/presentation/widgets/petwise_add_activity_sheet.dart';
+import 'package:petwise/presentation/widgets/petwise_offline_snackbar.dart';
 
 class PlannerScreen extends StatefulWidget {
   final DateTime? initialDate;
@@ -30,23 +31,38 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      final petProvider = context.read<PetProvider>();
-      final activityProvider = context.read<ActivityProvider>();
-
-      if (petProvider.pets.isEmpty) {
-        final userProvider = context.read<UserProvider>();
-        final userId = userProvider.user?.id;
-        if (userId != null) {
-          await petProvider.loadUserPets(userId);
-        }
-      }
-
-      if (!mounted) return;
-      final petIds = petProvider.pets.map((p) => p.id).toList();
-      if (petIds.isNotEmpty) {
-        activityProvider.loadAllActivities(petIds);
-      }
+      await _loadActivities();
     });
+  }
+
+  Future<void> _loadActivities() async {
+    final petProvider = context.read<PetProvider>();
+    final activityProvider = context.read<ActivityProvider>();
+
+    if (petProvider.pets.isEmpty) {
+      final userProvider = context.read<UserProvider>();
+      final userId = userProvider.user?.id;
+      if (userId != null) {
+        await petProvider.loadUserPets(userId);
+      }
+    }
+
+    if (!mounted) return;
+    final petIds = petProvider.pets.map((p) => p.id).toList();
+    if (petIds.isNotEmpty) {
+      await activityProvider.loadAllActivities(petIds);
+      if (!mounted) return;
+      if (activityProvider.lastError != null &&
+          activityProvider.lastError!.isOffline) {
+        PetwiseOfflineSnackbar.show(
+          context,
+          title: activityProvider.lastError!.title,
+          message: activityProvider.lastError!.message,
+          onRetry: () => _loadActivities(),
+          onCancel: () => activityProvider.clearError(),
+        );
+      }
+    }
   }
 
   @override
@@ -175,10 +191,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 if (activityProvider.error != null)
                   Container(
                     margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red.shade50,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.shade100),
                     ),
                     child: Row(
                       children: [
@@ -192,11 +212,32 @@ class _PlannerScreenState extends State<PlannerScreen> {
                           child: Text(
                             activityProvider.error!,
                             style: GoogleFonts.plusJakartaSans(
-                              color: Colors.redAccent,
+                              color: Colors.redAccent.shade700,
                               fontSize: 13,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: () => _loadActivities(),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              'Retry',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.redAccent.shade700,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
                         GestureDetector(
                           onTap: () =>
                               context.read<ActivityProvider>().clearError(),

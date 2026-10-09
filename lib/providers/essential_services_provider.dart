@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../data/models/pet_establishment_model.dart';
 import '../services/places_service.dart';
+import '../utils/error_mapper.dart';
 
 class EssentialServicesProvider with ChangeNotifier {
   PlacesService? _placesService;
@@ -17,6 +18,7 @@ class EssentialServicesProvider with ChangeNotifier {
 
   bool _isLoading = false;
   String? _error;
+  AppError? _lastError;
 
   LatLng? get userLocation => _userLocation;
   double get radiusMeters => _radiusMeters;
@@ -26,6 +28,7 @@ class EssentialServicesProvider with ChangeNotifier {
   Set<Circle> get circles => _circles;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  AppError? get lastError => _lastError;
 
   void updatePlacesService(PlacesService service) {
     _placesService = service;
@@ -34,6 +37,7 @@ class EssentialServicesProvider with ChangeNotifier {
   Future<void> initLocationAndFetch({void Function(PetEstablishmentModel)? onMarkerTap}) async {
     _isLoading = true;
     _error = null;
+    _lastError = null;
     notifyListeners();
 
     try {
@@ -56,7 +60,9 @@ class EssentialServicesProvider with ChangeNotifier {
       _userLocation = LatLng(position.latitude, position.longitude);
       await fetchPlaces(onMarkerTap: onMarkerTap);
     } catch (e) {
-      _error = e.toString().replaceAll('Exception: ', '');
+      final appError = ErrorMapper.from(e);
+      _error = appError.message;
+      _lastError = appError;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -68,6 +74,7 @@ class EssentialServicesProvider with ChangeNotifier {
 
     _isLoading = true;
     _error = null;
+    _lastError = null;
     notifyListeners();
 
     try {
@@ -82,11 +89,19 @@ class EssentialServicesProvider with ChangeNotifier {
       _buildOverlays(onMarkerTap);
     } catch (e) {
       debugPrint("❌ Error fetching nearby places: $e");
-      _error = e.toString().replaceAll('Exception: ', '');
+      final appError = ErrorMapper.from(e);
+      _error = appError.message;
+      _lastError = appError;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void clearError() {
+    _error = null;
+    _lastError = null;
+    notifyListeners();
   }
 
   void setCategory(EstablishmentCategory category, {void Function(PetEstablishmentModel)? onMarkerTap}) {

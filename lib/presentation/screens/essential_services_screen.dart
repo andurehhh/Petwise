@@ -7,6 +7,7 @@ import '../../data/models/pet_establishment_model.dart';
 import '../../providers/essential_services_provider.dart';
 import '../widgets/petwise_navbar.dart';
 import '../widgets/petwise_app_bar.dart';
+import '../widgets/petwise_offline_snackbar.dart';
 
 class EssentialServicesScreen extends StatefulWidget {
   const EssentialServicesScreen({super.key});
@@ -23,10 +24,40 @@ class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EssentialServicesProvider>().initLocationAndFetch(
-            onMarkerTap: _showEstablishmentDetails,
-          );
+      _initAndFetch();
     });
+  }
+
+  Future<void> _initAndFetch() async {
+    final provider = context.read<EssentialServicesProvider>();
+    await provider.initLocationAndFetch(
+      onMarkerTap: _showEstablishmentDetails,
+    );
+    if (!mounted) return;
+    if (provider.lastError != null && provider.lastError!.isOffline) {
+      PetwiseOfflineSnackbar.show(
+        context,
+        title: provider.lastError!.title,
+        message: provider.lastError!.message,
+        onRetry: () => _initAndFetch(),
+        onCancel: () => provider.clearError(),
+      );
+    }
+  }
+
+  Future<void> _fetchPlaces() async {
+    final provider = context.read<EssentialServicesProvider>();
+    await provider.fetchPlaces(onMarkerTap: _showEstablishmentDetails);
+    if (!mounted) return;
+    if (provider.lastError != null && provider.lastError!.isOffline) {
+      PetwiseOfflineSnackbar.show(
+        context,
+        title: provider.lastError!.title,
+        message: provider.lastError!.message,
+        onRetry: () => _fetchPlaces(),
+        onCancel: () => provider.clearError(),
+      );
+    }
   }
 
   double _calculateZoom(double radiusMeters) {
@@ -370,9 +401,7 @@ class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
                                   ),
                                 );
                               }
-                              provider.fetchPlaces(
-                                onMarkerTap: _showEstablishmentDetails,
-                              );
+                              _fetchPlaces();
                             },
                           ),
                         ),
@@ -455,36 +484,42 @@ class _EssentialServicesScreenState extends State<EssentialServicesScreen> {
                 ),
               ),
             )
-          else if (provider.error != null)
+          else if (provider.error != null &&
+              provider.lastError?.isOffline != true)
             Positioned(
               bottom: 24,
               left: 16,
               right: 76,
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade700,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
+                  border: Border.all(color: Colors.red.shade200),
+                  boxShadow: [
                     BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline,
-                        color: Colors.white, size: 20),
+                    Icon(
+                      Icons.error_outline,
+                      color: Colors.red.shade600,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         provider.error!,
                         style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
+                          color: const Color(0xFF1A2D40),
                           fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
