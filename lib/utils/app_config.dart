@@ -18,7 +18,20 @@ class AppConfig {
     'GOOGLE_SERVER_CLIENT_ID',
     defaultValue: '',
   );
+  static const String googlePlacesApiKey = String.fromEnvironment(
+    'GOOGLE_PLACES_API_KEY',
+    defaultValue: '',
+  );
 
+  static const String androidPackageName = String.fromEnvironment(
+    'ANDROID_PACKAGE_NAME',
+    defaultValue: 'com.petwise.app',
+  );
+
+  static const String androidCertSha1 = String.fromEnvironment(
+    'ANDROID_CERT_SHA1',
+    defaultValue: 'B16D9E1571CE5E6BEF5C830B46E99C28FCE41A6D',
+  );
 static void validate() {
     if (apiBaseUrl.isEmpty) {
       throw Exception(

@@ -15,6 +15,7 @@ import '../presentation/screens/add_pet_profile_screen.dart';
 import '../presentation/screens/pet_activity_planner_screen.dart';
 import '../presentation/screens/vaccination_screen.dart';
 import '../presentation/screens/analytics_screen.dart';
+import '../presentation/screens/essential_services_screen.dart';
 //Create class
 
 class AppRoute {
@@ -32,7 +33,7 @@ class AppRoute {
   static const String petActivityPlanner = '/PetActivityPlannerScreen';
   static const String vaccinationScreen = '/VaccinationScreen';
   static const String analyticsScreen = '/AnalyticsScreen';
-
+static const String essentialServicesScreen = '/EssentialServicesScreen';
   static Map<String, WidgetBuilder> get routes {
     return {
       userProfile: (context) => const UserProfileScreen(),
@@ -49,6 +50,7 @@ class AppRoute {
       petActivityPlanner: (context) => const PlannerScreen(),
       vaccinationScreen: (context) => const VaccinationScreen(),
       analyticsScreen: (context) => const AnalyticsScreen(),
+      essentialServicesScreen: (context) => const EssentialServicesScreen()
     };
   }
 }

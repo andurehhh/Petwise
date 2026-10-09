@@ -14,6 +14,8 @@ import 'package:petwise/services/pet_service.dart';
 import 'package:petwise/services/user_service.dart';
 import 'package:petwise/services/activity_service.dart';
 import 'package:petwise/services/health_event_service.dart';
+import 'package:petwise/services/places_service.dart';
+import 'package:petwise/providers/essential_services_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:petwise/services/analytics_service.dart';
 import 'package:petwise/providers/analytics_provider.dart';
@@ -52,7 +54,9 @@ void main() async {
         // Just Added: Analytics Service Hook
         ProxyProvider<ApiClient, AnalyticsService>(
           update: (_, client, _) => AnalyticsService(client),
-        ),
+        ),Provider<PlacesService>(
+  create: (_) => PlacesService(),
+),
         ChangeNotifierProxyProvider<UserService, UserProvider>(
           create: (_) => UserProvider(),
           update: (_, userService, userProvider) {
@@ -111,6 +115,13 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => PetPenBackgroundService()..load(),
         ),
+      ChangeNotifierProxyProvider<PlacesService, EssentialServicesProvider>(
+  create: (_) => EssentialServicesProvider(),
+  update: (_, placesService, essentialProvider) {
+    essentialProvider!.updatePlacesService(placesService);
+    return essentialProvider;
+  },
+),
       ],
       child: const MyApp(),
     ),
