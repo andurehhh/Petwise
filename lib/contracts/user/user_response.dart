@@ -6,6 +6,8 @@ class UserResponse {
   final String? firstName;
   final String? lastName;
   final String? nickname;
+  final String? contactNumber;
+  final String? address;
   final bool hasCompletedSetup;
 
   UserResponse({
@@ -16,19 +18,25 @@ class UserResponse {
     this.firstName,
     this.lastName,
     this.nickname,
+    this.contactNumber,
+    this.address,
     this.hasCompletedSetup = false,
   });
 
   factory UserResponse.fromJson(Map<String, dynamic> json) {
     return UserResponse(
-      userId: json['user_id'],
-      email: json['email'],
-      createdAt: DateTime.parse(json['created_at']).toLocal(),
-      imageUrl: json['image_url'],
-      firstName: json['first_name'],
-      lastName: json['last_name'],
+      userId: json['user_id'] ?? json['userId'] ?? '',
+      email: json['email'] ?? '',
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at']).toLocal()
+          : DateTime.now(),
+      imageUrl: json['image_url'] ?? json['imageUrl'],
+      firstName: json['first_name'] ?? json['firstName'],
+      lastName: json['last_name'] ?? json['lastName'],
       nickname: json['nickname'],
-      hasCompletedSetup: json['has_completed_setup'] ?? false,
+      contactNumber: json['contact_number'] ?? json['contactNumber'],
+      address: json['address'],
+      hasCompletedSetup: json['has_completed_setup'] ?? json['hasCompletedSetup'] ?? false,
     );
   }
 
@@ -41,6 +49,8 @@ class UserResponse {
       'image_url': imageUrl,
       'last_name': lastName,
       'nickname': nickname,
+      'contact_number': contactNumber,
+      'address': address,
       'has_completed_setup': hasCompletedSetup,
     };
   }

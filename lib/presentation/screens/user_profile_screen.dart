@@ -10,6 +10,7 @@ import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/user_provider.dart';
 import 'package:petwise/presentation/screens/edit_user_profile_screen.dart';
 import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
+import 'package:petwise/utils/phone_number_formatter.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -241,6 +242,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           PetwiseUserTextfield(
                             textLabel: "Email",
                             textHint: user.email,
+                          ),
+                          PetwiseUserTextfield(
+                            textLabel: "Contact Number",
+                            textHint: (user.contactNumber != null &&
+                                    user.contactNumber!.trim().isNotEmpty)
+                                ? MobileNumberInputFormatter.format(
+                                    user.contactNumber!,
+                                  )
+                                : "Not set",
+                          ),
+                          PetwiseUserTextfield(
+                            textLabel: "Address",
+                            textHint: (user.address != null &&
+                                    user.address!.trim().isNotEmpty)
+                                ? user.address!
+                                : "Not set",
                           ),
                           const SizedBox(height: 40),
                           ConstrainedBox(
