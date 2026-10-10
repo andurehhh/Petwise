@@ -46,6 +46,8 @@ class UserProvider extends ChangeNotifier {
     required String firstName,
     required String lastName,
     required String nickname,
+    String? contactNumber,
+    String? address,
     String? imageUrl,
   }) async {
     if (_userService == null || _user == null) return false;
@@ -59,6 +61,8 @@ class UserProvider extends ChangeNotifier {
         firstName: firstName,
         lastName: lastName,
         nickname: nickname,
+        contactNumber: contactNumber,
+        address: address,
         imageUrl: imageUrl ?? _user!.imageUrl,
       );
 
@@ -91,6 +95,8 @@ class UserProvider extends ChangeNotifier {
         email: _user!.email,
         nickname: _user!.nickname,
         imageUrl: pictureUrl,
+        contactNumber: _user!.contactNumber,
+        address: _user!.address,
         hasCompletedSetup: _user!.hasCompletedSetup,
       );
       notifyListeners();
@@ -111,6 +117,8 @@ class UserProvider extends ChangeNotifier {
       email: response.email,
       nickname: response.nickname,
       imageUrl: response.imageUrl,
+      contactNumber: response.contactNumber ?? _user?.contactNumber,
+      address: response.address ?? _user?.address,
       hasCompletedSetup: response.hasCompletedSetup,
     );
   }
@@ -124,6 +132,8 @@ class UserProvider extends ChangeNotifier {
           firstName: _user!.firstName,
           lastName: _user!.lastName,
           nickname: _user!.nickname,
+          contactNumber: _user!.contactNumber,
+          address: _user!.address,
           imageUrl: _user!.imageUrl,
           hasCompletedSetup: true,
         ),

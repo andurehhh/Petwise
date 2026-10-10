@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_user_image_picker.dart';
 import 'package:petwise/providers/user_provider.dart';
+import 'package:petwise/utils/phone_number_formatter.dart';
 
 class EditUserProfileScreen extends StatefulWidget {
   const EditUserProfileScreen({super.key});
@@ -15,9 +16,12 @@ class EditUserProfileScreen extends StatefulWidget {
 }
 
 class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _nicknameController;
+  late TextEditingController _contactNumberController;
+  late TextEditingController _addressController;
   String? _temporarySelectedImageUrl;
 
   @override
@@ -27,6 +31,10 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     _firstNameController = TextEditingController(text: user?.firstName ?? "");
     _lastNameController = TextEditingController(text: user?.lastName ?? "");
     _nicknameController = TextEditingController(text: user?.nickname ?? "");
+    _contactNumberController = TextEditingController(
+      text: MobileNumberInputFormatter.format(user?.contactNumber ?? ""),
+    );
+    _addressController = TextEditingController(text: user?.address ?? "");
     _temporarySelectedImageUrl = user?.imageUrl;
   }
 
@@ -35,7 +43,35 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _nicknameController.dispose();
+    _contactNumberController.dispose();
+    _addressController.dispose();
     super.dispose();
+  }
+
+  String? _validateContactNumber(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return 'Contact number is required.';
+    }
+    final clean = trimmed.replaceAll(RegExp(r'\D'), '');
+    if (!clean.startsWith('09') && !clean.startsWith('9')) {
+      return 'Mobile number must start with 09.';
+    }
+    if (clean.length < 10 || clean.length > 11) {
+      return 'Enter a valid 11-digit mobile number (e.g. 09xx-xxxx-xxx).';
+    }
+    return null;
+  }
+
+  String? _validateAddress(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return 'Address is required.';
+    }
+    if (trimmed.length < 5) {
+      return 'Address must be at least 5 characters long.';
+    }
+    return null;
   }
 
   void _openUserImagePicker(BuildContext context) {
@@ -158,95 +194,146 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                   width: double.infinity,
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   padding: const EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        "USER INFORMATION",
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: const Color(0xFF92A1B7),
-                          letterSpacing: 1.2,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          "USER INFORMATION",
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: const Color(0xFF92A1B7),
+                            letterSpacing: 1.2,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      PetwiseUserTextfield(
-                        textLabel: "First Name",
-                        textHint: "Enter first name",
-                        isEditable: true,
-                        controller: _firstNameController,
-                      ),
-                      const SizedBox(height: 12),
-                      PetwiseUserTextfield(
-                        textLabel: "Last Name",
-                        textHint: "Enter last name",
-                        isEditable: true,
-                        controller: _lastNameController,
-                      ),
-                      Consumer<UserProvider>(
-                        builder: (context, userProvider, child) {
-                          return Column(
-                            children: [
-                              PetwiseUserTextfield(
-                                textLabel: "Email",
-                                textHint:
-                                    userProvider.user?.email ??
-                                    "No Email Registered",
-                                isEditable: false,
-                              ),
-                              const SizedBox(height: 32),
-                              FilledButton(
-                                onPressed: userProvider.isLoading
-                                    ? null
-                                    : () async {
-                                        final messenger = ScaffoldMessenger.of(
-                                          context,
-                                        );
-                                        final navigator = Navigator.of(context);
-
-                                        bool success = await userProvider
-                                            .updateProfile(
-                                              firstName: _firstNameController
-                                                  .text
-                                                  .trim(),
-                                              lastName: _lastNameController.text
-                                                  .trim(),
-                                              nickname: _nicknameController.text
-                                                  .trim(),
-                                              imageUrl:
-                                                  _temporarySelectedImageUrl,
-                                            );
-
-                                        if (success) {
-                                          messenger.showSnackBar(
-                                            const SnackBar(
-                                              content: Text("Profile Updated!"),
-                                              backgroundColor:
-                                                  Colors.lightGreen,
-                                            ),
-                                          );
-                                          navigator.pop();
-                                        } else {
-                                          messenger.showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                userProvider.error ??
-                                                    "Failed to update profile",
-                                              ),
-                                              backgroundColor: Colors.redAccent,
-                                            ),
-                                          );
-                                        }
-                                      },
-                                style: FilledButton.styleFrom(
-                                  minimumSize: const Size(double.infinity, 52),
-                                  backgroundColor: const Color(0xFFF7A433),
-                                  side: const BorderSide(
-                                    color: Color(0xFFDA9B44),
-                                    width: 2,
-                                  ),
+                        const SizedBox(height: 16),
+                        PetwiseUserTextfield(
+                          textLabel: "First Name",
+                          textHint: "Enter first name",
+                          isEditable: true,
+                          controller: _firstNameController,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'First name is required.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        PetwiseUserTextfield(
+                          textLabel: "Last Name",
+                          textHint: "Enter last name",
+                          isEditable: true,
+                          controller: _lastNameController,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Last name is required.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        PetwiseUserTextfield(
+                          textLabel: "Contact Number",
+                          textHint: "09xx-xxxx-xxx",
+                          isEditable: true,
+                          controller: _contactNumberController,
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: const [
+                            MobileNumberInputFormatter(),
+                          ],
+                          validator: _validateContactNumber,
+                        ),
+                        const SizedBox(height: 12),
+                        PetwiseUserTextfield(
+                          textLabel: "Address",
+                          textHint: "Enter street, city, province/state",
+                          isEditable: true,
+                          controller: _addressController,
+                          keyboardType: TextInputType.streetAddress,
+                          validator: _validateAddress,
+                        ),
+                        const SizedBox(height: 12),
+                        Consumer<UserProvider>(
+                          builder: (context, userProvider, child) {
+                            return Column(
+                              children: [
+                                PetwiseUserTextfield(
+                                  textLabel: "Email",
+                                  textHint:
+                                      userProvider.user?.email ??
+                                      "No Email Registered",
+                                  isEditable: false,
                                 ),
+                                const SizedBox(height: 32),
+                                FilledButton(
+                                  onPressed: userProvider.isLoading
+                                      ? null
+                                      : () async {
+                                          if (!_formKey.currentState!
+                                              .validate()) {
+                                            return;
+                                          }
+                                          final messenger =
+                                              ScaffoldMessenger.of(context);
+                                          final navigator =
+                                              Navigator.of(context);
+
+                                          bool success = await userProvider
+                                              .updateProfile(
+                                                firstName:
+                                                    _firstNameController.text
+                                                        .trim(),
+                                                lastName:
+                                                    _lastNameController.text
+                                                        .trim(),
+                                                nickname:
+                                                    _nicknameController.text
+                                                        .trim(),
+                                                contactNumber:
+                                                    _contactNumberController
+                                                        .text
+                                                        .trim(),
+                                                address: _addressController.text
+                                                    .trim(),
+                                                imageUrl:
+                                                    _temporarySelectedImageUrl,
+                                              );
+
+                                          if (success) {
+                                            messenger.showSnackBar(
+                                              const SnackBar(
+                                                content:
+                                                    Text("Profile Updated!"),
+                                                backgroundColor:
+                                                    Colors.lightGreen,
+                                              ),
+                                            );
+                                            navigator.pop();
+                                          } else {
+                                            messenger.showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  userProvider.error ??
+                                                      "Failed to update profile",
+                                                ),
+                                                backgroundColor:
+                                                    Colors.redAccent,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                  style: FilledButton.styleFrom(
+                                    minimumSize:
+                                        const Size(double.infinity, 52),
+                                    backgroundColor: const Color(0xFFF7A433),
+                                    side: const BorderSide(
+                                      color: Color(0xFFDA9B44),
+                                      width: 2,
+                                    ),
+                                  ),
                                 child: userProvider.isLoading
                                     ? const SizedBox(
                                         height: 20,
@@ -291,6 +378,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                   ),
                 ),
               ),
+            ),
             ],
           ),
         ),
