@@ -148,13 +148,11 @@ class _PetCardScreenState extends State<PetCardScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/AddPetProfileScreen'),
         backgroundColor: const Color(0xFFF7A433),
-        shape: const CircleBorder(),
+        onPressed: () => Navigator.pushNamed(context, '/AddPetProfileScreen'),
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 3, showFab: true),
+      bottomNavigationBar: const PetwiseNavbar(navbarIndex: 3),
     );
   }
 }
