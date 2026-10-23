@@ -27,6 +27,8 @@ class PetwiseOfflineSnackbar {
     BuildContext context, {
     String title = "You're offline",
     String message = 'Check your connection, then tap retry.',
+    IconData icon = Icons.error_outline_rounded,
+    Color? iconColor,
     FutureOr<void> Function()? onRetry,
     VoidCallback? onCancel,
     Duration duration = const Duration(seconds: 10),
@@ -39,12 +41,14 @@ class PetwiseOfflineSnackbar {
         behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.white,
         elevation: 6,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
           side: BorderSide(
-            color: const Color(0xFFF7A433).withValues(alpha: 0.35),
+            color: iconColor != null
+                ? iconColor.withValues(alpha: 0.35)
+                : Colors.red.shade200,
             width: 1.2,
           ),
         ),
@@ -52,6 +56,8 @@ class PetwiseOfflineSnackbar {
         content: _OfflineSnackbarContent(
           title: title,
           message: message,
+          icon: icon,
+          iconColor: iconColor,
           onRetry: onRetry,
           onCancel: onCancel,
         ),
@@ -63,6 +69,8 @@ class PetwiseOfflineSnackbar {
   static void showError(
     BuildContext context, {
     required AppError error,
+    IconData icon = Icons.error_outline_rounded,
+    Color? iconColor,
     FutureOr<void> Function()? onRetry,
     VoidCallback? onCancel,
     Duration duration = const Duration(seconds: 10),
@@ -71,6 +79,8 @@ class PetwiseOfflineSnackbar {
       context,
       title: error.title,
       message: error.message,
+      icon: icon,
+      iconColor: iconColor,
       onRetry: onRetry,
       onCancel: onCancel,
       duration: duration,
@@ -86,12 +96,16 @@ class PetwiseOfflineSnackbar {
 class _OfflineSnackbarContent extends StatefulWidget {
   final String title;
   final String message;
+  final IconData icon;
+  final Color? iconColor;
   final FutureOr<void> Function()? onRetry;
   final VoidCallback? onCancel;
 
   const _OfflineSnackbarContent({
     required this.title,
     required this.message,
+    this.icon = Icons.error_outline_rounded,
+    this.iconColor,
     this.onRetry,
     this.onCancel,
   });
@@ -125,23 +139,22 @@ class _OfflineSnackbarContentState extends State<_OfflineSnackbarContent> {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveIconColor = widget.iconColor ?? Colors.red.shade600;
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Offline Icon Badge in soft amber tint
+        // Error / Status Icon Badge in red tint
         Container(
-          width: 38,
-          height: 38,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            color: const Color(0xFFF7A433).withValues(alpha: 0.15),
+            color: effectiveIconColor.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.wifi_off_rounded,
-            color: Color(0xFFF7A433),
-            size: 20,
-          ),
+          child: Icon(widget.icon, color: effectiveIconColor, size: 19),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
 
         // Text & Instructions matching PetWise page typography
         Expanded(
@@ -151,22 +164,25 @@ class _OfflineSnackbarContentState extends State<_OfflineSnackbarContent> {
             children: [
               Text(
                 widget.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF1A2D40), // PetWise primary navy
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
+                  height: 1.25,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 widget.message,
-                maxLines: 2,
+                maxLines: 5,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF64748B), // Slate-500 subtitle
                   fontWeight: FontWeight.w500,
                   fontSize: 11,
-                  height: 1.25,
+                  height: 1.3,
                 ),
               ),
             ],
@@ -175,7 +191,7 @@ class _OfflineSnackbarContentState extends State<_OfflineSnackbarContent> {
 
         // Actions: Cancel & Retry
         if (widget.onRetry != null) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           // Cancel Action
           InkWell(
             onTap: _isRetrying
@@ -186,7 +202,7 @@ class _OfflineSnackbarContentState extends State<_OfflineSnackbarContent> {
                   },
             borderRadius: BorderRadius.circular(8),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
               child: Text(
                 'Cancel',
                 style: GoogleFonts.plusJakartaSans(
@@ -198,12 +214,12 @@ class _OfflineSnackbarContentState extends State<_OfflineSnackbarContent> {
             ),
           ),
           const SizedBox(width: 4),
-          // Active Retry Pill Action
+          // Active Retry Pill Action (remains orange)
           InkWell(
             onTap: _isRetrying ? null : _handleRetry,
             borderRadius: BorderRadius.circular(20),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               decoration: BoxDecoration(
                 color: const Color(0xFFF7A433), // PetWise branded amber
                 borderRadius: BorderRadius.circular(20),
@@ -250,4 +266,3 @@ class _OfflineSnackbarContentState extends State<_OfflineSnackbarContent> {
     );
   }
 }
-

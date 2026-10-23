@@ -205,7 +205,8 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 15),
-                        if (authProvider.error != null)
+                        if (authProvider.error != null &&
+                            authProvider.lastError?.isOffline != true)
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
                             margin: const EdgeInsets.only(bottom: 15),

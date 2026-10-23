@@ -52,12 +52,21 @@ class _PlannerScreenState extends State<PlannerScreen> {
     if (petIds.isNotEmpty) {
       await activityProvider.loadAllActivities(petIds);
       if (!mounted) return;
-      if (activityProvider.lastError != null &&
-          activityProvider.lastError!.isOffline) {
+      if (activityProvider.lastError != null) {
         PetwiseOfflineSnackbar.show(
           context,
           title: activityProvider.lastError!.title,
           message: activityProvider.lastError!.message,
+          icon: Icons.error_outline_rounded,
+          onRetry: () => _loadActivities(),
+          onCancel: () => activityProvider.clearError(),
+        );
+      } else if (activityProvider.error != null) {
+        PetwiseOfflineSnackbar.show(
+          context,
+          title: 'Unable to Load Activities',
+          message: activityProvider.error!,
+          icon: Icons.error_outline_rounded,
           onRetry: () => _loadActivities(),
           onCancel: () => activityProvider.clearError(),
         );
@@ -188,68 +197,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                if (activityProvider.error != null)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.shade100),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.redAccent,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            activityProvider.error!,
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.redAccent.shade700,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        InkWell(
-                          onTap: () => _loadActivities(),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            child: Text(
-                              'Retry',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.redAccent.shade700,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          onTap: () =>
-                              context.read<ActivityProvider>().clearError(),
-                          child: const Icon(
-                            Icons.close,
-                            size: 16,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 if (activityProvider.isLoading)
                   const Center(
                     child: Padding(
