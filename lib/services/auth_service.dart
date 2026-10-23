@@ -5,6 +5,7 @@ import '../contracts/auth/signin_request.dart';
 import '../contracts/auth/signup_request.dart';
 import '../contracts/auth/auth_response.dart';
 import '../utils/app_config.dart';
+import '../utils/error_mapper.dart';
 
 class AuthService {
   final ApiClient _apiClient;
@@ -29,7 +30,9 @@ class AuthService {
 
       return authResponse;
     } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) rethrow;
+      final appError = ErrorMapper.from(e);
+      throw AppException(message: appError.message, technicalDetails: e);
     }
   }
 
@@ -44,7 +47,9 @@ class AuthService {
 
       return {'message': 'Signup successful.', 'success': true};
     } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) rethrow;
+      final appError = ErrorMapper.from(e);
+      throw AppException(message: appError.message, technicalDetails: e);
     }
   }
 
@@ -56,7 +61,9 @@ class AuthService {
       });
       return (response as Map<String, dynamic>?) ?? {};
     } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) rethrow;
+      final appError = ErrorMapper.from(e);
+      throw AppException(message: appError.message, technicalDetails: e);
     }
   }
 
@@ -74,7 +81,9 @@ class AuthService {
       });
       return (response as Map<String, dynamic>?) ?? {};
     } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) rethrow;
+      final appError = ErrorMapper.from(e);
+      throw AppException(message: appError.message, technicalDetails: e);
     }
   }
 
@@ -84,7 +93,9 @@ class AuthService {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
-        throw Exception('Google Sign In Failed');
+        throw const AppException(
+          message: 'Google Sign-In was cancelled or incomplete.',
+        );
       }
 
       final GoogleSignInAuthentication googleAuth =
@@ -92,8 +103,8 @@ class AuthService {
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {
-        throw Exception(
-          'Google Sign In Failed to retrieve the Google ID Token',
+        throw const AppException(
+          message: 'Failed to retrieve credentials from Google. Please try again.',
         );
       }
 
@@ -111,7 +122,9 @@ class AuthService {
       return authResponse;
     } catch (e) {
       debugPrint('Google Sign-In error: $e');
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) rethrow;
+      final appError = ErrorMapper.from(e);
+      throw AppException(message: appError.message, technicalDetails: e);
     }
   }
 }
