@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petwise/services/cloudinary_service.dart';
+import 'package:petwise/services/storage/storage_destination.dart';
 
 class PetwiseImagePickerSheet extends StatefulWidget {
   final String currentImageUrl;
   final ValueChanged<String> onImageSelected;
+  final StorageDestination? destination;
 
   const PetwiseImagePickerSheet({
     super.key,
     required this.currentImageUrl,
     required this.onImageSelected,
+    this.destination,
   });
 
   @override
@@ -56,6 +59,7 @@ class _PetwiseImagePickerSheetState extends State<PetwiseImagePickerSheet> {
     try {
       final String? uploadedUrl = await CloudinaryService().uploadImage(
         File(pickedFile.path),
+        destination: widget.destination ?? StorageDestination.petProfile(),
       );
 
       if (mounted) Navigator.pop(context);
@@ -64,14 +68,15 @@ class _PetwiseImagePickerSheetState extends State<PetwiseImagePickerSheet> {
         widget.onImageSelected(uploadedUrl);
         if (mounted) Navigator.pop(context);
       } else {
-        throw Exception("Upload failed");
+        throw Exception("Upload failed. Please check your connection or try again.");
       }
     } catch (e) {
       if (mounted) {
         if (Navigator.canPop(context)) Navigator.pop(context);
+        final errorMessage = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Upload failed. Check your connection."),
+          SnackBar(
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );

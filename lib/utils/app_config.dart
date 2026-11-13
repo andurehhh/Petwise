@@ -32,7 +32,29 @@ class AppConfig {
     'ANDROID_CERT_SHA1',
     defaultValue: 'B16D9E1571CE5E6BEF5C830B46E99C28FCE41A6D',
   );
-static void validate() {
+
+  static const String appEnv = String.fromEnvironment(
+    'APP_ENV',
+    defaultValue: '',
+  );
+
+  /// Resolves the current runtime environment ('dev', 'staging', 'prod')
+  /// based on explicit APP_ENV or inferred from API_BASE_URL.
+  static String get currentEnvironment {
+    if (appEnv.isNotEmpty) {
+      return appEnv.toLowerCase().trim();
+    }
+    final url = apiBaseUrl.toLowerCase();
+    if (url.contains('staging') || url.contains('test')) {
+      return 'staging';
+    }
+    if (url.contains('dev') || url.contains('localhost') || url.contains('10.0.2.2')) {
+      return 'dev';
+    }
+    return 'prod';
+  }
+
+  static void validate() {
     if (apiBaseUrl.isEmpty) {
       throw Exception(
         'Missing API_BASE_URL! Did you forget --dart-define-from-file=.env ?',
