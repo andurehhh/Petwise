@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:petwise/presentation/widgets/petwise_user_text_field.dart';
 import 'package:petwise/presentation/widgets/petwise_user_image_picker.dart';
 import 'package:petwise/providers/user_provider.dart';
+import 'package:petwise/services/storage/storage_destination.dart';
 import 'package:petwise/utils/phone_number_formatter.dart';
 
 class EditUserProfileScreen extends StatefulWidget {
@@ -75,12 +76,14 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
   }
 
   void _openUserImagePicker(BuildContext context) {
+    final user = context.read<UserProvider>().user;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (bottomSheetContext) => PetwiseUserImagePickerSheet(
         currentImageUrl: _temporarySelectedImageUrl ?? "",
+        destination: StorageDestination.userAvatar(userId: user?.id),
         onImageSelected: (newImageUrl) {
           setState(() {
             _temporarySelectedImageUrl = newImageUrl;

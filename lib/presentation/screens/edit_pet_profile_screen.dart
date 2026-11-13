@@ -10,6 +10,7 @@ import 'package:petwise/presentation/widgets/petwise_add_health_event_sheet.dart
 import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
 import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/health_event_provider.dart';
+import 'package:petwise/services/storage/storage_destination.dart';
 import 'package:provider/provider.dart';
 
 class EditPetProfileScreen extends StatefulWidget {
@@ -263,6 +264,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
   }
 
   void _openImagePickerSheet() {
+    final petId = context.read<PetProvider>().selectedPet?.id;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -270,6 +272,7 @@ class _EditPetProfileScreenState extends State<EditPetProfileScreen> {
       builder: (context) {
         return PetwiseImagePickerSheet(
           currentImageUrl: imageUrl,
+          destination: StorageDestination.petProfile(petId: petId?.toString()),
           onImageSelected: (newUrl) {
             setState(() {
               imageUrl = newUrl;

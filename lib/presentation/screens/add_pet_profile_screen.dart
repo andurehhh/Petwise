@@ -9,6 +9,7 @@ import 'package:petwise/providers/pet_provider.dart';
 import 'package:petwise/providers/auth_provider.dart';
 import 'package:petwise/providers/health_event_provider.dart';
 import 'package:petwise/presentation/widgets/petwise_confirmation_dialog.dart';
+import 'package:petwise/services/storage/storage_destination.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -229,6 +230,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => PetwiseImagePickerSheet(
         currentImageUrl: _pickedImagePath ?? _defaultAssetPath,
+        destination: StorageDestination.petProfile(petId: 'new'),
         onImageSelected: (String newImageUrl) {
           setState(() {
             _pickedImagePath = newImageUrl;
